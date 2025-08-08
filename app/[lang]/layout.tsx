@@ -3,6 +3,7 @@ import { RootProvider } from 'fumadocs-ui/provider';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 import type { Translations } from 'fumadocs-ui/i18n';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const cn: Partial<Translations> = {
   search: '搜索',
@@ -31,9 +32,6 @@ export default async function Layout(
 
   return (
     <html lang={lang} className={inter.className} suppressHydrationWarning>
-      <head>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEWZ8WZX0C"></script>
-      </head>
       <body className="flex flex-col min-h-screen">
         <RootProvider
           i18n={{
@@ -45,6 +43,7 @@ export default async function Layout(
             enabled: false,
           }}>{children}</RootProvider>
       </body>
+      <GoogleAnalytics id="G-SEWZ8WZX0C" />
     </html>
   );
 }
