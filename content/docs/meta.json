@@ -24,6 +24,8 @@
     "settings/file-manager",
     "settings/editor",
     "settings/ocr",
-    "settings/developer"
+    "settings/developer",
+    "---其他---",
+    "contributing"
   ]
 }

@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Heart, Users, Github } from 'lucide-react';
+import { Heart, Users, Github, Book } from 'lucide-react';
 import SectionWrap from './section-wrap';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,11 @@ export default function HomeContributors() {
   const contributionsText = {
     cn: "次贡献",
     en: "contributions",
+  }[lang];
+
+  const contributionGuideText = {
+    cn: "贡献指南",
+    en: "Contribution Guide",
   }[lang];
 
   useEffect(() => {
@@ -111,10 +116,16 @@ export default function HomeContributors() {
           <p className="text-fd-muted-foreground leading-relaxed mb-6 max-w-4xl mx-auto">
             {promotionalText}
           </p>
-          <Button onClick={() => window.open('https://github.com/codexu/note-gen', '_blank')}>
-            <Github className="size-4" />
-            {viewOnGithubText}
-          </Button>
+          <div className="flex gap-4 items-center justify-center">
+            <Button onClick={() => window.open('https://github.com/codexu/note-gen', '_blank')}>
+              <Github className="size-4" />
+              {viewOnGithubText}
+            </Button>
+            <Button onClick={() => window.location.href = `${lang}/docs/contributing`} variant="outline">
+              <Book className="size-4" />
+              {contributionGuideText}
+            </Button>
+          </div>
         </div>
       </div>
     </SectionWrap>

@@ -24,7 +24,7 @@ export default function HomeRecord() {
 
   const aiConfig = {
     cn: "模型配置",
-    en: "Model Config",
+    en: "Model Configuration",
   }[lang];
 
   const recordList = [
@@ -108,7 +108,7 @@ export default function HomeRecord() {
         ))}
       </ul>
       <div className="flex gap-2 mt-6">
-        <Button variant="default">
+        <Button variant="default" onClick={() => window.location.href = `${lang}/docs/settings/model-config`}>
           {aiConfig}
         </Button>
       </div>

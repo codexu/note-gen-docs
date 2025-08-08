@@ -24,7 +24,7 @@ export default function HomeWriting() {
 
   const syncConfig = {
     cn: "同步配置",
-    en: "Sync Config",
+    en: "Sync Configuration",
   }[lang];
 
   const writingList = [
@@ -81,7 +81,7 @@ export default function HomeWriting() {
         ))}
       </ul>
       <div className="flex gap-2 mt-6">
-        <Button variant="default">
+        <Button variant="default" onClick={() => window.location.href = `${lang}/docs/settings/sync`}>
           {syncConfig}
         </Button>
       </div>
