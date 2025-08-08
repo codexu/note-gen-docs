@@ -1,0 +1,67 @@
+---
+title: File Manager
+description: The file manager is used to manage writing files, supporting operations like create, delete, rename, and is associated with sync repositories.
+icon: FolderOpen
+---
+
+import { CloudCog, FolderPlus, FilePlus, SortAsc, ChevronsDownUp, FolderSync } from 'lucide-react'
+
+If you follow the previous chapters, you should now be automatically redirected to the writing page:
+
+![1.png](https://s2.loli.net/2025/05/26/ZQHCG65VeY4Knqb.png)
+
+The left side is the file manager, and the right side is the Markdown editor.
+
+Recording and writing are interconnected but can also be used completely independently.
+
+## Toolbar
+
+The file manager has a toolbar at the top with the following buttons:
+
+<Cards>
+  <Card icon={<CloudCog />} title="Access Repository">
+    Click to open the currently used sync repository (Github/Gitee). Shows loading state when loading repository files.
+  </Card>
+  <Card icon={<FilePlus />} title="New File">
+    Create a new file at the same level as the currently selected file. If nothing is selected, creates in the root directory. Note that folders cannot be selected; to create files inside folders, right-click the folder and select `New File`.
+  </Card>
+  <Card icon={<FolderPlus />} title="New Folder">
+    Create a new folder, similar to creating new files.
+  </Card>
+  <Card icon={<SortAsc />} title="Sort">
+    Select file sorting method, supporting name, creation time, modification time, ascending/descending order.
+  </Card>
+  <Card icon={<ChevronsDownUp />} title="Expand/Collapse">
+    Expand/collapse all folders.
+  </Card>
+  <Card icon={<FolderSync />} title="Refresh">
+    Refresh file list and sync information.
+  </Card>
+</Cards>
+
+## Context Menu
+
+`Right-click folder` provides the following menu:
+
+- New File (create inside folder)
+- New Folder (create inside folder)
+- Show in Folder, opens the folder in the system file manager
+- Cut
+- Copy
+- Paste
+- Rename
+- Delete
+
+`Right-click file` provides the following menu:
+
+- Show in Folder
+- Cut
+- Copy
+- Paste
+- Rename
+- Delete Sync File (delete file in sync repository)
+- Delete Local File
+
+## Drag and Drop Support
+
+- Supports dragging files into other folders

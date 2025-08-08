@@ -1,0 +1,29 @@
+{
+  "title": "指南",
+  "pages": [
+    "---从此开始---",
+    "index",
+    "download",
+    "---功能介绍---",
+    "preview/record",
+    "preview/chat",
+    "preview/organize",
+    "preview/writing",
+    "preview/files",
+    "preview/search",
+    "preview/image",
+    "---配置方式---",
+    "settings/sync",
+    "settings/image-hosting",
+    "settings/backup",
+    "settings/model-config",
+    "settings/default-model",
+    "settings/rag",
+    "settings/prompt",
+    "settings/organize-template",
+    "settings/file-manager",
+    "settings/editor",
+    "settings/ocr",
+    "settings/developer"
+  ]
+}

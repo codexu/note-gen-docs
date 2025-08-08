@@ -1,0 +1,84 @@
+---
+title: Client Downloads
+description: NoteGen supports Windows, MacOS, Linux, Android, iOS (compile and install yourself).
+icon: Download
+---
+
+import { Monitor, Github } from "lucide-react"
+
+## Desktop (Beta)
+
+Supports Windows, MacOS(M Chip), MacOS(Intel), Linux.
+
+<Cards>
+  <Card icon={<Monitor className="text-purple-500" />} title="Desktop Client" href="http://download.upgrade.toolsetlink.com/download?appKey=tyEi-iLVFxnRhGc9c_xApw">
+    Upgrade and download provided by UpgradeLink.
+  </Card>
+  <Card icon={<Github />} title="Github Download" href="https://github.com/codexu/note-gen/releases">
+    Download service provided by Github.
+  </Card>
+</Cards>
+
+[MacOS installation shows corrupted?](#macos)
+
+## Mobile (Alpha)
+
+<Callout title="Early Access" type="warning">
+  Mobile is currently in development, not available on any app stores. You can download for self-installation or compile and install.
+</Callout>
+
+### Android
+
+Android devices support arm, arm64, x86, x86_64. Please choose download according to your device.
+
+<Cards>
+  <Card title="Android arm" href="https://download.upgrade.toolsetlink.com/download?appKey=EL9I7RGe5r_hjC3ZF1zfhA">
+    Suitable for older Android devices.
+  </Card>
+  <Card title="Android arm64" href="https://download.upgrade.toolsetlink.com/download?appKey=9YXz-aEnn4cdwNkB2nqPww">
+    Suitable for newer Android devices.
+  </Card>
+  <Card title="Android x86" href="https://download.upgrade.toolsetlink.com/download?appKey=uiv-AYoAVQFDbga6TfJwig">
+    Commonly used for x86 emulators.
+  </Card>
+  <Card title="Android x86_64" href="https://download.upgrade.toolsetlink.com/download?appKey=XT0Fr-oPdhuJXiV0ME2XEg">
+    Commonly used for x86_64 emulators.
+  </Card>
+</Cards>
+
+### iOS
+
+NoteGen supports iOS, but due to not having registered a developer account, unsigned applications can only be used for 7 days and are not available on the App Store.
+
+<Callout title="NoteGen Unsigned" type="error">
+  If you want to experience on iOS, please compile and install yourself.
+</Callout>
+
+## How to Choose Installation Package?
+
+### MacOS
+
+MacOS Intel chip: `x64.dmg`
+
+MacOS Apple M chip: `aarch64.dmg`
+
+NoteGen is currently unsigned, so it will show a corrupted file prompt during installation. Solutions for different chips are as follows:
+
+- Intel: Open Mac applications from unknown developers.
+- Silicon: Open Terminal and run the following command: `sudo xattr -r -d com.apple.quarantine /Applications/NoteGen.app`
+
+If you get an error "option -r not recognized", it means your system doesn't support the -r parameter. Please run the following two commands instead:
+
+```
+sudo xattr -d com.apple.quarantine /Applications/NoteGen.app
+sudo xattr -d com.apple.quarantine /Applications/NoteGen.app/Contents/MacOS/*
+```
+
+### Linux
+
+Linux: `x86_64.rpm`
+
+### Windows
+
+64-bit: `x64-setup.exe`
+32-bit: `x86-setup.exe`

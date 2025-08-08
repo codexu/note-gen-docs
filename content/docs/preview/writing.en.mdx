@@ -1,0 +1,68 @@
+---
+title: Markdown Editor
+description: Powerful Markdown editor supporting multiple editing modes, AI-assisted writing, and real-time sync functionality.
+icon: PenTool
+---
+
+import { MessageCircleQuestion, ListPlus, Lollipop, Languages } from 'lucide-react'
+
+## Features
+
+- Supports three editing modes: `WYSIWYG`, instant rendering, split-screen preview.
+- Supports outline.
+- Export, image lazy loading, task lists, multi-platform preview, multi-theme switching, copy to WeChat Official Account/Zhihu functionality.
+- Supports drag-and-drop and clipboard paste for image upload.
+- Real-time content saving to prevent accidental loss.
+- Automatic HTML to Markdown conversion when pasting.
+- Character count.
+
+## Editing Modes
+
+### WYSIWYG
+
+*WYSIWYG* mode is user-friendly for those unfamiliar with Markdown, while those familiar with Markdown can use it seamlessly.
+
+### Instant Rendering
+
+*Instant rendering* mode should feel familiar to Typora users. Theoretically, this is the most elegant way to edit Markdown.
+
+### Split-Screen Preview
+
+Traditional *split-screen preview* mode is suitable for Markdown editing on large screens.
+
+## Syntax Support
+
+- All CommonMark syntax: horizontal rules, ATX headings, Setext headings, indented code blocks, fenced code blocks, HTML blocks, link reference definitions, paragraphs, block quotes, lists, backslash escapes, HTML entities, inline code, emphasis, strong emphasis, links, images, inline HTML, hard line breaks, soft line breaks, and plain text.
+- All GFM syntax: tables, task list items, strikethrough, autolinks, XSS filtering
+- Chart syntax
+  - Flowcharts, sequence diagrams, Gantt charts, supported through Mermaid
+  - Graphviz
+  - Line charts, pie charts, mind maps, etc., supported through ECharts
+- Musical notation: supported through abc.js
+- Mathematical formulas: math blocks, inline math formulas, supported through MathJax and KaTeX
+- YAML Front Matter
+
+## AI Support
+
+AI can effectively help you complete writing, including continuation and optimization, but please don't rely on it completely.
+
+<Cards>
+  <Card icon={<MessageCircleQuestion />} title="Q&A">
+    Similar to AI conversation, you can input questions and AI will return answers.
+  </Card>
+  <Card icon={<ListPlus />} title="Continue Writing">
+    Based on your preceding text, AI will continue writing, helping you continue when lacking inspiration.
+  </Card>
+  <Card icon={<Lollipop />} title="Optimize">
+    Select a piece of text, and AI will polish that text.
+  </Card>
+  <Card icon={<Languages />} title="Translate">
+    Select a piece of text, and AI will translate that text.
+  </Card>
+</Cards>
+
+## Sync
+
+The sync button in the bottom right corner allows you to sync the current file to the sync repository, provided you have configured a sync repository in settings.
+
+The adjacent button allows you to view history. Click to query historical sync records, including sync information, time, etc. You can also select a specific record to roll back.

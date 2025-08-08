@@ -1,0 +1,67 @@
+---
+title: 文件管理器
+description: 文件管理器用于管理写作文件，支持新建、删除、重命名等操作，与同步仓库关联。
+icon: FolderOpen
+---
+
+import { CloudCog, FolderPlus, FilePlus, SortAsc, ChevronsDownUp, FolderSync } from 'lucide-react'
+
+如果你按照前面的章节进行操作，此时已经自动跳转到写作页面：
+
+![1.png](https://s2.loli.net/2025/05/26/ZQHCG65VeY4Knqb.png)
+
+左侧是文件管理器，右侧是 Markdown 编辑器。
+
+记录与写作是相互关联的，但也可以完全独立使用。
+
+## 工具栏
+
+文件管理器顶部有工具栏，包含以下按钮：
+
+<Cards>
+  <Card icon={<CloudCog />} title="访问仓库">
+    点击后，会打开当前使用的同步仓库（Github/Gitee），加载仓库内文件时则为 loading 状态。
+  </Card>
+  <Card icon={<FilePlus />} title="新建文件">
+    创建新文件，位置为当前选择的文件的同级下创建新文件，如果没有选择，则创建在根目录，注意文件夹是无法选择，如果想在文件夹内部创建文件，请右键文件夹，选择`新建文件`。
+  </Card>
+  <Card icon={<FolderPlus />} title="新建文件夹">
+    创建新文件夹，方式与新建文件类似。
+  </Card>
+  <Card icon={<SortAsc />} title="排序">
+    选择文件的排序方式，支持名称、创建时间、修改时间，增序/降序。
+  </Card>
+  <Card icon={<ChevronsDownUp />} title="展开/折叠">
+    展开/折叠全部文件夹。
+  </Card>
+  <Card icon={<FolderSync />} title="刷新">
+    刷新文件列表和同步信息。
+  </Card>
+</Cards>
+
+## 右键菜单
+
+`右键文件夹`，有以下菜单：
+
+- 新建文件（创建于文件夹内部）
+- 新建文件夹（创建于文件夹内部）
+- 查看目录，在系统的文件管理器所在的文件夹打开。
+- 剪切
+- 复制
+- 粘贴
+- 重命名
+- 删除
+
+`右键文件`，有以下菜单：
+
+- 查看目录
+- 剪切
+- 复制
+- 粘贴
+- 重命名
+- 删除同步文件（删除同步仓库内文件）
+- 删除本地文件
+
+## 拖拽支持
+
+- 支持将文件拖拽到其他文件夹内部

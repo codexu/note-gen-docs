@@ -1,0 +1,74 @@
+---
+title: AI Assistant
+description: The AI assistant is an important component of recording, enhancing recording efficiency through conversational interaction.
+icon: Bot
+---
+
+import { Drama, BotMessageSquare, MessageSquarePlus, Trash2, Globe, Link, Lightbulb, Clipboard, AlignVerticalJustifyCenter, Eraser, Book } from 'lucide-react'
+
+## Top Status Bar
+
+<Cards>
+  <Card icon={<Drama />} title="Prompt">
+    You can configure prompts in settings. The AI will converse based on your input prompts. NoteGen only provides a very simple writing assistant prompt.
+  </Card>
+  <Card icon={<BotMessageSquare />} title="AI Model">
+    AI model, including model name and vendor name, for display only.
+  </Card>
+  <Card icon={<MessageSquarePlus />} title="Start New Conversation with New Tag">
+    Click to open a dialog, input a new tag name, start a new conversation, and create a new tag simultaneously.
+  </Card>
+  <Card icon={<Trash2 />} title="Delete Conversation">
+    Delete the current tag along with all conversations and records under the current tag (use with caution).
+  </Card>
+</Cards>
+
+## Conversation History
+
+The middle area displays conversation history, including user input, AI responses, clipboard detection information, etc. The left side shows bot information, and the right side shows user input information.
+
+- Conversation history is isolated under different tags.
+- AI response content can be recorded as text using the `Record` toolbar below each message.
+- Translation: Translate AI conversations to your desired language.
+- Clipboard events are triggered when the program gains focus (when switching to the window).
+- Clipboard content only exists for 5 seconds and will disappear if not recorded.
+- Clicking `X` will delete this conversation and clear the clipboard.
+- Some models support `thinking`.
+
+## Dialog Tools
+
+<Cards>
+  <Card icon={<BotMessageSquare />} title="Select AI Model">
+    Multiple AI models can be configured in settings and switched here to handle different scenarios.
+  </Card>
+  <Card icon={<Drama />} title="Select Prompt">
+    Multiple prompts can be configured in settings and switched here to handle different scenarios. NoteGen presets a simple prompt; it's recommended to write prompts based on actual needs.
+  </Card>
+  <Card icon={<Globe />} title="Select Conversation Language">
+    Select a language, and the AI will converse with you in that language.
+  </Card>
+  <Card icon={<Link />} title="Associate Tags">
+    When enabled, AI conversations will carry all record information within the current tag.
+  </Card>
+  <Card icon={<Book />} title="Knowledge Base Retrieval">
+    Through RAG (Retrieval Augmented Generation) technology, retrieve existing articles to improve AI conversation quality. Requires configuration of embedding models (required) and reranking models (optional).
+  </Card>
+  <Card icon={<Lightbulb />} title="AI Suggestions">
+    Based on conversations and records, AI will provide suggestions generated in placeholders. Use the `TAB` key to use suggestions.
+    
+    You can configure this AI model in Settings - Default Model. It's recommended to use fast and inexpensive models.
+  </Card>
+  <Card icon={<Clipboard />} title="Clipboard Monitoring">
+    When enabled, monitors clipboard content, supporting text and images. Messages are automatically removed after 5 seconds. Clicking record will save as `text` or `image` under the current tag.
+  </Card>
+  <Card icon={<AlignVerticalJustifyCenter />} title="Clear Context">
+    Does not delete current conversation content but truncates the context available to the AI model. Hover over the clear context message to delete this context clearing and restore AI context.
+  </Card>
+  <Card icon={<Eraser />} title="Clear Conversation">
+    Clear all conversation content under the current tag without deleting the tag.
+  </Card>
+</Cards>
+
+## Modes
+
+The right side of the dialog box switches between `Organize/Chat` modes, and the buttons change accordingly.

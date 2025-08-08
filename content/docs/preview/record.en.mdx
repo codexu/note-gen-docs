@@ -1,0 +1,89 @@
+---
+title: Record Tools
+description: Recording is the core feature of NoteGen, consisting of recording tools, tag management, and record content.
+icon: Highlighter
+---
+
+import { ScanText, ImagePlus, FilePlus, CopySlash, Link } from 'lucide-react'
+
+# Record
+
+Located on the left side of the record page.
+
+<img width="240" src="https://s2.loli.net/2025/05/23/7TpehH9ZAOF8Cuw.png" />
+
+## Recording Tools
+
+Recording tools provide 5 recording methods: `screenshot`, `image`, `file`, `text`, and `link`. When used appropriately, they can improve recording efficiency for different scenarios.
+
+<Cards>
+  <Card icon={<CopySlash />} title="Text Recording">
+    Record text directly, suitable for long text recording or temporary notes.
+  </Card>
+  <Card icon={<ScanText />} title="Screenshot Recording">
+    Quickly identify and record content from window screenshots.
+  </Card>
+  <Card icon={<ImagePlus />} title="Image Recording">
+    Record images that will be inserted into articles during organization.
+  </Card>
+  <Card icon={<FilePlus />} title="File Recording">
+    Select files from local storage, supports plain text format recording.
+  </Card>
+  <Card icon={<Link />} title="Link Recording">
+    Input links to crawl web content.
+  </Card>
+</Cards>
+
+### Screenshot Recording
+
+![1.png](https://s2.loli.net/2025/05/29/QsPSBFw4qIHNgtl.png)
+
+Select an area from a window screenshot, capture the selected area, recognize text through OCR, generate record descriptions via AI (to help users distinguish content), and upload to image hosting.
+
+- Window screenshot order is sorted by the Z-value of the currently active window.
+- After selection, double-click the selected area to complete the screenshot.
+- Minimized windows cannot be captured.
+
+### Image Recording
+
+When selecting images from local storage or when the AI assistant recognizes clipboard images, image recording can be performed with the same logic as screenshot recording.
+
+- `Screenshot recording` is ultimately recorded as text, **inserting the recognized text into the article**, without inserting the screenshot.
+- `Image recording` is ultimately recorded as an image, **inserted into the article as an image**, with position determined by AI through description analysis.
+
+### File Recording
+
+Select files from local storage for file recording. Currently supports `txt`, `md`, `csv`, `pdf` formats, recording them as text.
+
+### Text Recording
+
+Click to open the text recording dialog where users can directly input text, suitable for long text recording or temporary notes.
+
+### Link Recording
+
+Input links to crawl web content. Currently does not support SPA website crawling, ultimately recorded as text.
+
+## Tag Management
+
+Tag management is used to manage record tags, making it convenient for users to categorize records. Tags also affect the AI assistant's conversation records and AI content association.
+
+![2.png](https://s2.loli.net/2025/05/23/VmhnPKqAlZt5xsk.png)
+
+Feature list:
+
+- Click the tag box to open the tag list for tag switching.
+- Input in the search box for fuzzy search; non-existent tag names can create new tags.
+- Right-click for tag pinning, renaming, and deletion operations.
+- The number on the right side of tags represents the count of records under that tag.
+
+## Record Content
+
+Record content includes `record type`, `record time`, `record description`, `thumbnail`, and other information.
+
+<img width="280" src="https://s2.loli.net/2025/05/23/bYT1HlExqBWSLh5.png" />
+
+Feature list:
+
+- Click the description to open record details.
+- Click the thumbnail to preview the full image.
+- Right-click to open a menu with numerous convenient tools, such as tag transfer, link copying, and record management.

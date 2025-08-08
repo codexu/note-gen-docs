@@ -1,0 +1,29 @@
+{
+  "title": "Guide",
+  "pages": [
+    "---introduction---",
+    "index",
+    "download",
+    "---function---",
+    "preview/record",
+    "preview/chat",
+    "preview/organize",
+    "preview/writing",
+    "preview/files",
+    "preview/search",
+    "preview/image",
+    "---configuration---",
+    "settings/sync",
+    "settings/image-hosting",
+    "settings/backup",
+    "settings/model-config",
+    "settings/default-model",
+    "settings/rag",
+    "settings/prompt",
+    "settings/organize-template",
+    "settings/file-manager",
+    "settings/editor",
+    "settings/ocr",
+    "settings/developer"
+  ]
+}
