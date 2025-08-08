@@ -31,6 +31,9 @@ export default async function Layout(
 
   return (
     <html lang={lang} className={inter.className} suppressHydrationWarning>
+      <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEWZ8WZX0C"></script>
+      </head>
       <body className="flex flex-col min-h-screen">
         <RootProvider
           i18n={{
