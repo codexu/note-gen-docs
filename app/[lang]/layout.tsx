@@ -43,7 +43,7 @@ export default async function Layout(
             enabled: false,
           }}>{children}</RootProvider>
       </body>
-      <GoogleAnalytics id="G-SEWZ8WZX0C" />
+      <GoogleAnalytics gaId="G-SEWZ8WZX0C" />
     </html>
   );
 }

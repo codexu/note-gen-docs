@@ -9,6 +9,7 @@
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {
+    "@next/third-parties": "^15.4.6",
     "@orama/tokenizers": "^3.1.11",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
@@ -16,7 +17,6 @@
     "fumadocs-core": "15.6.8",
     "fumadocs-mdx": "11.7.3",
     "fumadocs-ui": "15.6.8",
-    "google": "link:@next/third-parties/google",
     "lucide-react": "^0.536.0",
     "next": "15.4.5",
     "react": "^19.1.1",
