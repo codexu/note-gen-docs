@@ -50,7 +50,6 @@ export default function HomeContributors() {
   }[lang];
 
   useEffect(() => {
-    console.log('get contributors');
     fetch('/api/contributors')
       .then(response => response.json())
       .then(data => {
@@ -116,7 +115,7 @@ export default function HomeContributors() {
           <p className="text-fd-muted-foreground leading-relaxed mb-6 max-w-4xl mx-auto">
             {promotionalText}
           </p>
-          <div className="flex gap-4 items-center justify-center">
+          <div className="flex gap-4 lg:flex-row flex-col items-center justify-center">
             <Button onClick={() => window.open('https://github.com/codexu/note-gen', '_blank')}>
               <Github className="size-4" />
               {viewOnGithubText}

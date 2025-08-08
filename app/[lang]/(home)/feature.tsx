@@ -120,12 +120,12 @@ export default function HomeFeature() {
 
   return (
     <SectionWrap isPadding={false}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
         {features1.map((feature, index) => (
           <FeatureItem key={index} feature={feature} lang={lang} isBorderBottom={true} />
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
         {features2.map((feature, index) => (
           <FeatureItem key={index} feature={feature} lang={lang} isBorderBottom={false} />
         ))}
@@ -137,7 +137,7 @@ export default function HomeFeature() {
 function FeatureItem({ feature, lang, isBorderBottom }: { feature: Feature, lang: 'cn' | 'en', isBorderBottom?: boolean }) {
   return (
     <div className={`
-      flex flex-col justify-start items-start gap-4 p-12
+      flex flex-col justify-start items-start gap-3 sm:gap-4 p-6 md:p-8 lg:p-12
       lg:not-first:border-l ${isBorderBottom ? 'border-b' : ''} border-fd-border border-dashed
     `}>
       <h5 className="flex gap-2 text-xs text-fd-muted-foreground">

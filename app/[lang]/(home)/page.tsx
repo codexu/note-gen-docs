@@ -10,13 +10,13 @@ export default function HomePage() {
   return <main>
     <HomeHero />
     <HomeFeature />
-    <SectionWrap isPadding={false} className="h-12"><span></span></SectionWrap>
+    <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeRecord />
-    <SectionWrap isPadding={false} className="h-12"><span></span></SectionWrap>
+    <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeWriting />
-    <SectionWrap isPadding={false} className="h-12"><span></span></SectionWrap>
+    <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeContributors />
-    <SectionWrap isPadding={false} className="h-12"><span></span></SectionWrap>
+    <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeFooter />
   </main>
 }

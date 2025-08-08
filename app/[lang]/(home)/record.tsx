@@ -98,8 +98,8 @@ export default function HomeRecord() {
     setCurrent(key)
   }
 
-  return <SectionWrap isPadding={false} className="grid grid-cols-3">
-    <div className="col-span-2 flex flex-col gap-2 p-12">
+  return <SectionWrap isPadding={false} className="grid grid-cols-1 lg:grid-cols-3">
+    <div className="lg:col-span-2 flex flex-col gap-3 sm:gap-4 p-6 md:p-8 lg:p-12">
       <h1 className="text-3xl font-bold mb-4">{recordTitle}</h1>
       <p className="text-fd-muted-foreground text-sm">{recordDescription}</p>
       <ul className="list-disc ml-4 text-sm text-fd-muted-foreground leading-6 mt-6">
@@ -107,13 +107,13 @@ export default function HomeRecord() {
           <li key={index}>{feature[lang]}</li>
         ))}
       </ul>
-      <div className="flex gap-2 mt-6">
-        <Button variant="default" onClick={() => window.location.href = `${lang}/docs/settings/model-config`}>
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full sm:w-auto">
+        <Button className="w-full sm:w-auto" variant="default" onClick={() => window.location.href = `${lang}/docs/settings/model-config`}>
           {aiConfig}
         </Button>
       </div>
     </div>
-    <div className="col-span-1 flex flex-col justify-between border-l border-fd-border-foreground border-dashed">
+    <div className="lg:col-span-1 flex flex-col justify-between lg:border-l border-fd-border-foreground border-dashed">
       <div className="p-1 overflow-hidden">
         <ImageZoom
           src={recordItems.find(item => item.key === current)?.image || ''}
@@ -128,7 +128,7 @@ export default function HomeRecord() {
           <div
             onClick={() => handleChangeRecord(item.key)}
             key={index}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-2 not-first:border-l border-fd-border-foreground border-dashed
+            className={`flex py-4 lg:py-0 cursor-pointer flex-col items-center justify-center gap-2 not-first:border-l border-fd-border-foreground border-dashed
               ${current === item.key ? 'text-fd-primary' : 'text-fd-muted-foreground'}
             `}
           >

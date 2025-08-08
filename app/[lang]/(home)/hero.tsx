@@ -51,25 +51,25 @@ export default function HomeHero() {
   }, []);
 
   return (
-    <SectionWrap className='flex lg:flex-row flex-col justify-between gap-24'>
-      <div className="flex flex-col justify-center">
+    <SectionWrap className='flex flex-col lg:flex-row justify-between gap-8 md:gap-16 lg:gap-24'>
+      <div className="flex flex-col justify-center items-center lg:items-start text-center lg:text-left">
         <div className="flex items-center">
-          <p className="text-5xl font-bold mb-6">NoteGen</p>
+          <p className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">NoteGen</p>
         </div>
-        <h1 className="mb-4 text-2xl font-bold">{h1Text}</h1>
-        <p className="text-fd-muted-foreground">
+        <h1 className="mb-3 text-lg sm:text-xl lg:text-2xl font-bold">{h1Text}</h1>
+        <p className="text-fd-muted-foreground max-w-prose">
           {pText}
         </p>
-        <div className="flex gap-4 mt-12">
-          <Button onClick={() => window.location.href = `${lang}/docs/download`} variant="default">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-10 lg:mt-12 w-full sm:w-auto">
+          <Button className="w-full sm:w-auto" onClick={() => window.location.href = `${lang}/docs/download`} variant="default">
             <Download />
             {downloadLink}
           </Button>
-          <Button onClick={() => window.location.href = `${lang}/docs`} variant="default">
+          <Button className="w-full sm:w-auto" onClick={() => window.location.href = `${lang}/docs`} variant="default">
             <Book />
             {docsLink}
           </Button>
-          <Button onClick={() => window.open('https://github.com/codexu/note-gen', '_blank')} variant="outline">
+          <Button className="w-full sm:w-auto" onClick={() => window.open('https://github.com/codexu/note-gen', '_blank')} variant="outline">
             <Github /> Github {starCount ? formatNumber(starCount) : ''}
           </Button>
         </div>

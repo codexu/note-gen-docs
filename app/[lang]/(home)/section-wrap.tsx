@@ -4,7 +4,7 @@ export default function SectionWrap({ children, className = '', isPadding = true
     <div className={`
       xl:max-w-fd-container xl:w-fd-container xl:mx-auto
       xl:border-r xl:border-l xl:border-fd-border xl:border-dashed
-      ${isPadding ? 'p-12' : ''}
+      ${isPadding ? 'p-6 md:p-8 lg:p-12' : ''}
       ${className}
     `}>
       {children}
