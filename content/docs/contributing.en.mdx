@@ -1,0 +1,92 @@
+---
+title: Contributing
+description: NoteGen is an open-source and free community project. We continue building it with passion and welcome contributions in any form.
+icon: Code
+---
+
+Hi! Thank you so much for contributing to NoteGen! Before you begin, please take a moment to read the following:
+
+## How to Contribute
+
+Whether you are contributing code or reporting issues, please start by creating an Issue.
+
+### Issues
+
+Always create new issues via [Issues](https://github.com/codexu/note-gen/issues). Please describe the problem in as much detail as possible, including reproduction steps, expected behavior, and actual behavior.
+
+### Discussions
+
+If you’d like to start a discussion, you can use [Discussions](https://github.com/codexu/note-gen/discussions), or join the [community group](https://github.com/codexu/note-gen/discussions/110).
+
+### Pull Request
+
+- Before fixing a bug, please check [Issues](https://github.com/codexu/note-gen/issues) to see if the same issue already exists.
+- If you plan to develop a new feature, please first submit an [Issue](https://github.com/codexu/note-gen/issues) to discuss with maintainers whether the feature is needed. This helps save time for both maintainers and contributors.
+
+## Tech Stack
+
+NoteGen mainly uses the following technologies:
+
+- [Tauri 2](https://v2.tauri.app/)
+- [Next.js 15](https://nextjs.org/)
+- [shadcn-ui](https://ui.shadcn.com/)
+- [tailwindcss](https://tailwindcss.com/)
+
+- See frontend dependencies in [package.json](https://github.com/codexu/note-gen/blob/dev/package.json).
+- See Rust dependencies in [src-tauri/Cargo.toml](https://github.com/codexu/note-gen/blob/dev/src-tauri/Cargo.toml).
+
+If your contribution needs to update or add dependencies, please mention the changes to `package.json` or `src-tauri/Cargo.toml` in the issue.
+
+## Development Environment
+
+Please read the [Tauri 2 prerequisites](https://v2.tauri.app/zh-cn/start/prerequisites/) and configure your environment accordingly.
+
+Once your environment is ready, **fork** the repository to your GitHub account, then clone it locally:
+
+```bash
+# 1. Fork to your GitHub account
+
+# 2. Clone locally
+git clone https://github.com/your-username/note-gen.git
+```
+
+Then enter the project directory and install dependencies:
+
+```bash
+# 3. Enter project directory & install dependencies
+cd note-gen
+pnpm install
+
+# 4. Start local development; if you see a blank screen, try right-clicking to reload.
+pnpm tauri dev
+```
+
+## Project Structure
+
+- `src`: Frontend application directory.
+  - `apps`: Frontend application modules.
+    - `core`: Core features of the main app.
+      - `article`: Writing.
+      - `image`: Image hosting management.
+      - `record`: Recording.
+      - `search`: Search.
+      - `setting`: Settings.
+    - `screenshot`: Screenshot window.
+  - `components`: Component library, including shadcn and common components.
+  - `lib`: Utility libraries (e.g., AI, GitHub requests).
+  - `db`: SQLite database.
+  - `store`: State management (zustand).
+- `src-tauri`: Rust code.
+- `messages`: i18n configuration.
+
+## Pull Request Guidelines
+
+NoteGen does not use the master or main branches. All development happens on the `dev` branch. Releasing is triggered by merging into the `release` branch, which runs GitHub Actions to build and publish versions.
+
+After forking the repository, create a new branch from `dev` and name it according to your contribution, such as `fix/123` or `feat/121`.
+
+You can push multiple commits until all changes are complete. When submitting a Pull Request, we will use `Squash and Merge` to squash them into a single commit.
+
+Please use `fix(#xxx): ***` or `feat(#xxx): ***` in the PR title, where `#xxx` is the issue number, e.g., [NoteGen Roadmap #46](https://github.com/codexu/note-gen/issues/46).
+
+Before submitting the PR, ensure `pnpm tauri build` can build and run successfully on your local machine.
