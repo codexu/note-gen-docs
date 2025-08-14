@@ -3,7 +3,12 @@ import { remarkImage } from 'fumadocs-core/mdx-plugins';
 
 const withMDX = createMDX({
   mdxOptions: {
-    remarkPlugins: [remarkImage],
+    remarkPlugins: [
+      remarkImage,
+      {
+        publicDir: "https://s2.loli.net/",
+      },
+    ],
   },
 });
 
