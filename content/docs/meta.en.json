@@ -1,10 +1,11 @@
 {
   "title": "Guide",
   "pages": [
-    "---introduction---",
+    "---Introduction---",
     "index",
     "download",
-    "---function---",
+    "faq",
+    "---Function---",
     "preview/record",
     "preview/chat",
     "preview/organize",
@@ -12,7 +13,7 @@
     "preview/files",
     "preview/search",
     "preview/image",
-    "---configuration---",
+    "---Configuration---",
     "settings/sync",
     "settings/image-hosting",
     "settings/backup",
@@ -25,6 +26,7 @@
     "settings/editor",
     "settings/ocr",
     "settings/developer",
+    "---Others---",
     "contributing"
   ]
 }
