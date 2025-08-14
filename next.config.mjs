@@ -1,17 +1,3 @@
-import { createMDX } from 'fumadocs-mdx/next';
-import { remarkImage } from 'fumadocs-core/mdx-plugins';
-
-const withMDX = createMDX({
-  mdxOptions: {
-    remarkPlugins: [
-      remarkImage,
-      {
-        publicDir: "https://s2.loli.net/",
-      },
-    ],
-  },
-});
-
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
@@ -20,4 +6,4 @@ const config = {
   },
 };
 
-export default withMDX(config);
+export default config;
