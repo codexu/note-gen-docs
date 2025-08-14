@@ -1,11 +1,5 @@
 import { createMDX } from 'fumadocs-mdx/next';
-import { remarkImage } from 'fumadocs-core/mdx-plugins';
-
-const withMDX = createMDX({
-  mdxOptions: {
-    remarkPlugins: [remarkImage],
-  },
-});
+const withMDX = createMDX({});
 
 /** @type {import('next').NextConfig} */
 const config = {
