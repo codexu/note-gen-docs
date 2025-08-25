@@ -18,7 +18,8 @@ export async function GET() {
     const response = await fetch('https://api.github.com/repos/codexu/note-gen', {
       headers,
       // 缓存 1 小时
-      next: { revalidate: 3600 }
+      next: { revalidate: 3600 },
+      cache: 'force-cache',
     });
 
     if (!response.ok) {

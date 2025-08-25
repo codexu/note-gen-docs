@@ -15,7 +15,8 @@ export async function GET() {
     
     const response = await fetch('https://api.github.com/repos/codexu/note-gen/contributors?per_page=24', {
       headers,
-      next: { revalidate: 3600 }
+      next: { revalidate: 3600 },
+      cache: 'force-cache',
     });
 
     if (!response.ok) {

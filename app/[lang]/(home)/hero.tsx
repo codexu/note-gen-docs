@@ -41,7 +41,12 @@ export default function HomeHero() {
   // 获取 Github star
   const [starCount, setStarCount] = useState(0);
   useEffect(() => {
-    fetch('/api/github-stats')
+    fetch('/api/github-stats', {
+      cache: 'force-cache',
+      next: {
+        revalidate: 3600,
+      },
+    })
       .then(response => response.json())
       .then(data => setStarCount(data.stargazers_count || 0))
       .catch(error => {

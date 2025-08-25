@@ -50,7 +50,12 @@ export default function HomeContributors() {
   }[lang];
 
   useEffect(() => {
-    fetch('/api/contributors')
+    fetch('/api/contributors', {
+      cache: 'force-cache',
+      next: {
+        revalidate: 3600,
+      },
+    })
       .then(response => response.json())
       .then(data => {
         setContributors(data || []);
