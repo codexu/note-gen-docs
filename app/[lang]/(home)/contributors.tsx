@@ -1,6 +1,5 @@
 "use client";
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { Heart, Users, Github, Book } from 'lucide-react';
 import SectionWrap from './section-wrap';
 import Image from 'next/image';
@@ -14,10 +13,12 @@ type Contributor = {
   contributions: number;
 };
 
-export default function HomeContributors() {
+interface HomeContributorsProps {
+  contributors?: Contributor[];
+}
+
+export default function HomeContributors({ contributors = [] }: HomeContributorsProps) {
   const lang = (useParams().lang as 'cn' | 'en') || 'cn';
-  const [contributors, setContributors] = useState<Contributor[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const titleText = {
     cn: "开源贡献者",
@@ -49,24 +50,6 @@ export default function HomeContributors() {
     en: "Contribution Guide",
   }[lang];
 
-  useEffect(() => {
-    fetch('/api/contributors', {
-      cache: 'force-cache',
-      next: {
-        revalidate: 3600,
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        setContributors(data || []);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Failed to fetch contributors:', error);
-        setLoading(false);
-      });
-  }, []);
-
   return (
     <SectionWrap>
       <div className="text-center mb-12">
@@ -78,13 +61,8 @@ export default function HomeContributors() {
           {subtitleText}
         </p>
         
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fd-primary"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6 mb-12">
-            {contributors.slice(0, 24).map((contributor) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6 mb-12">
+          {contributors.slice(0, 24).map((contributor) => (
               <div
                 key={contributor.id}
                 className="group flex flex-col items-center p-4 rounded-lg border border-fd-border hover:border-fd-primary transition-all duration-200 hover:shadow-lg cursor-pointer"
@@ -107,8 +85,7 @@ export default function HomeContributors() {
                 </p>
               </div>
             ))}
-          </div>
-        )}
+        </div>
 
         <div className="bg-gradient-to-r from-fd-primary/5 to-fd-primary/10 rounded-xl p-8 border border-fd-primary/20">
           <div className="flex items-center justify-center gap-2 mb-4">

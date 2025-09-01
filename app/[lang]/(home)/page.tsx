@@ -5,17 +5,24 @@ import HomeRecord from './record';
 import HomeWriting from './writing';
 import HomeContributors from './contributors';
 import SectionWrap from './section-wrap';
+import { getContributors, getGitHubStats } from '@/lib/github-data';
 
-export default function HomePage() {
+export default async function HomePage() {
+  // 在服务端预获取数据，减少客户端 API 调用
+  const [contributors, githubStats] = await Promise.all([
+    getContributors(),
+    getGitHubStats()
+  ]);
+
   return <main>
-    <HomeHero />
+    <HomeHero githubStats={githubStats} />
     <HomeFeature />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeRecord />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeWriting />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
-    <HomeContributors />
+    <HomeContributors contributors={contributors} />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeFooter />
   </main>

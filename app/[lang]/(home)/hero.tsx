@@ -1,7 +1,6 @@
 "use client";
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
 import { Download, Github, Book } from 'lucide-react';
 import SectionWrap from './section-wrap';
 import Image from 'next/image';
@@ -14,8 +13,17 @@ function formatNumber(num: number): string {
   return num.toString();
 }
 
-export default function HomeHero() {
+type GitHubStats = {
+  stargazers_count: number;
+  forks_count: number;
+  watchers_count: number;
+};
 
+interface HomeHeroProps {
+  githubStats?: GitHubStats;
+}
+
+export default function HomeHero({ githubStats }: HomeHeroProps) {
   const lang = (useParams().lang as 'cn' | 'en') || 'cn';
 
   const h1Text = {
@@ -38,22 +46,8 @@ export default function HomeHero() {
     en: "Get Started",
   }[lang];
 
-  // 获取 Github star
-  const [starCount, setStarCount] = useState(0);
-  useEffect(() => {
-    fetch('/api/github-stats', {
-      cache: 'force-cache',
-      next: {
-        revalidate: 3600,
-      },
-    })
-      .then(response => response.json())
-      .then(data => setStarCount(data.stargazers_count || 0))
-      .catch(error => {
-        console.error('Failed to fetch GitHub stats:', error);
-        setStarCount(0);
-      });
-  }, []);
+  // 使用服务端传入的数据，避免客户端 API 调用
+  const starCount = githubStats?.stargazers_count || 0;
 
   return (
     <SectionWrap className='flex flex-col lg:flex-row justify-between gap-8 md:gap-16 lg:gap-24'>
