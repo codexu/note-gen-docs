@@ -62,29 +62,58 @@ export default function HomeContributors({ contributors = [] }: HomeContributors
         </p>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6 mb-12">
-          {contributors.slice(0, 24).map((contributor) => (
-              <div
-                key={contributor.id}
-                className="group flex flex-col items-center p-4 rounded-lg border border-fd-border hover:border-fd-primary transition-all duration-200 hover:shadow-lg cursor-pointer"
-                onClick={() => window.open(contributor.html_url, '_blank')}
-              >
-                <div className="relative mb-3">
-                  <Image
-                    src={contributor.avatar_url}
-                    alt={contributor.login}
-                    width={64}
-                    height={64}
-                    className="rounded-full ring-2 ring-fd-border group-hover:ring-fd-primary transition-all duration-200"
-                  />
-                </div>
-                <p className="text-sm font-medium text-center group-hover:text-fd-primary transition-colors duration-200 truncate w-full">
-                  {contributor.login}
-                </p>
-                <p className="text-xs text-fd-muted-foreground mt-1">
-                  {contributor.contributions} {contributionsText}
-                </p>
-              </div>
-            ))}
+          {(() => {
+            const cols = {
+              2: 2, 3: 3, 4: 4, 6: 6, 8: 8
+            };
+            // Calculate max items for 2 rows based on responsive grid
+            const maxItemsForTwoRows = 16; // 8 cols * 2 rows for xl screens
+            const displayContributors = contributors.slice(0, maxItemsForTwoRows - 1);
+            const remainingCount = contributors.length - displayContributors.length;
+            
+            return (
+              <>
+                {displayContributors.map((contributor) => (
+                  <div
+                    key={contributor.id}
+                    className="group flex flex-col items-center p-4 rounded-lg border border-fd-border hover:border-fd-primary transition-all duration-200 hover:shadow-lg cursor-pointer"
+                    onClick={() => window.open(contributor.html_url, '_blank')}
+                  >
+                    <div className="relative mb-3">
+                      <Image
+                        src={contributor.avatar_url}
+                        alt={contributor.login}
+                        width={64}
+                        height={64}
+                        className="rounded-full ring-2 ring-fd-border group-hover:ring-fd-primary transition-all duration-200"
+                      />
+                    </div>
+                    <p className="text-sm font-medium text-center group-hover:text-fd-primary transition-colors duration-200 truncate w-full">
+                      {contributor.login}
+                    </p>
+                    <p className="text-xs text-fd-muted-foreground mt-1">
+                      {contributor.contributions} {contributionsText}
+                    </p>
+                  </div>
+                ))}
+                {remainingCount > 0 && (
+                  <div 
+                    className="group flex flex-col items-center p-4 rounded-lg border border-fd-border hover:border-fd-primary transition-all duration-200 hover:shadow-lg cursor-pointer"
+                    onClick={() => window.open('https://github.com/codexu/note-gen/graphs/contributors', '_blank')}
+                  >
+                    <div className="relative mb-3 w-16 h-16 rounded-full bg-fd-muted flex items-center justify-center ring-2 ring-fd-border group-hover:ring-fd-primary transition-all duration-200">
+                      <span className="text-xl font-bold text-fd-muted-foreground group-hover:text-fd-primary transition-colors duration-200">
+                        +{remainingCount}
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium text-center group-hover:text-fd-primary transition-colors duration-200">
+                      {lang === 'cn' ? '更多贡献者' : 'More contributors'}
+                    </p>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         <div className="bg-gradient-to-r from-fd-primary/5 to-fd-primary/10 rounded-xl p-8 border border-fd-primary/20">
