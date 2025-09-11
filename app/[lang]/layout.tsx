@@ -1,6 +1,5 @@
 import '@/app/global.css';
 import { RootProvider } from 'fumadocs-ui/provider';
-import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 import type { Translations } from 'fumadocs-ui/i18n';
 import { GoogleAnalytics } from '@next/third-parties/google';
@@ -20,10 +19,6 @@ const locales = [
   },
 ];
 
-const inter = Inter({
-  subsets: ['latin'],
-});
-
 export default async function Layout(
   { children, params }: 
   { children: ReactNode, params: Promise<{ lang: string }>}
@@ -31,7 +26,7 @@ export default async function Layout(
   const lang = (await params).lang;
 
   return (
-    <html lang={lang} className={inter.className} suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
         <RootProvider
           i18n={{
