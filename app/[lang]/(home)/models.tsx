@@ -109,6 +109,15 @@ export default function HomeModels() {
             <ModelItem key={index} model={model} lang={lang} />
           ))}
         </div>
+
+        <ul className="mt-6 list-disc">
+          <li className="text-sm text-fd-muted-foreground leading-relaxed mt-6">
+            {lang === 'cn' 
+              ? '免费模型能力有限，如果需要更强大的模型，请配置自定义模型。'
+              : 'Free models have limited capabilities, if you need more powerful models, please configure custom models.'
+            }
+          </li>
+        </ul>
       </div>
     </SectionWrap>
   );
