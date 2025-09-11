@@ -1,6 +1,7 @@
 import HomeHero from './hero';
 import HomeFeature from './feature';
 import HomeModels from './models';
+import HomeSync from './sync';
 import HomeFooter from './footer';
 import HomeRecord from './record';
 import HomeWriting from './writing';
@@ -24,6 +25,8 @@ export default async function HomePage() {
     <HomeWriting />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeModels />
+    <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
+    <HomeSync />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeContributors contributors={contributors} />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
