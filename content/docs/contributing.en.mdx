@@ -90,3 +90,69 @@ You can push multiple commits until all changes are complete. When submitting a 
 Please use `fix(#xxx): ***` or `feat(#xxx): ***` in the PR title, where `#xxx` is the issue number, e.g., [NoteGen Roadmap #46](https://github.com/codexu/note-gen/issues/46).
 
 Before submitting the PR, ensure `pnpm tauri build` can build and run successfully on your local machine.
+
+## Development Guide
+
+This section will guide you through the development of NoteGen.
+
+### DeepWiki
+
+You can quickly learn about NoteGen's development through AI-generated documentation at [DeepWiki](https://deepwiki.com/codexu/note-gen).
+
+### Project Environment Setup
+
+Please read the [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/) documentation and configure your development environment accordingly.
+
+Start local development with `pnpm tauri dev`. If you encounter a blank screen, try right-clicking and selecting reload.
+
+### Project Building
+
+#### Desktop
+
+Build the desktop application with `pnpm tauri build`. Note that this will create an installation package for your current system.
+
+By default, builds are automated via GitHub Actions, triggered when merging to the `release` branch. This typically involves updating the version number in `src-tauri/tauri.conf.json`.
+
+#### Android
+
+To build the Android application, first run `pnpm tauri android init`.
+
+Then, follow the [Tauri 2 Android Signing](https://v2.tauri.app/distribute/sign/android/) documentation to create a signing key.
+
+Create a `keystore.properties` file in the `src-tauri/gen/android` directory with the following content:
+
+```properties
+storePassword=**
+keyPassword=**
+keyAlias=**
+storeFile=/**/Downloads/upload-keystore.jks
+```
+
+Add the following code to `src-tauri/gen/android/app/build.gradle.kts`:
+
+```kotlin
+import java.io.FileInputStream
+
+android {
+    signingConfigs {
+        create("release") {
+            val keystorePropertiesFile = rootProject.file("keystore.properties")
+            val keystoreProperties = Properties()
+            if (keystorePropertiesFile.exists()) {
+                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+            }
+
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }  
+}
+```
+
+Finally, you can build APKs for different Android architectures using:
+
+```bash
+pnpm tauri android build --apk --split-per-abi
+```

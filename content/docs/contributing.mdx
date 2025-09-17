@@ -90,3 +90,65 @@ Fork 仓库后，请使用 dev 分支创建一个新的分支，命名为本次�
 请在 PR 标题中添加 `fix(#xxx): ***` 或 `feat(#xxx): ***`，#xxx 是 issue 编号，例如 [NoteGen 更新计划 #46](https://github.com/codexu/note-gen/issues/46)。
 
 在提交 PR 前，确保本地运行 `pnpm tauri build` 可以正常构建及运行。
+
+## 开发指南
+
+本章节将介绍如何快速上手 NoteGen 的开发。
+
+### DeepWiki
+
+你可以通过 AI 生成的文档 [DeepWiki](https://deepwiki.com/codexu/note-gen) 来快速学习 NoteGen 的开发文档。
+
+### 项目环境搭建
+
+请先阅读 [Tauri 2 前置要求](https://v2.tauri.app/start/prerequisites/) 文档，按照文档要求配置开发环境。
+
+通过 `pnpm tauri dev` 可以启动本地开发，如果遇到白屏情况，尝试右键 reload。
+
+### 项目构建
+
+#### 桌面端
+
+通过 `pnpm tauri build` 可以构建桌面端应用，注意此时会根据你的系统构建相应的安装包。
+
+默认情况下是通过 Github Action 自动构建的，通过发布 release 分支时触发，通常会修改 `src-tauri/tauri.conf.json` 中的版本号。
+
+#### Android
+
+要构建 Android 应用，首先运行 `pnpm tauri android init`。
+
+然后阅读 [Tauri 2 Android 签名](https://v2.tauri.app/distribute/sign/android/) 文档，按照文档要求创建签名 key。
+
+在 `src-tauri/gen/android` 目录下创建 `keystore.properties` 文件，内容如下：
+
+```properties
+storePassword=**
+keyPassword=**
+keyAlias=**
+storeFile=/**/Downloads/upload-keystore.jks
+```
+
+在 `src-tauri/gen/android/app/build.gradle.kts` 中添加一下代码：
+
+```kotlin
+import java.io.FileInputStream
+
+android {
+    signingConfigs {
+        create("release") {
+            val keystorePropertiesFile = rootProject.file("keystore.properties")
+            val keystoreProperties = Properties()
+            if (keystorePropertiesFile.exists()) {
+                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+            }
+
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }  
+}
+```
+
+最后可以通过 `pnpm tauri android build --apk --split-per-abi` 构建不同 Android 架构的 APK。
