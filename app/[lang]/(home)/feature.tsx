@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from 'next/navigation';
-import { Bot, Brain, Cloud, LaptopMinimal, SquareM, TabletSmartphone } from 'lucide-react';
+import { Bot, Brain, Cloud, SquareM, TabletSmartphone, Puzzle } from 'lucide-react';
 import SectionWrap from './section-wrap';
 
 type Feature = {
@@ -50,8 +50,8 @@ export default function HomeFeature() {
         en: "Supports Custom LLMs",
       },
       description: {
-        cn: "支持主流模型，如 OpenAI、Deepseek、Gemini等，支持 Ollama 等本地模型。",
-        en: "Supports LLMs, such as OpenAI、Deepseek、Gemini, etc. Supports local models such as Ollama.",
+        cn: "内置开箱即用的免费模型，也支持自定义配置 OpenAI、Deepseek、Gemini 等主流模型及 Ollama 本地模型。",
+        en: "Built-in free models ready to use. Also supports custom configuration for OpenAI, Deepseek, Gemini, and local models like Ollama.",
       },
     },
     {
@@ -87,21 +87,6 @@ export default function HomeFeature() {
       },
     },
     {
-      icon: <LaptopMinimal className="size-4" />,
-      title: {
-        cn: "所见即所得",
-        en: "Wysiwyg",
-      },
-      shortDescription: {
-        cn: "三种编辑模式",
-        en: "Three editing modes",
-      },
-      description: {
-        cn: "支持类似 Typora 的即时渲染，并且还支持所见即所得、分屏预览。 ",
-        en: "Supports instant rendering like Typora, supports wysiwyg, split screen preview.",
-      },
-    },
-    {
       icon: <Brain className="size-4" />,
       title: {
         cn: "RAG",
@@ -114,6 +99,21 @@ export default function HomeFeature() {
       description: {
         cn: "你的笔记就是你的知识库，支持嵌入模型、重排序模型。",
         en: "Your notes are your knowledge base, supports embedding models, reordering models.",
+      },
+    },
+    {
+      icon: <Puzzle className="size-4" />,
+      title: {
+        cn: "MCP 支持",
+        en: "MCP Support",
+      },
+      shortDescription: {
+        cn: "扩展 AI 能力",
+        en: "Extend AI Capabilities",
+      },
+      description: {
+        cn: "支持模型上下文协议，让 AI 访问外部工具和数据源，增强智能交互体验。",
+        en: "Supports Model Context Protocol, enabling AI to access external tools and data sources.",
       },
     },
   ];
