@@ -26,6 +26,7 @@
     "settings/editor",
     "settings/ocr",
     "settings/developer",
+    "settings/custom-css",
     "---其他---",
     "contributing"
   ]
