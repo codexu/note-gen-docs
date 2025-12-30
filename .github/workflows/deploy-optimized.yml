@@ -1,0 +1,122 @@
+name: Deploy to Aliyun (Optimized)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+        env:
+          NODE_ENV: production
+
+      - name: Create standalone deployment
+        run: |
+          mkdir -p deploy
+          cp -r .next/standalone/* deploy/ 2>/dev/null || cp -r .next deploy/
+          cp -r public deploy/public
+          cp -r .next/static deploy/.next/static
+          cp ecosystem.config.js deploy/
+          tar -czf deploy.tar.gz -C deploy .
+
+      - name: Upload to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          key: ${{ secrets.ALIYUN_SSH_KEY }}
+          port: ${{ secrets.ALIYUN_PORT }}
+          source: "deploy.tar.gz"
+          target: "/tmp"
+          timeout: 300s
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          key: ${{ secrets.ALIYUN_SSH_KEY }}
+          port: ${{ secrets.ALIYUN_PORT }}
+          timeout: 300s
+          script: |
+            set -e
+            
+            APP_DIR="/root/note-gen-docs"
+            BACKUP_DIR="/root/backups/note-gen-docs"
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            
+            echo "🚀 Starting deployment..."
+            
+            # Create backup directory
+            mkdir -p $BACKUP_DIR
+            
+            # Backup current deployment
+            if [ -d "$APP_DIR/.next" ]; then
+                echo "📦 Creating backup..."
+                tar -czf "$BACKUP_DIR/backup_$TIMESTAMP.tar.gz" -C $APP_DIR .next || true
+                ls -t $BACKUP_DIR/backup_*.tar.gz | tail -n +6 | xargs -r rm || true
+            fi
+            
+            # Extract new deployment
+            echo "📂 Extracting deployment..."
+            cd $APP_DIR
+            tar -xzf /tmp/deploy.tar.gz
+            rm /tmp/deploy.tar.gz
+            
+            # Install production dependencies
+            echo "📦 Installing dependencies..."
+            npm install --production
+            
+            # Reload PM2
+            echo "🔄 Reloading application..."
+            if pm2 describe note-gen-docs > /dev/null 2>&1; then
+                pm2 reload ecosystem.config.js --update-env
+            else
+                pm2 start ecosystem.config.js
+            fi
+            pm2 save
+            
+            echo "✅ Deployment completed!"
+            pm2 status note-gen-docs
+
+      - name: Health check
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          key: ${{ secrets.ALIYUN_SSH_KEY }}
+          port: ${{ secrets.ALIYUN_PORT }}
+          script: |
+            echo "🏥 Running health check..."
+            sleep 5
+            if pm2 describe note-gen-docs | grep -q "online"; then
+                echo "✅ Application is running"
+                exit 0
+            else
+                echo "❌ Application failed to start"
+                pm2 logs note-gen-docs --lines 50
+                exit 1
+            fi
