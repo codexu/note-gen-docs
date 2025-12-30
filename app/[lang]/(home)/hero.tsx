@@ -74,7 +74,7 @@ export default function HomeHero({ githubStats }: HomeHeroProps) {
         </div>
       </div>
       <Image
-        src="https://s2.loli.net/2025/06/13/UbVGPrhFl3etnQz.png"
+        src="https://s2.loli.net/2025/12/22/jlpEP2c6ogwHhIA.png"
         alt="NoteGen"
         width={1280}
         height={720}
