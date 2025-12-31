@@ -27,8 +27,8 @@ export default function HomeHero({ githubStats }: HomeHeroProps) {
   const lang = (useParams().lang as 'cn' | 'en') || 'cn';
 
   const h1Text = {
-    cn: "一款跨平台的 Markdown AI 笔记软件",
-    en: "A cross-platform Markdown AI note-taking software.",
+    cn: "一款跨平台的 Markdown AI Agent 笔记软件",
+    en: "A cross-platform Markdown AI Agent note-taking software.",
   }[lang];
 
   const pText = {
