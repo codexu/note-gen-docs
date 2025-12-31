@@ -1,9 +1,6 @@
-"use client";
-import { useParams } from 'next/navigation';
 import { Dot, Eye, MessageSquare, Move3D, Sparkles } from 'lucide-react';
 import SectionWrap from './section-wrap';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
 
 type Model = {
   icon: React.ReactNode;
@@ -26,37 +23,7 @@ type ApiModel = {
   supported_endpoint_types: string[];
 }
 
-export default function HomeModels() {
-  const lang = (useParams().lang as 'cn' | 'en') || 'cn';
-  const [premiumModels, setPremiumModels] = useState<ApiModel[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // 获取限时体验模型列表
-  useEffect(() => {
-    const fetchPremiumModels = async () => {
-      try {
-        const response = await fetch('https://api.notegen.top/v1/models', {
-          headers: {
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_NOTEGEN_API_KEY || 'sk-1eaNsBvrfrF4hpwdo6AiQlFzcEtZK7GUpBlOcg03Dm3xunbQ'}`
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          // 过滤出限时体验模型（排除已有的免费模型）
-          const freeModelIds = ['Qwen/Qwen3-8B', 'BAAI/bge-m3', 'THUDM/GLM-4.1V-9B-Thinking'];
-          const premium = data.data.filter((model: ApiModel) => !freeModelIds.includes(model.id));
-          setPremiumModels(premium);
-        }
-      } catch (error) {
-        console.error('Failed to fetch premium models:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPremiumModels();
-  }, []);
+export default async function HomeModels({ premiumModels, lang }: { premiumModels: ApiModel[], lang: 'cn' | 'en' }) {
 
   const sectionTitle = {
     cn: "开箱即用的免费模型",
@@ -172,16 +139,7 @@ export default function HomeModels() {
               </p>
             </div>
             
-            {loading ? (
-              <div className="space-y-1">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-2 p-2 border border-fd-border border-dashed rounded animate-pulse">
-                    <div className="w-2 h-2 bg-fd-muted rounded"></div>
-                    <div className="h-2 bg-fd-muted rounded w-1/3"></div>
-                  </div>
-                ))}
-              </div>
-            ) : (
+            {premiumModels.length > 0 && (
               <div className="space-y-1">
                 {premiumModels.map((model) => (
                   <div key={model.id} className="flex items-center gap-2 p-2 hover:bg-fd-muted/50 transition-colors">
