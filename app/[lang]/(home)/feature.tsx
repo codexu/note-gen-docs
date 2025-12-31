@@ -42,16 +42,16 @@ export default function HomeFeature() {
     {
       icon: <Bot className="size-4" />,
       title: {
-        cn: "AI 集成",
-        en: "AI Capabilities",
+        cn: "AI 智能助手",
+        en: "AI Assistant",
       },
       shortDescription: {
-        cn: "支持自定义模型",
-        en: "Supports Custom LLMs",
+        cn: "智能 Agent + 自定义模型",
+        en: "Smart Agent + Custom LLMs",
       },
       description: {
-        cn: "内置开箱即用的免费模型，也支持自定义配置 OpenAI、Deepseek、Gemini 等主流模型及 Ollama 本地模型。",
-        en: "Built-in free models ready to use. Also supports custom configuration for OpenAI, Deepseek, Gemini, and local models like Ollama.",
+        cn: "内置免费模型，支持自定义配置主流模型。智能Agent可自动整理笔记、生成内容。",
+        en: "Built-in free models with custom LLM support. Smart Agent organizes notes and generates content.",
       },
     },
     {

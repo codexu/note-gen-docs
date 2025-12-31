@@ -3,8 +3,6 @@ import HomeFeature from './feature';
 import HomeModels from './models';
 import HomeSync from './sync';
 import HomeFooter from './footer';
-import HomeRecord from './record';
-import HomeWriting from './writing';
 import HomeContributors from './contributors';
 import SectionWrap from './section-wrap';
 import { getContributors, getGitHubStats } from '@/lib/github-data';
@@ -19,10 +17,6 @@ export default async function HomePage() {
   return <main>
     <HomeHero githubStats={githubStats} />
     <HomeFeature />
-    <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
-    <HomeRecord />
-    <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
-    <HomeWriting />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeModels />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
