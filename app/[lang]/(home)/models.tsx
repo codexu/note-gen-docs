@@ -160,12 +160,12 @@ export default async function HomeModels({ premiumModels, lang }: { premiumModel
 
 function ModelItem({ model, lang }: { model: Model, lang: 'cn' | 'en' }) {
   return (
-    <div className="flex flex-col gap-2 p-4 border border-fd-border border-dashed rounded-lg hover:bg-fd-muted/50 transition-colors">
+    <div className="p-4 relative overflow-hidden rounded-lg bg-gray-950/[2.5%] after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:inset-ring after:inset-ring-gray-950/5 dark:after:inset-ring-white/10 bg-[image:radial-gradient(var(--pattern-fg)_1px,_transparent_0)] bg-[size:10px_10px] bg-fixed [--pattern-fg:var(--color-gray-950)]/5 dark:[--pattern-fg:var(--color-white)]/10 flex flex-col gap-2 border-[0.5px] border-fd-border hover:bg-fd-muted/50 transition-colors">
       <div className="flex items-center gap-2 text-fd-primary">
         {model.icon}
         <h3 className="font-semibold text-lg">{model.title[lang]}</h3>
       </div>
-      <p className="text-sm font-mono text-fd-muted-foreground bg-fd-muted px-2 py-1 rounded">
+      <p className="text-sm font-mono text-fd-muted-foreground bg-fd-primary-foreground border px-2 py-1 rounded">
         {model.name}
       </p>
       <p className="text-sm text-fd-muted-foreground">

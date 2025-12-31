@@ -76,7 +76,7 @@ export default function HomeContributors({ contributors = [] }: HomeContributors
                 {displayContributors.map((contributor) => (
                   <div
                     key={contributor.id}
-                    className="group flex flex-col items-center p-4 rounded-lg border border-fd-border hover:border-fd-primary transition-all duration-200 hover:shadow-lg cursor-pointer"
+                    className="group flex flex-col items-center p-4 rounded-lg border-[0.5px] border-fd-border hover:border-fd-primary transition-all duration-200 hover:shadow-lg cursor-pointer relative overflow-hidden bg-gray-950/[2.5%] after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:inset-ring after:inset-ring-gray-950/5 dark:after:inset-ring-white/10 bg-[image:radial-gradient(var(--pattern-fg)_1px,_transparent_0)] bg-[size:10px_10px] bg-fixed [--pattern-fg:var(--color-gray-950)]/5 dark:[--pattern-fg:var(--color-white)]/10"
                     onClick={() => window.open(contributor.html_url, '_blank')}
                   >
                     <div className="relative mb-3">
@@ -98,7 +98,7 @@ export default function HomeContributors({ contributors = [] }: HomeContributors
                 ))}
                 {remainingCount > 0 && (
                   <div 
-                    className="group flex flex-col items-center p-4 rounded-lg border border-fd-border hover:border-fd-primary transition-all duration-200 hover:shadow-lg cursor-pointer"
+                    className="group flex flex-col items-center p-4 rounded-lg border-[0.5px] border-fd-border hover:border-fd-primary transition-all duration-200 hover:shadow-lg cursor-pointer relative overflow-hidden bg-gray-950/[2.5%] after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:inset-ring after:inset-ring-gray-950/5 dark:after:inset-ring-white/10 bg-[image:radial-gradient(var(--pattern-fg)_1px,_transparent_0)] bg-[size:10px_10px] bg-fixed [--pattern-fg:var(--color-gray-950)]/5 dark:[--pattern-fg:var(--color-white)]/10"
                     onClick={() => window.open('https://github.com/codexu/note-gen/graphs/contributors', '_blank')}
                   >
                     <div className="relative mb-3 w-16 h-16 rounded-full bg-fd-muted flex items-center justify-center ring-2 ring-fd-border group-hover:ring-fd-primary transition-all duration-200">
