@@ -82,7 +82,7 @@ export default async function HomeModels({ premiumModels, lang }: { premiumModel
             <h1 className="text-3xl font-bold mb-4">{sectionTitle}</h1>
             <p className="text-fd-muted-foreground text-sm">{sectionDescription}</p>
           </div>
-          <div className="flex-shrink-0 ml-8">
+          <div className="hidden lg:flex flex-shrink-0 ml-8">
             <a 
               href="https://cloud.siliconflow.cn/i/O2ciJeZw" 
               target="_blank" 
