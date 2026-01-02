@@ -4,55 +4,50 @@ description: NoteGen 支持 Windows、MacOS、Linux、Android、iOS(自行编译
 icon: Download
 ---
 
-import { Monitor, Github } from "lucide-react"
+import { Monitor, Github, Download, Smartphone, Apple } from "lucide-react"
+import DownloadCard from "@/components/ui/download-card"
 
 ## 桌面端
 
 支持 Windows、MacOS(M Chip)、MacOS(Intel)、Linux。
 
 <Cards>
-  <Card icon={<Monitor className="text-purple-500" />} title="桌面端客户端" href="http://download.upgrade.toolsetlink.com/download?appKey=tyEi-iLVFxnRhGc9c_xApw">
-    由 UpgradeLink 提供应用升级与下载服务。
-  </Card>
-  <Card icon={<Github />} title="Github 下载" href="https://github.com/codexu/note-gen/releases">
-    由 Github 提供下载服务。
-  </Card>
+  <DownloadCard 
+    icon={<Monitor className="text-purple-500" />} 
+    title="桌面端客户端" 
+    description="由 UpgradeLink 提供应用升级与下载服务。"
+    href="http://download.upgrade.toolsetlink.com/download?appKey=tyEi-iLVFxnRhGc9c_xApw"
+  />
+  <DownloadCard 
+    icon={<Github />} 
+    title="Github 下载" 
+    description="由 Github 提供下载服务。"
+    href="https://github.com/codexu/note-gen/releases"
+  />
 </Cards>
 
 [MacOS 安装提示损坏？](#macos)
 
 ## 移动端（Beta）
 
+<Cards>
+  <DownloadCard 
+    icon={<Smartphone className="text-green-500" />} 
+    title="Android 通用版" 
+    description="Universal 通用版本，支持所有 Android 设备。"
+    href="https://download.upgrade.toolsetlink.com/download?appKey=UScEcQD5Frt6Pn3p8z-7OA"
+  />
+  <DownloadCard 
+    icon={<Apple className="text-gray-800 dark:text-white" />} 
+    title="iOS 内测版" 
+    description="安装 testflight 并加入内测版。"
+    href="https://testflight.apple.com/join/8KjFRTCq"
+  />
+</Cards>
+
 <Callout title="抢先体验" type="warning">
   移动端目前正在开发状态，未上架任何应用商店，可下载自行安装或编译安装。
 </Callout>
-
-### Android
-
-Android 安卓设备支持 arm、arm64、x86、x86_64，请根据设备选择下载。
-
-<Cards>
-  <Card title="Android arm" href="https://download.upgrade.toolsetlink.com/download?appKey=EL9I7RGe5r_hjC3ZF1zfhA">
-    适合旧 Android 设备。
-  </Card>
-  <Card title="Android arm64" href="https://download.upgrade.toolsetlink.com/download?appKey=9YXz-aEnn4cdwNkB2nqPww">
-    适合新 Android 设备。
-  </Card>
-  <Card title="Android x86" href="https://download.upgrade.toolsetlink.com/download?appKey=uiv-AYoAVQFDbga6TfJwig">
-    常用于 x86 模拟器。
-  </Card>
-  <Card title="Android x86_64" href="https://download.upgrade.toolsetlink.com/download?appKey=XT0Fr-oPdhuJXiV0ME2XEg">
-    常用于 x86_64 模拟器。
-  </Card>
-</Cards>
-
-### iOS
-
-<Cards>
-  <Card title="iOS 内测版" href="https://testflight.apple.com/join/8KjFRTCq">
-    安装 testflight 并加入内测版。
-  </Card>
-</Cards>
 
 ## 如何选择安装包？
 
