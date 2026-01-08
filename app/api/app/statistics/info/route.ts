@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const body = '';
     
     // Validate signature
-    const secretKey = process.env.SECRET_KEY;
+    const secretKey = process.env.UPGRADELINK_SECRET_KEY;
     if (!secretKey) {
       const errorResponse: ErrorResponse = {
         code: 500001,

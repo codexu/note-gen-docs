@@ -85,7 +85,7 @@ export function extractAuthHeaders(request: NextRequest): AuthHeaders {
 }
 
 export function validateAccessKey(accessKey: string): { valid: boolean; error?: string } {
-  const validAccessKey = process.env.ACCESS_KEY;
+  const validAccessKey = process.env.UPGRADELINK_ACCESS_KEY;
   
   if (!validAccessKey) {
     return { valid: false, error: '服务器配置错误' };
