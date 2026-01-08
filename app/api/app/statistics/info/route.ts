@@ -5,7 +5,7 @@ import {
   validateAccessKey, 
   validateSignature 
 } from '@/lib/auth-utils';
-import { getAppStatistics } from '@/lib/statistics-data';
+import { getAppStatistics } from '@/app/api/internal/services/statistics-service';
 import { ApiResponse, ErrorResponse } from '@/lib/statistics-types';
 
 export async function GET(request: NextRequest) {
