@@ -1,0 +1,95 @@
+---
+title: MCP Configuration
+description: MCP (Model Context Protocol) configuration guide to extend AI capabilities through standard protocol, calling external tools and services.
+icon: Puzzle
+---
+
+## What is MCP
+
+MCP (Model Context Protocol) is an open standard protocol that allows AI applications to connect to external data sources and tools in a unified way. Through MCP, NoteGen can call external services to extend the AI assistant's capabilities.
+
+## Enable MCP
+
+Find MCP configuration in settings page and toggle "Enable MCP" switch to activate this feature.
+
+## Configure MCP Servers
+
+NoteGen supports two types of MCP server connection methods:
+
+### Standard I/O (stdio)
+
+Suitable for locally running MCP servers that communicate through standard input/output.
+
+**Configuration Parameters:**
+- **Name**: Used to identify this MCP server
+- **Command**: Command to start the MCP server, such as `node`, `python`, `./server`
+- **Arguments**: Array of parameters passed when starting the server, such as `["server.js"]`
+- **Environment Variables**: Optional, set environment variables for server runtime
+
+**Example Configuration:**
+```json
+{
+  "name": "Local File System",
+  "command": "node",
+  "args": ["path/to/server.js"],
+  "env": {
+    "API_KEY": "your-api-key"
+  }
+}
+```
+
+### HTTP (SSE)
+
+Suitable for MCP servers accessed over the network using Server-Sent Events for communication.
+
+**Configuration Parameters:**
+- **Name**: Used to identify this MCP server
+- **URL**: HTTP address of the MCP server
+- **Headers**: Optional, set HTTP headers for requests
+
+**Example Configuration:**
+```json
+{
+  "name": "Remote Service",
+  "url": "https://example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer your-token"
+  }
+}
+```
+
+## Test Connection
+
+After configuration, use the "Test Connection" function to verify the configuration is correct:
+- Successful connection will display available tools and resources
+- Failed connection will show error messages, please check configuration parameters
+
+## Using MCP Tools
+
+Once enabled and configured with MCP servers, in the AI chat on the record page:
+1. Click the MCP tools button
+2. Select available tools
+3. AI will automatically call selected tools to enhance conversation capabilities
+
+## Common MCP Servers
+
+Here are some commonly used MCP server examples:
+
+### File System Access
+- **mcp-server-filesystem**: Access local file system
+- **GitHub**: Read and manipulate GitHub repositories
+
+### Database Connections
+- **PostgreSQL**: Connect to PostgreSQL databases
+- **SQLite**: Access SQLite database files
+
+### Web Services
+- **Fetch**: Send HTTP requests
+- **Puppeteer**: Web automation
+
+## Important Notes
+
+1. **Security**: Only configure trusted MCP servers to avoid leaking sensitive information
+2. **Performance**: MCP tool calls increase response time, enable selectively as needed
+3. **Compatibility**: Ensure MCP server version is compatible with NoteGen
+4. **Network Requirements**: HTTP-type servers require stable network connection

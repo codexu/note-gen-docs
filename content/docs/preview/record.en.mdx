@@ -28,7 +28,7 @@ Recording tools provide 5 recording methods: `screenshot`, `image`, `file`, `tex
     Record images that will be inserted into articles during organization.
   </Card>
   <Card icon={<FilePlus />} title="File Recording">
-    Select files from local storage, supports plain text format recording.
+    Select files from local storage, supports text and PDF formats with automatic text recognition.
   </Card>
   <Card icon={<Link />} title="Link Recording">
     Input links to crawl web content.
@@ -54,7 +54,13 @@ When selecting images from local storage or when the AI assistant recognizes cli
 
 ### File Recording
 
-Select files from local storage for file recording. Currently supports `txt`, `md`, `csv`, `pdf` formats, recording them as text.
+Select files from local storage for file recording. Supports `txt`, `md`, `csv`, `pdf` formats.
+
+- For `txt`, `md`, `csv` formats, records directly as text.
+- For `pdf` format, supports PDF text extraction and OCR text recognition:
+  - If PDF contains text layer, extracts text content directly
+  - If PDF is scanned or image-based, automatically uses OCR to recognize text (based on Tesseract engine)
+  - Supports multi-page PDF processing with progress display
 
 ### Text Recording
 

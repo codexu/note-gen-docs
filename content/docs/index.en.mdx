@@ -11,10 +11,11 @@ import Image from 'next/image'
 <Cards>
   <Card title="Lightweight">Installation package only 20MB, free and ad-free.</Card>
   <Card title="Cross-platform">Supports Mac, Windows, Linux, iOS, Android.</Card>
-  <Card title="Sync">Supports local offline use by default, real-time sync to GitHub, Gitee private repositories, supports history rollback, supports WebDAV sync.</Card>
-  <Card title="AI">AI Assistant helps you record and organize more efficiently, supports custom configuration of mainstream vendor models.</Card>
+  <Card title="Sync">Supports local offline use by default, real-time sync to GitHub, Gitee, GitLab, Gitea private repositories, supports history rollback, supports WebDAV sync.</Card>
+  <Card title="AI">AI Assistant helps you record and organize more efficiently, supports custom configuration of mainstream vendor models, supports MCP protocol to extend AI tools.</Card>
   <Card title="RAG">RAG support, your notes are your knowledge base, supports embedding models and reranking models.</Card>
-  <Card title="Recording">Supports multiple recording methods like screenshots, text, illustrations, files, links, meeting various fragmented recording needs.</Card>
+  <Card title="Recording">Supports multiple recording methods like screenshots, text, illustrations, files, links. File recording supports PDF import with OCR text recognition, meeting various fragmented recording needs.</Card>
+  <Card title="Themes">Supports 12 preset themes, customizable theme colors, dark theme, and appearance settings for Markdown and code.</Card>
   <Card title="Markdown">Native Markdown(.md) as storage format, no modifications, easy migration.</Card>
   <Card title="WYSIWYG">Supports WYSIWYG, instant rendering, and split-screen preview modes.</Card>
 </Cards>
@@ -41,6 +42,8 @@ The following auxiliary functions can help you record better:
 - Tags: used to distinguish different recording scenarios.
 - Masks: support custom prompts for precise control of your AI assistant.
 - Clipboard assistant: can automatically recognize text or images in the clipboard and record them in the list.
+- MCP Tools: supports extending AI capabilities through Model Context Protocol, calling external tools and services.
+- Voice input: supports speech recognition (STT) functionality for quickly recording thoughts via voice.
 
 ### Writing
 
@@ -61,18 +64,18 @@ Writing is divided into two parts: file manager and Markdown editor.
 - Supports AI assistance for dialogue, continuation, polishing, and translation functions.
 - Supports image hosting, can upload images to image hosting and convert to Markdown image links.
 - Supports HTML, Markdown conversion, can copy browser content and automatically convert to Markdown format.
-- Supports outline, mathematical formulas, mind maps, charts, flowcharts, Gantt charts, sequence diagrams, staff notation, multimedia, voice reading, title anchors, code highlighting and copying, graphviz rendering, plantuml UML diagrams.
+- Supports outline, mathematical formulas, mind maps, charts, flowcharts, Gantt charts, sequence diagrams, staff notation, multimedia, text-to-speech (TTS), title anchors, code highlighting and copying, graphviz rendering, plantuml UML diagrams.
 - Supports real-time local content saving, delayed (10s without editing) automatic sync, history rollback.
 
 #### Others
 
 - Global search: can quickly search and jump to specified content.
 - Image hosting management: convenient management of image hosting repository content.
-- Themes and appearance: supports dark theme, supports Markdown, code appearance settings.
+- Themes and appearance: supports 12 preset themes (Ocean, Forest, Sunset, Lavender, Coral Warm, Slate Gray, etc.), customizable theme colors with share/import support, dark theme, and appearance settings for Markdown and code.
 - Supports internationalization, currently supports Chinese, English, Japanese.
 
 ## Personalization Settings
 
-NoteGen supports rich personalization settings, including: AI-related, sync-related, etc.
+NoteGen supports rich personalization settings, including: AI-related, audio-related (speech recognition and synthesis), sync-related, etc.
 
 <Image width={600} height={400} src="https://s2.loli.net/2025/08/07/lfacewWk2BEDsNU.png" alt="Settings interface showing configuration options" />
