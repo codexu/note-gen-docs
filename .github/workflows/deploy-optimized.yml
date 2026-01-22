@@ -35,9 +35,9 @@ jobs:
 
       - name: Create standalone deployment
         run: |
-          mkdir -p deploy
-          cp -r .next/standalone/* deploy/ 2>/dev/null || cp -r .next deploy/
-          cp -r public deploy/public
+          mkdir -p deploy/.next
+          cp -r .next/standalone/* deploy/ 2>/dev/null || cp -r .next/* deploy/
+          cp -r public deploy/
           cp -r .next/static deploy/.next/static
           cp ecosystem.config.js deploy/
           tar -czf deploy.tar.gz -C deploy .
