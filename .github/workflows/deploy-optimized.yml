@@ -85,11 +85,7 @@ jobs:
             cd $APP_DIR
             tar -xzf /tmp/deploy.tar.gz
             rm /tmp/deploy.tar.gz
-            
-            # Install production dependencies
-            echo "📦 Installing dependencies..."
-            npm install --production
-            
+
             # Reload PM2
             echo "🔄 Reloading application..."
             if pm2 describe note-gen-docs > /dev/null 2>&1; then
