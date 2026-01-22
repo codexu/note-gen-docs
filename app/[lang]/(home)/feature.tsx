@@ -20,8 +20,8 @@ type Feature = {
 }
 
 export default function HomeFeature() {
-
-  const lang = (useParams().lang as 'cn' | 'en') || 'cn';
+  const params = useParams();
+  const lang = (params?.lang as 'cn' | 'en') || 'cn';
 
   const features1 = [
     {

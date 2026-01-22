@@ -24,7 +24,8 @@ interface HomeHeroProps {
 }
 
 export default function HomeHero({ githubStats }: HomeHeroProps) {
-  const lang = (useParams().lang as 'cn' | 'en') || 'cn';
+  const params = useParams();
+  const lang = (params?.lang as 'cn' | 'en') || 'cn';
 
   const h1Text = {
     cn: "一款跨平台的 Markdown AI Agent 笔记软件",

@@ -40,7 +40,8 @@ type SyncSolution = {
 }
 
 export default function HomeSync() {
-  const lang = (useParams().lang as 'cn' | 'en') || 'cn';
+  const params = useParams();
+  const lang = (params?.lang as 'cn' | 'en') || 'cn';
 
   const sectionTitle = {
     cn: "免费同步方案",

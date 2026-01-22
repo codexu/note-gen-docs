@@ -18,7 +18,8 @@ interface HomeContributorsProps {
 }
 
 export default function HomeContributors({ contributors = [] }: HomeContributorsProps) {
-  const lang = (useParams().lang as 'cn' | 'en') || 'cn';
+  const params = useParams();
+  const lang = (params?.lang as 'cn' | 'en') || 'cn';
 
   const titleText = {
     cn: "开源贡献者",
