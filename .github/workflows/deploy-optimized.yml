@@ -83,8 +83,9 @@ jobs:
             # Extract new deployment
             echo "📂 Extracting deployment..."
             cd $APP_DIR
-            # Clean old files to avoid conflicts
-            rm -rf node_modules .next server.js
+            # Clean everything for fresh install
+            rm -rf .next node_modules server.js static public package.json ecosystem.config.js content
+            # Extract deployment package
             tar -xzf /tmp/deploy.tar.gz
             rm /tmp/deploy.tar.gz
 
