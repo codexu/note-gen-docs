@@ -1,4 +1,4 @@
-name: Deploy to Aliyun (Optimized)
+name: Deploy to Aliyun (Source Code)
 
 on:
   push:
@@ -9,38 +9,19 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build project
-        run: pnpm build
-        env:
-          NODE_ENV: production
-
-      - name: Create standalone deployment
+      - name: Create source package
         run: |
-          mkdir -p deploy/.next
-          cp -r .next/standalone/* deploy/
-          cp -r .next/static deploy/.next/
-          cp -r public deploy/
-          cp ecosystem.config.js deploy/
-          tar -czf deploy.tar.gz -C deploy .
+          tar -czf source.tar.gz \
+            --exclude=node_modules \
+            --exclude=.next \
+            --exclude=.git \
+            --exclude=source.tar.gz \
+            .
 
       - name: Upload to server
         uses: appleboy/scp-action@v0.1.7
@@ -49,7 +30,7 @@ jobs:
           username: ${{ secrets.ALIYUN_USERNAME }}
           key: ${{ secrets.ALIYUN_SSH_KEY }}
           port: ${{ secrets.ALIYUN_PORT }}
-          source: "deploy.tar.gz"
+          source: "source.tar.gz"
           target: "/tmp"
           timeout: 300s
 
@@ -60,34 +41,40 @@ jobs:
           username: ${{ secrets.ALIYUN_USERNAME }}
           key: ${{ secrets.ALIYUN_SSH_KEY }}
           port: ${{ secrets.ALIYUN_PORT }}
-          timeout: 300s
+          timeout: 600s
           script: |
             set -e
-            
+
             APP_DIR="/root/note-gen-docs"
             BACKUP_DIR="/root/backups/note-gen-docs"
             TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-            
-            echo "🚀 Starting deployment..."
-            
-            # Create backup directory
-            mkdir -p $BACKUP_DIR
-            
+
+            echo "🚀 Starting source code deployment..."
+
+            # Create directories
+            mkdir -p $APP_DIR $BACKUP_DIR
+
             # Backup current deployment
-            if [ -d "$APP_DIR/.next" ]; then
+            if [ -f "$APP_DIR/package.json" ]; then
                 echo "📦 Creating backup..."
-                tar -czf "$BACKUP_DIR/backup_$TIMESTAMP.tar.gz" -C $APP_DIR .next || true
+                tar -czf "$BACKUP_DIR/backup_$TIMESTAMP.tar.gz" -C $APP_DIR . 2>/dev/null || true
                 ls -t $BACKUP_DIR/backup_*.tar.gz | tail -n +6 | xargs -r rm || true
             fi
-            
-            # Extract new deployment
-            echo "📂 Extracting deployment..."
+
+            # Clean and extract new source
+            echo "📂 Extracting source code..."
+            rm -rf $APP_DIR/*
+            tar -xzf /tmp/source.tar.gz -C $APP_DIR
+            rm /tmp/source.tar.gz
+
+            # Install dependencies
+            echo "📦 Installing dependencies..."
             cd $APP_DIR
-            # Clean everything for fresh install
-            rm -rf .next node_modules server.js static public package.json ecosystem.config.js content
-            # Extract deployment package
-            tar -xzf /tmp/deploy.tar.gz
-            rm /tmp/deploy.tar.gz
+            pnpm install --frozen-lockfile
+
+            # Build project
+            echo "🔨 Building project..."
+            pnpm build
 
             # Reload PM2
             echo "🔄 Reloading application..."
@@ -97,7 +84,7 @@ jobs:
                 pm2 start ecosystem.config.js
             fi
             pm2 save
-            
+
             echo "✅ Deployment completed!"
             pm2 status note-gen-docs
 
