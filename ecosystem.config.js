@@ -1,8 +1,7 @@
 module.exports = {
   apps: [{
     name: 'note-gen-docs',
-    script: 'npm',
-    args: 'start',
+    script: 'server.js',
     cwd: '/root/note-gen-docs',
     env: {
       NODE_ENV: 'production',
