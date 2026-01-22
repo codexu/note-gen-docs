@@ -109,12 +109,12 @@ jobs:
           port: ${{ secrets.ALIYUN_PORT }}
           script: |
             echo "🏥 Running health check..."
-            sleep 5
+            sleep 30
             if pm2 describe note-gen-docs | grep -q "online"; then
                 echo "✅ Application is running"
                 exit 0
             else
                 echo "❌ Application failed to start"
-                pm2 logs note-gen-docs --lines 50
+                pm2 logs note-gen-docs --lines 100
                 exit 1
             fi
