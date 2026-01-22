@@ -21,6 +21,7 @@ jobs:
             --exclude=.next \
             --exclude=.git \
             --exclude=source.tar.gz \
+            --warning=no-file-changed \
             .
 
       - name: Upload to server
