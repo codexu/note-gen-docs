@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from 'next/navigation';
-import { Bot, Brain, Cloud, SquareM, TabletSmartphone, Puzzle } from 'lucide-react';
+import { Eye, ExternalLink, Heart, Palette, Shield, SquareM, TabletSmartphone } from 'lucide-react';
 import SectionWrap from './section-wrap';
 
 type Feature = {
@@ -17,13 +17,29 @@ type Feature = {
     cn: string;
     en: string;
   };
+  link?: string;
 }
 
 export default function HomeFeature() {
   const params = useParams();
   const lang = (params?.lang as 'cn' | 'en') || 'cn';
 
-  const features1 = [
+  const features = [
+    {
+      icon: <Heart className="size-4" />,
+      title: {
+        cn: "开源免费",
+        en: "Open Source & Free",
+      },
+      shortDescription: {
+        cn: "永久免费使用",
+        en: "Free Forever",
+      },
+      description: {
+        cn: "完全开源，永久免费。软件内无广告，无隐藏收费，纯净的笔记体验。",
+        en: "Fully open source and free forever. No ads, no hidden fees, just a pure note-taking experience.",
+      },
+    },
     {
       icon: <TabletSmartphone className="size-4" />,
       title: {
@@ -40,37 +56,20 @@ export default function HomeFeature() {
       },
     },
     {
-      icon: <Bot className="size-4" />,
+      icon: <Shield className="size-4" />,
       title: {
-        cn: "AI 智能助手",
-        en: "AI Assistant",
+        cn: "本地优先",
+        en: "Local First",
       },
       shortDescription: {
-        cn: "智能 Agent + 自定义模型",
-        en: "Smart Agent + Custom LLMs",
+        cn: "数据本地存储",
+        en: "Data Stored Locally",
       },
       description: {
-        cn: "内置免费模型，支持自定义配置主流模型。智能Agent可自动整理笔记、生成内容。",
-        en: "Built-in free models with custom LLM support. Smart Agent organizes notes and generates content.",
+        cn: "所有数据存储在本地，完全掌控你的笔记。无需登录即可使用，隐私安全有保障。",
+        en: "All data is stored locally, giving you full control over your notes. No login required, privacy and security guaranteed.",
       },
     },
-    {
-      icon: <Cloud className="size-4" />,
-      title: {
-        cn: "免费安全同步",
-        en: "Free Safe Synchronization",
-      },
-      shortDescription: {
-        cn: "多种同步方案可选",
-        en: "Multiple Synchronization Schemes",
-      },
-      description: {
-        cn: "主要同步方案支持 Github、GitLab、Gitee，备用方案支持 WebDAV。",
-        en: "Main synchronization schemes support Github、GitLab、Gitee, backup scheme support WebDAV.",
-      },
-    },
-  ];
-  const features2 = [
     {
       icon: <SquareM className="size-4" />,
       title: {
@@ -87,64 +86,68 @@ export default function HomeFeature() {
       },
     },
     {
-      icon: <Brain className="size-4" />,
+      icon: <Eye className="size-4" />,
       title: {
-        cn: "RAG",
-        en: "RAG",
+        cn: "所见即所得",
+        en: "WYSIWYG",
       },
       shortDescription: {
-        cn: "本地知识库",
-        en: "Local Knowledge Base",
+        cn: "Vditor",
+        en: "Vditor",
       },
       description: {
-        cn: "你的笔记就是你的知识库，支持嵌入模型、重排序模型。",
-        en: "Your notes are your knowledge base, supports embedding models, reordering models.",
+        cn: "使用 Vditor 编辑器，支持所见即所得模式，类似 Typora 的即时渲染体验。",
+        en: "Powered by Vditor editor, supports WYSIWYG mode with instant rendering experience like Typora.",
       },
+      link: "https://github.com/Vanessa219/vditor",
     },
     {
-      icon: <Puzzle className="size-4" />,
+      icon: <Palette className="size-4" />,
       title: {
-        cn: "MCP 支持",
-        en: "MCP Support",
+        cn: "主题",
+        en: "Themes",
       },
       shortDescription: {
-        cn: "扩展 AI 能力",
-        en: "Extend AI Capabilities",
+        cn: "多主题 + 深色模式",
+        en: "Multiple Themes + Dark Mode",
       },
       description: {
-        cn: "支持模型上下文协议，让 AI 访问外部工具和数据源，增强智能交互体验。",
-        en: "Supports Model Context Protocol, enabling AI to access external tools and data sources.",
+        cn: "内置 12 种精心设计的预设主题，支持自定义主题颜色。提供深色模式，保护你的眼睛。",
+        en: "Supports 12 preset themes with customizable theme colors. Includes dark mode.",
       },
     },
   ];
 
   return (
     <SectionWrap isPadding={false}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-        {features1.map((feature, index) => (
-          <FeatureItem key={index} feature={feature} lang={lang} isBorderBottom={true} />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-        {features2.map((feature, index) => (
-          <FeatureItem key={index} feature={feature} lang={lang} isBorderBottom={false} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
+        {features.map((feature, index) => (
+          <FeatureItem key={index} feature={feature} lang={lang} index={index} />
         ))}
       </div>
     </SectionWrap>
   );
 }
 
-function FeatureItem({ feature, lang, isBorderBottom }: { feature: Feature, lang: 'cn' | 'en', isBorderBottom?: boolean }) {
+function FeatureItem({ feature, lang, index }: { feature: Feature, lang: 'cn' | 'en', index: number }) {
+  const col = index % 3;
+  const hasRightBorder = col < 2;
+  const hasBottomBorder = index < 3;
+
   return (
-    <div className={`
-      flex flex-col justify-start items-start gap-3 sm:gap-4 p-6 md:p-8 lg:p-12
-      lg:not-first:border-l ${isBorderBottom ? 'border-b' : ''} border-fd-border border-dashed
-    `}>
+    <div className={`flex flex-col justify-start items-start gap-3 sm:gap-4 p-6 md:p-8 lg:p-12 ${hasBottomBorder ? 'border-b' : ''} border-fd-border border-dashed ${hasRightBorder ? 'border-r' : ''}`}>
       <h5 className="flex gap-2 text-xs text-fd-muted-foreground">
         {feature.icon}
         {feature.shortDescription[lang]}
       </h5>
-      <h3 className="text-lg font-bold">{feature.title[lang]}</h3>
+      {feature.link ? (
+        <a href={feature.link} target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-fd-primary hover:underline flex items-center gap-1">
+          {feature.title[lang]}
+          <ExternalLink className="size-3" />
+        </a>
+      ) : (
+        <h3 className="text-lg font-bold">{feature.title[lang]}</h3>
+      )}
       <p className="text-fd-muted-foreground text-sm">{feature.description[lang]}</p>
     </div>
   );

@@ -1,5 +1,6 @@
 import HomeHero from './hero';
 import HomeFeature from './feature';
+import HomeAgent from './agent';
 import HomeModels from './models';
 import HomeSync from './sync';
 import HomeFooter from './footer';
@@ -24,6 +25,8 @@ export default async function HomePage({
   return <main>
     <HomeHero githubStats={githubStats} />
     <HomeFeature />
+    <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
+    <HomeAgent />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeModels premiumModels={premiumModels} lang={lang as 'cn' | 'en'} />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
