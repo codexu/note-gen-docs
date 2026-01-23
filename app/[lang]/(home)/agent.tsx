@@ -24,8 +24,8 @@ export default function HomeAgent() {
   const lang = (params?.lang as 'cn' | 'en') || 'cn';
 
   const sectionTitle = {
-    cn: "强大的 Agent 能力",
-    en: "Powerful Agent Capabilities",
+    cn: "AI Agent",
+    en: "AI Agent",
   }[lang];
 
   const sectionDescription = {
@@ -37,8 +37,8 @@ export default function HomeAgent() {
     {
       icon: <FileEdit className="size-4" />,
       title: {
-        cn: "智能内容编辑",
-        en: "Intelligent Content Editing",
+        cn: "智能笔记编辑",
+        en: "Intelligent Note Editing",
       },
       shortDescription: {
         cn: "上下文感知编辑",
@@ -52,8 +52,8 @@ export default function HomeAgent() {
     {
       icon: <Puzzle className="size-4" />,
       title: {
-        cn: "MCP 协议支持",
-        en: "MCP Protocol Support",
+        cn: "MCP",
+        en: "MCP",
       },
       shortDescription: {
         cn: "扩展 AI 能力边界",
@@ -67,8 +67,8 @@ export default function HomeAgent() {
     {
       icon: <Sparkles className="size-4" />,
       title: {
-        cn: "Skills 技能系统",
-        en: "Skills System",
+        cn: "Skills",
+        en: "Skills",
       },
       shortDescription: {
         cn: "可定制的工作流",
@@ -82,8 +82,8 @@ export default function HomeAgent() {
     {
       icon: <Database className="size-4" />,
       title: {
-        cn: "RAG 知识库",
-        en: "RAG Knowledge Base",
+        cn: "RAG",
+        en: "RAG",
       },
       shortDescription: {
         cn: "本地知识检索",

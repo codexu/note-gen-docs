@@ -26,8 +26,8 @@ type ApiModel = {
 export default async function HomeModels({ premiumModels, lang }: { premiumModels: ApiModel[], lang: 'cn' | 'en' }) {
 
   const sectionTitle = {
-    cn: "开箱即用的免费模型",
-    en: "Ready-to-Use Free Models",
+    cn: "免费模型",
+    en: "Free Models",
   }[lang];
 
   const sectionDescription = {
