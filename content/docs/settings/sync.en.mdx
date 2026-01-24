@@ -8,41 +8,41 @@ import Image from 'next/image'
 
 <Image width={600} height={400} src="https://s2.loli.net/2025/07/10/eSPLbUfYRuphnoO.png" alt="Sync configuration interface showing primary sync methods" />
 
-## Primary Sync Methods
+### Primary Sync Methods
 
 Primary sync methods currently support GitHub, Gitee, GitLab, and Gitea, because the history rollback feature requires Git support (no need to install Git locally).
 
-### Configuration
+#### Configuration
 
-#### GitHub/Gitee
+##### GitHub/Gitee
 - GitHub Access Token, you need to get a token from [GitHub](https://github.com/settings/tokens/new) or [Gitee](https://gitee.com/profile/personal_access_tokens). Note that repository access permissions are required.
 - Auto sync, when enabled, automatic quick backup will occur * seconds after stopping input during writing. Commit content uses a fixed template and can be collapsed.
 
-#### GitLab/Gitea
+##### GitLab/Gitea
 - Supports GitLab and Gitea self-hosted instances, requires configuring server address and access token.
 - Also supports history rollback feature, all Markdown files will be stored in private repositories.
 
 - Note that you must select GitHub, Gitee, GitLab, or Gitea as the primary backup method for it to take effect. The button is located at the bottom of the page.
 
-## WebDAV Sync
+### WebDAV Sync
 
 In addition to Git-based sync methods, NoteGen also supports data synchronization via the WebDAV protocol.
 
-### Configuration
+#### Configuration
 
 - **Server URL**: The complete URL address of the WebDAV server
 - **Username**: Username for logging into the WebDAV server
 - **Password**: Password for logging into the WebDAV server
 - **Path**: Optional, specifies the root directory path for synchronization
 
-### Use Cases
+#### Use Cases
 
 WebDAV sync is suitable for:
 - Self-hosted cloud storage services (like Nextcloud, ownCloud)
 - Enterprise internal file servers
 - WebDAV-supported cloud storage services
 
-### Important Notes
+#### Important Notes
 
 - WebDAV sync does not support history rollback feature
 - Please ensure server address and credentials are configured correctly

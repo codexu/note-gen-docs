@@ -7,13 +7,13 @@ icon: Highlighter
 import { ScanText, ImagePlus, FilePlus, CopySlash, Link } from 'lucide-react'
 import Image from 'next/image'
 
-# Record
+## Record
 
 Located on the left side of the record page.
 
 <Image width={600} height={400} src="https://s2.loli.net/2025/05/23/7TpehH9ZAOF8Cuw.png" alt="Record tools interface showing recording options" />
 
-## Recording Tools
+### Recording Tools
 
 Recording tools provide 5 recording methods: `screenshot`, `image`, `file`, `text`, and `link`. When used appropriately, they can improve recording efficiency for different scenarios.
 
@@ -35,7 +35,7 @@ Recording tools provide 5 recording methods: `screenshot`, `image`, `file`, `tex
   </Card>
 </Cards>
 
-### Screenshot Recording
+#### Screenshot Recording
 
 <Image width={600} height={400} src="https://s2.loli.net/2025/05/29/QsPSBFw4qIHNgtl.png" alt="Screenshot recording interface with area selection" />
 
@@ -45,14 +45,14 @@ Select an area from a window screenshot, capture the selected area, recognize te
 - After selection, double-click the selected area to complete the screenshot.
 - Minimized windows cannot be captured.
 
-### Image Recording
+#### Image Recording
 
 When selecting images from local storage or when the AI assistant recognizes clipboard images, image recording can be performed with the same logic as screenshot recording.
 
 - `Screenshot recording` is ultimately recorded as text, **inserting the recognized text into the article**, without inserting the screenshot.
 - `Image recording` is ultimately recorded as an image, **inserted into the article as an image**, with position determined by AI through description analysis.
 
-### File Recording
+#### File Recording
 
 Select files from local storage for file recording. Supports `txt`, `md`, `csv`, `pdf` formats.
 
@@ -62,15 +62,15 @@ Select files from local storage for file recording. Supports `txt`, `md`, `csv`,
   - If PDF is scanned or image-based, automatically uses OCR to recognize text (based on Tesseract engine)
   - Supports multi-page PDF processing with progress display
 
-### Text Recording
+#### Text Recording
 
 Click to open the text recording dialog where users can directly input text, suitable for long text recording or temporary notes.
 
-### Link Recording
+#### Link Recording
 
 Input links to crawl web content. Currently does not support SPA website crawling, ultimately recorded as text.
 
-## Tag Management
+### Tag Management
 
 Tag management is used to manage record tags, making it convenient for users to categorize records. Tags also affect the AI assistant's conversation records and AI content association.
 
@@ -83,7 +83,7 @@ Feature list:
 - Right-click for tag pinning, renaming, and deletion operations.
 - The number on the right side of tags represents the count of records under that tag.
 
-## Record Content
+### Record Content
 
 Record content includes `record type`, `record time`, `record description`, `thumbnail`, and other information.
 

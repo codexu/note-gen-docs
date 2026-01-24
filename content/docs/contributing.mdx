@@ -6,24 +6,24 @@ icon: Code
 
 Hi! 非常感谢你参与 NoteGen 的贡献！在此之前，请花一些时间阅读以下内容：
 
-## 如何贡献
+### 如何贡献
 
 不论是贡献代码还是提交问题，都应该先创建 Issue。
 
-### Issues
+#### Issues
 
 请始终使用 [Issues](https://github.com/codexu/note-gen/issues) 创建新问题，尽量详细描述问题，包括重现步骤、预期行为和实际行为。
 
-### Discussions
+#### Discussions
 
 如果你想发起讨论，可以使用 [Discussions](https://github.com/codexu/note-gen/discussions)，或加入 [交流群](https://github.com/codexu/note-gen/discussions/110)。
 
-### Pull Request
+#### Pull Request
 
 - 在修复 bug 前，请先检查 [Issues](https://github.com/codexu/note-gen/issues) 是否具有相同的问题。
 - 如果你要开发一个功能，请先提交 [Issue](https://github.com/codexu/note-gen/issues)，与项目维护者讨论该功能是否被需要，这有助于节省维护者和贡献者的时间。
 
-## 技术栈
+### 技术栈
 
 NoteGen 主要用到以下几个技术栈：
 
@@ -37,31 +37,31 @@ NoteGen 主要用到以下几个技术栈：
 
 如果你本次贡献需要更新或添加依赖，请在 issue 中添加 `package.json` 或 `src-tauri/Cargo.toml` 的更新说明。
 
-## 开发环境
+### 开发环境
 
 请先阅读 [Tauri 2 前置要求](https://v2.tauri.app/zh-cn/start/prerequisites/) 文档，按照文档要求配置开发环境。
 
 环境装好后，**fork** 仓库到你的 GitHub 账号下，然后克隆到本地：
 
 ```bash
-# 1. fork 到你的 GitHub 账号下
+## 1. fork 到你的 GitHub 账号下
 
-# 2. 克隆到本地
+## 2. 克隆到本地
 git clone https://github.com/your-username/note-gen.git
 ```
 
 然后进入项目目录，安装依赖：
 
 ```bash
-# 3. 进入项目目录 & 安装依赖
+## 3. 进入项目目录 & 安装依赖
 cd note-gen
 pnpm install
 
-# 4. 启动本地开发，如果遇到白屏情况，尝试右键 reload。
+## 4. 启动本地开发，如果遇到白屏情况，尝试右键 reload。
 pnpm tauri dev
 ```
 
-## 目录说明
+### 目录说明
 
 - `src`：前端应用目录。
   - `apps`：前端应用目录。
@@ -79,7 +79,7 @@ pnpm tauri dev
 - `src-tauri`：Rust 代码目录。
 - `messages`：多语言配置目录。
 
-## Pull Request 指南
+### Pull Request 指南
 
 NoteGen 未使用 master 或 main 分支，一切发开都在 dev 分支下进行，通过合并到 release 分之后触发 Github Action 进行版本发布和构建。
 
@@ -91,29 +91,29 @@ Fork 仓库后，请使用 dev 分支创建一个新的分支，命名为本次�
 
 在提交 PR 前，确保本地运行 `pnpm tauri build` 可以正常构建及运行。
 
-## 开发指南
+### 开发指南
 
 本章节将介绍如何快速上手 NoteGen 的开发。
 
-### DeepWiki
+#### DeepWiki
 
 你可以通过 AI 生成的文档 [DeepWiki](https://deepwiki.com/codexu/note-gen) 来快速学习 NoteGen 的开发文档。
 
-### 项目环境搭建
+#### 项目环境搭建
 
 请先阅读 [Tauri 2 前置要求](https://v2.tauri.app/start/prerequisites/) 文档，按照文档要求配置开发环境。
 
 通过 `pnpm tauri dev` 可以启动本地开发，如果遇到白屏情况，尝试右键 reload。
 
-### 项目构建
+#### 项目构建
 
-#### 桌面端
+##### 桌面端
 
 通过 `pnpm tauri build` 可以构建桌面端应用，注意此时会根据你的系统构建相应的安装包。
 
 默认情况下是通过 Github Action 自动构建的，通过发布 release 分支时触发，通常会修改 `src-tauri/tauri.conf.json` 中的版本号。
 
-#### Android
+##### Android
 
 要构建 Android 应用，首先运行 `pnpm tauri android init`。
 

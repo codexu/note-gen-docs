@@ -6,24 +6,24 @@ icon: Code
 
 Hi! Thank you so much for contributing to NoteGen! Before you begin, please take a moment to read the following:
 
-## How to Contribute
+### How to Contribute
 
 Whether you are contributing code or reporting issues, please start by creating an Issue.
 
-### Issues
+#### Issues
 
 Always create new issues via [Issues](https://github.com/codexu/note-gen/issues). Please describe the problem in as much detail as possible, including reproduction steps, expected behavior, and actual behavior.
 
-### Discussions
+#### Discussions
 
 If you’d like to start a discussion, you can use [Discussions](https://github.com/codexu/note-gen/discussions), or join the [community group](https://github.com/codexu/note-gen/discussions/110).
 
-### Pull Request
+#### Pull Request
 
 - Before fixing a bug, please check [Issues](https://github.com/codexu/note-gen/issues) to see if the same issue already exists.
 - If you plan to develop a new feature, please first submit an [Issue](https://github.com/codexu/note-gen/issues) to discuss with maintainers whether the feature is needed. This helps save time for both maintainers and contributors.
 
-## Tech Stack
+### Tech Stack
 
 NoteGen mainly uses the following technologies:
 
@@ -37,31 +37,31 @@ NoteGen mainly uses the following technologies:
 
 If your contribution needs to update or add dependencies, please mention the changes to `package.json` or `src-tauri/Cargo.toml` in the issue.
 
-## Development Environment
+### Development Environment
 
 Please read the [Tauri 2 prerequisites](https://v2.tauri.app/zh-cn/start/prerequisites/) and configure your environment accordingly.
 
 Once your environment is ready, **fork** the repository to your GitHub account, then clone it locally:
 
 ```bash
-# 1. Fork to your GitHub account
+## 1. Fork to your GitHub account
 
-# 2. Clone locally
+## 2. Clone locally
 git clone https://github.com/your-username/note-gen.git
 ```
 
 Then enter the project directory and install dependencies:
 
 ```bash
-# 3. Enter project directory & install dependencies
+## 3. Enter project directory & install dependencies
 cd note-gen
 pnpm install
 
-# 4. Start local development; if you see a blank screen, try right-clicking to reload.
+## 4. Start local development; if you see a blank screen, try right-clicking to reload.
 pnpm tauri dev
 ```
 
-## Project Structure
+### Project Structure
 
 - `src`: Frontend application directory.
   - `apps`: Frontend application modules.
@@ -79,7 +79,7 @@ pnpm tauri dev
 - `src-tauri`: Rust code.
 - `messages`: i18n configuration.
 
-## Pull Request Guidelines
+### Pull Request Guidelines
 
 NoteGen does not use the master or main branches. All development happens on the `dev` branch. Releasing is triggered by merging into the `release` branch, which runs GitHub Actions to build and publish versions.
 
@@ -91,29 +91,29 @@ Please use `fix(#xxx): ***` or `feat(#xxx): ***` in the PR title, where `#xxx` i
 
 Before submitting the PR, ensure `pnpm tauri build` can build and run successfully on your local machine.
 
-## Development Guide
+### Development Guide
 
 This section will guide you through the development of NoteGen.
 
-### DeepWiki
+#### DeepWiki
 
 You can quickly learn about NoteGen's development through AI-generated documentation at [DeepWiki](https://deepwiki.com/codexu/note-gen).
 
-### Project Environment Setup
+#### Project Environment Setup
 
 Please read the [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/) documentation and configure your development environment accordingly.
 
 Start local development with `pnpm tauri dev`. If you encounter a blank screen, try right-clicking and selecting reload.
 
-### Project Building
+#### Project Building
 
-#### Desktop
+##### Desktop
 
 Build the desktop application with `pnpm tauri build`. Note that this will create an installation package for your current system.
 
 By default, builds are automated via GitHub Actions, triggered when merging to the `release` branch. This typically involves updating the version number in `src-tauri/tauri.conf.json`.
 
-#### Android
+##### Android
 
 To build the Android application, first run `pnpm tauri android init`.
 

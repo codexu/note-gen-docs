@@ -4,15 +4,15 @@ description: Guide for custom CSS configuration.
 icon: Settings
 ---
 
-## ID Naming Convention
+### ID Naming Convention
 
 All component IDs follow the `route-component` naming convention (lowercase), for example:
 - Desktop AI Chat: `record-chat`
 - Mobile Writing Editor: `mobile-writing`
 
-## Desktop Components
+### Desktop Components
 
-### Writing Page (Article)
+#### Writing Page (Article)
 - **Main Editor Container**: `#article-editor`
   - Contains the Markdown editor and toolbar
   - Path: `/core/article`
@@ -21,7 +21,7 @@ All component IDs follow the `route-component` naming convention (lowercase), fo
   - Contains file manager and workspace selector
   - Path: `/core/article`
 
-### AI Chat Page (Record)
+#### AI Chat Page (Record)
 - **Chat Container**: `#record-chat`
   - Contains chat content, input field, and toolbar
   - Path: `/core/record`
@@ -30,46 +30,46 @@ All component IDs follow the `route-component` naming convention (lowercase), fo
   - Contains tag management and notes list
   - Path: `/core/record`
 
-### Search Page
+#### Search Page
 - **Search Page Container**: `#search-page`
   - Contains search input and results list
   - Path: `/core/search`
 
-### Image Management Page
+#### Image Management Page
 - **Image Page Container**: `#image-page`
   - Contains image list and upload area
   - Path: `/core/image`
 
-### Settings Page
+#### Settings Page
 - **Settings Page Container**: `#setting-page`
   - Contains settings tabs and content area
   - Path: `/core/setting/*`
 
-## Mobile Components
+### Mobile Components
 
-### AI Chat
+#### AI Chat
 - **Mobile Chat Container**: `#mobile-chat`
   - Mobile AI chat interface
   - Path: `/mobile/chat`
 
-### Writing Editor
+#### Writing Editor
 - **Mobile Editor Container**: `#mobile-writing`
   - Mobile Markdown editor
   - Path: `/mobile/writing`
 
-### Notes List
+#### Notes List
 - **Mobile Notes List**: `#mobile-record`
   - Mobile notes management interface
   - Path: `/mobile/record`
 
-### Settings
+#### Settings
 - **Mobile Settings Page**: `#mobile-setting`
   - Mobile settings interface
   - Path: `/mobile/setting`
 
-## Usage Examples
+### Usage Examples
 
-### Change AI Chat Background Color
+#### Change AI Chat Background Color
 ```css
 /* Desktop */
 #record-chat {
@@ -82,7 +82,7 @@ All component IDs follow the `route-component` naming convention (lowercase), fo
 }
 ```
 
-### Change Editor Font
+#### Change Editor Font
 ```css
 /* Desktop Editor */
 #article-editor {
@@ -95,7 +95,7 @@ All component IDs follow the `route-component` naming convention (lowercase), fo
 }
 ```
 
-### Modify Sidebar Width
+#### Modify Sidebar Width
 ```css
 /* File Sidebar */
 #article-sidebar {
@@ -110,7 +110,7 @@ All component IDs follow the `route-component` naming convention (lowercase), fo
 }
 ```
 
-### Customize Search Page
+#### Customize Search Page
 ```css
 #search-page {
   background: linear-gradient(to bottom, #ffffff, #f0f0f0);
@@ -122,7 +122,7 @@ All component IDs follow the `route-component` naming convention (lowercase), fo
 }
 ```
 
-### Adjust Settings Page Layout
+#### Adjust Settings Page Layout
 ```css
 #setting-page {
   max-width: 1400px;
@@ -130,7 +130,7 @@ All component IDs follow the `route-component` naming convention (lowercase), fo
 }
 ```
 
-## Important Notes
+### Important Notes
 
 1. **Use `!important`**: Due to Tailwind CSS's high specificity, you may need to use `!important` to override some styles.
 

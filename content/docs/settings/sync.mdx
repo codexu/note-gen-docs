@@ -8,41 +8,41 @@ import Image from 'next/image'
 
 <Image width={600} height={400} src="https://s2.loli.net/2025/07/10/eSPLbUfYRuphnoO.png" alt="同步配置界面显示主要同步方式" />
 
-## 主要同步方式
+### 主要同步方式
 
 主要同步方式目前支持 GitHub、Gitee、GitLab、Gitea，原因是历史回滚功能需要 Git（本地无需安装 Git） 的支持。
 
-### 配置
+#### 配置
 
-#### GitHub/Gitee
+##### GitHub/Gitee
 - GitHub Access Token，需要去 [GitHub](https://github.com/settings/tokens/new) 或 [Gitee](https://gitee.com/profile/personal_access_tokens) 获取令牌，注意需要访问仓库的权限。
 - 自动同步，开启后，在写作时，停止输入后的 * 秒后进行自动快速备份，提交内容为固定模板，可折叠。
 
-#### GitLab/Gitea
+##### GitLab/Gitea
 - 支持 GitLab 和 Gitea 自建实例，需要配置服务器地址和访问令牌。
 - 同样支持历史回滚功能，所有 Markdown 都会存储于私有仓库。
 
 - 注意要选择 GitHub、Gitee、GitLab 或 Gitea 作为主要备份方式才可生效，按钮位于页面最下方。
 
-## WebDAV 同步
+### WebDAV 同步
 
 除了基于 Git 的同步方式外，NoteGen 还支持 WebDAV 协议进行数据同步。
 
-### 配置
+#### 配置
 
 - **服务器地址**：WebDAV 服务器的完整 URL 地址
 - **用户名**：登录 WebDAV 服务器的用户名
 - **密码**：登录 WebDAV 服务器的密码
 - **路径**：可选，指定同步的根目录路径
 
-### 使用场景
+#### 使用场景
 
 WebDAV 同步适用于：
 - 使用自建云存储服务（如 Nextcloud、ownCloud）
 - 企业内部的文件服务器
 - 支持 WebDAV 的网盘服务
 
-### 注意事项
+#### 注意事项
 
 - WebDAV 同步不支持历史回滚功能
 - 请确保服务器地址和凭证配置正确

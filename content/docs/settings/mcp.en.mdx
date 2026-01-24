@@ -4,19 +4,19 @@ description: MCP (Model Context Protocol) configuration guide to extend AI capab
 icon: Puzzle
 ---
 
-## What is MCP
+### What is MCP
 
 MCP (Model Context Protocol) is an open standard protocol that allows AI applications to connect to external data sources and tools in a unified way. Through MCP, NoteGen can call external services to extend the AI assistant's capabilities.
 
-## Enable MCP
+### Enable MCP
 
 Find MCP configuration in settings page and toggle "Enable MCP" switch to activate this feature.
 
-## Configure MCP Servers
+### Configure MCP Servers
 
 NoteGen supports two types of MCP server connection methods:
 
-### Standard I/O (stdio)
+#### Standard I/O (stdio)
 
 Suitable for locally running MCP servers that communicate through standard input/output.
 
@@ -38,7 +38,7 @@ Suitable for locally running MCP servers that communicate through standard input
 }
 ```
 
-### HTTP (SSE)
+#### HTTP (SSE)
 
 Suitable for MCP servers accessed over the network using Server-Sent Events for communication.
 
@@ -58,36 +58,36 @@ Suitable for MCP servers accessed over the network using Server-Sent Events for 
 }
 ```
 
-## Test Connection
+### Test Connection
 
 After configuration, use the "Test Connection" function to verify the configuration is correct:
 - Successful connection will display available tools and resources
 - Failed connection will show error messages, please check configuration parameters
 
-## Using MCP Tools
+### Using MCP Tools
 
 Once enabled and configured with MCP servers, in the AI chat on the record page:
 1. Click the MCP tools button
 2. Select available tools
 3. AI will automatically call selected tools to enhance conversation capabilities
 
-## Common MCP Servers
+### Common MCP Servers
 
 Here are some commonly used MCP server examples:
 
-### File System Access
+#### File System Access
 - **mcp-server-filesystem**: Access local file system
 - **GitHub**: Read and manipulate GitHub repositories
 
-### Database Connections
+#### Database Connections
 - **PostgreSQL**: Connect to PostgreSQL databases
 - **SQLite**: Access SQLite database files
 
-### Web Services
+#### Web Services
 - **Fetch**: Send HTTP requests
 - **Puppeteer**: Web automation
 
-## Important Notes
+### Important Notes
 
 1. **Security**: Only configure trusted MCP servers to avoid leaking sensitive information
 2. **Performance**: MCP tool calls increase response time, enable selectively as needed

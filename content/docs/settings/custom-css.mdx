@@ -4,15 +4,15 @@ description: 自定义 CSS 配置指南。
 icon: Settings
 ---
 
-## ID 命名规则
+### ID 命名规则
 
 所有组件 ID 采用 `路由-组件名` 的命名规则（全小写），例如：
 - 桌面端 AI 对话：`record-chat`
 - 移动端写作编辑器：`mobile-writing`
 
-## 桌面端组件
+### 桌面端组件
 
-### 写作页面 (Article)
+#### 写作页面 (Article)
 - **主编辑器容器**: `#article-editor`
   - 包含整个 Markdown 编辑器及工具栏
   - 路径：`/core/article`
@@ -21,7 +21,7 @@ icon: Settings
   - 包含文件管理器、工作区选择器
   - 路径：`/core/article`
 
-### AI 对话页面 (Record)
+#### AI 对话页面 (Record)
 - **对话容器**: `#record-chat`
   - 包含聊天内容、输入框、工具栏
   - 路径：`/core/record`
@@ -30,46 +30,46 @@ icon: Settings
   - 包含标签管理、笔记列表
   - 路径：`/core/record`
 
-### 搜索页面
+#### 搜索页面
 - **搜索页面容器**: `#search-page`
   - 包含搜索输入框和搜索结果列表
   - 路径：`/core/search`
 
-### 图片管理页面
+#### 图片管理页面
 - **图片页面容器**: `#image-page`
   - 包含图片列表、上传区域
   - 路径：`/core/image`
 
-### 设置页面
+#### 设置页面
 - **设置页面容器**: `#setting-page`
   - 包含设置标签页和内容区域
   - 路径：`/core/setting/*`
 
-## 移动端组件
+### 移动端组件
 
-### AI 对话
+#### AI 对话
 - **移动端对话容器**: `#mobile-chat`
   - 移动端 AI 对话界面
   - 路径：`/mobile/chat`
 
-### 写作编辑器
+#### 写作编辑器
 - **移动端编辑器容器**: `#mobile-writing`
   - 移动端 Markdown 编辑器
   - 路径：`/mobile/writing`
 
-### 笔记列表
+#### 笔记列表
 - **移动端笔记列表**: `#mobile-record`
   - 移动端笔记管理界面
   - 路径：`/mobile/record`
 
-### 设置
+#### 设置
 - **移动端设置页面**: `#mobile-setting`
   - 移动端设置界面
   - 路径：`/mobile/setting`
 
-## 使用示例
+### 使用示例
 
-### 修改 AI 对话背景色
+#### 修改 AI 对话背景色
 ```css
 /* 桌面端 */
 #record-chat {
@@ -82,7 +82,7 @@ icon: Settings
 }
 ```
 
-### 修改编辑器字体
+#### 修改编辑器字体
 ```css
 /* 桌面端编辑器 */
 #article-editor {
@@ -95,7 +95,7 @@ icon: Settings
 }
 ```
 
-### 修改侧边栏宽度
+#### 修改侧边栏宽度
 ```css
 /* 文件侧边栏 */
 #article-sidebar {
@@ -110,7 +110,7 @@ icon: Settings
 }
 ```
 
-### 修改搜索页面样式
+#### 修改搜索页面样式
 ```css
 #search-page {
   background: linear-gradient(to bottom, #ffffff, #f0f0f0);
@@ -122,7 +122,7 @@ icon: Settings
 }
 ```
 
-### 修改设置页面布局
+#### 修改设置页面布局
 ```css
 #setting-page {
   max-width: 1400px;
@@ -130,7 +130,7 @@ icon: Settings
 }
 ```
 
-## 注意事项
+### 注意事项
 
 1. **使用 `!important`**：由于 Tailwind CSS 的优先级较高，某些样式可能需要使用 `!important` 来覆盖。
 
