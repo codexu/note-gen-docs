@@ -1,10 +1,7 @@
 {
   "title": "Guide",
   "pages": [
-    "---Introduction---",
     "index",
-    "download",
-    "faq",
     "---Function---",
     "preview/record",
     "preview/chat",

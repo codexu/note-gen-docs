@@ -61,7 +61,7 @@ export default function HomeHero({ githubStats }: HomeHeroProps) {
           {pText}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-10 lg:mt-12 w-full sm:w-auto">
-          <Button className="w-full sm:w-auto" onClick={() => window.location.href = `${lang}/docs/download`} variant="default">
+          <Button className="w-full sm:w-auto" onClick={() => window.location.href = `${lang}/download`} variant="default">
             <Download />
             {downloadLink}
           </Button>
