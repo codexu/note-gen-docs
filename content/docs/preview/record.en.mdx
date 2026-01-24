@@ -1,21 +1,18 @@
 ---
-title: Record Tools
-description: Recording is the core feature of NoteGen, consisting of recording tools, tag management, and record content.
+title: Record & Organize
+description: Recording is the core feature of NoteGen, supporting multiple recording methods and AI organization to transform fragmented records into complete notes.
 icon: Highlighter
 ---
 
-import { ScanText, ImagePlus, FilePlus, CopySlash, Link } from 'lucide-react'
-import Image from 'next/image'
+import { ScanText, ImagePlus, FilePlus, CopySlash, Link, Mic } from 'lucide-react'
 
-## Record
+## Record & Organize
 
-Located on the left side of the record page.
-
-<Image width={600} height={400} src="https://s2.loli.net/2025/05/23/7TpehH9ZAOF8Cuw.png" alt="Record tools interface showing recording options" />
+Recording and organization are the core features of NoteGen, providing flexible recording methods combined with AI organization to help you capture inspiration and information anytime, anywhere, transforming fragmented records into structured notes.
 
 ### Recording Tools
 
-Recording tools provide 5 recording methods: `screenshot`, `image`, `file`, `text`, and `link`. When used appropriately, they can improve recording efficiency for different scenarios.
+NoteGen offers 6 recording methods covering various scenarios, making your recording more efficient.
 
 <Cards>
   <Card icon={<CopySlash />} title="Text Recording">
@@ -33,64 +30,128 @@ Recording tools provide 5 recording methods: `screenshot`, `image`, `file`, `tex
   <Card icon={<Link />} title="Link Recording">
     Input links to crawl web content.
   </Card>
+  <Card icon={<Mic />} title="Voice Recording">
+    Voice-to-text function automatically converts spoken content into text records.
+  </Card>
 </Cards>
-
-#### Screenshot Recording
-
-<Image width={600} height={400} src="https://s2.loli.net/2025/05/29/QsPSBFw4qIHNgtl.png" alt="Screenshot recording interface with area selection" />
-
-Select an area from a window screenshot, capture the selected area, recognize text through OCR, generate record descriptions via AI (to help users distinguish content), and upload to image hosting.
-
-- Window screenshot order is sorted by the Z-value of the currently active window.
-- After selection, double-click the selected area to complete the screenshot.
-- Minimized windows cannot be captured.
-
-#### Image Recording
-
-When selecting images from local storage or when the AI assistant recognizes clipboard images, image recording can be performed with the same logic as screenshot recording.
-
-- `Screenshot recording` is ultimately recorded as text, **inserting the recognized text into the article**, without inserting the screenshot.
-- `Image recording` is ultimately recorded as an image, **inserted into the article as an image**, with position determined by AI through description analysis.
-
-#### File Recording
-
-Select files from local storage for file recording. Supports `txt`, `md`, `csv`, `pdf` formats.
-
-- For `txt`, `md`, `csv` formats, records directly as text.
-- For `pdf` format, supports PDF text extraction and OCR text recognition:
-  - If PDF contains text layer, extracts text content directly
-  - If PDF is scanned or image-based, automatically uses OCR to recognize text (based on Tesseract engine)
-  - Supports multi-page PDF processing with progress display
 
 #### Text Recording
 
-Click to open the text recording dialog where users can directly input text, suitable for long text recording or temporary notes.
+Click to open the text recording dialog where users can directly input text. This method is suitable for:
+- Fast entry of long text content
+- Temporary recording of ideas and inspiration
+- Text pasted from other sources
+
+#### Screenshot Recording
+
+Select an area from a window screenshot for recording. The system automatically performs the following operations:
+1. Capture the selected screen area
+2. Use OCR technology to recognize text in the image
+3. Generate record descriptions via AI for easy distinction and management
+4. Automatically upload to image hosting
+
+**Usage Tips:**
+- Window list is sorted by the Z-value of currently active windows, with recently used windows at the front
+- After selection, double-click the selected area to complete the screenshot
+- Minimized windows cannot be captured
+
+#### Image Recording
+
+Support selecting images from local storage or automatically recognizing clipboard images. The processing flow is similar to screenshot recording, but the final result differs:
+
+- **Screenshot recording** saves as text, inserting recognized text into the article
+- **Image recording** saves as images, inserting the actual image into the article, with position determined by AI based on content description
+
+**Use Cases:**
+- Preserving records that require image materials
+- Recording UI designs, charts, and other visual content
+- Scenarios where original images need to be displayed in notes
+
+#### File Recording
+
+Select files from local storage for recording. Supports `txt`, `md`, `csv`, `pdf` and other formats.
+
+**Text Files (txt, md, csv)**: Extract text content directly for recording
+
+**PDF Files**: Intelligent recognition processing
+- PDFs with text layer: Extract text content directly
+- Scanned or image-based PDFs: Automatically use OCR technology for text recognition (based on Tesseract engine)
+- Supports multi-page PDF processing with progress display
 
 #### Link Recording
 
-Input links to crawl web content. Currently does not support SPA website crawling, ultimately recorded as text.
+Input web links, and the system automatically crawls web content and converts it to text records.
+
+**Note:** Currently does not support crawling of SPA (Single Page Application) websites that require JavaScript rendering.
+
+#### Voice Recording
+
+Use voice-to-text technology to automatically convert your spoken content into text records.
+
+**Use Cases:**
+- Quickly record inspiration, hands-free
+- Meeting records and interview organization
+- Think-aloud creative process
 
 ### Tag Management
 
-Tag management is used to manage record tags, making it convenient for users to categorize records. Tags also affect the AI assistant's conversation records and AI content association.
+Tag management is used to categorize and organize records. Good tagging habits keep your notes organized. Tags also affect the AI assistant's conversation context and content association, helping AI better understand your record system.
 
-<Image width={600} height={400} src="https://s2.loli.net/2025/05/23/VmhnPKqAlZt5xsk.png" alt="Tag management interface showing tag list" />
+**Features:**
 
-Feature list:
+- **Tag Switching**: Click the tag box to open the tag list for quick switching between different tags
+- **Search & Create**: Enter text in the search box for fuzzy search; if the tag doesn't exist, create a new tag directly
+- **Tag Management**: Right-click tags to pin, rename, or delete
+- **Record Statistics**: The number on the right side of tags shows the count of records under that tag
 
-- Click the tag box to open the tag list for tag switching.
-- Input in the search box for fuzzy search; non-existent tag names can create new tags.
-- Right-click for tag pinning, renaming, and deletion operations.
-- The number on the right side of tags represents the count of records under that tag.
+**Usage Tips:**
+- Create tags by topic or project, such as "Work", "Study", "ProjectA"
+- Use hierarchical tag naming, such as "Frontend/React", "Backend/Node.js"
+- Regularly organize tags, merge similar tags, and delete unused tags
 
 ### Record Content
 
-Record content includes `record type`, `record time`, `record description`, `thumbnail`, and other information.
+Each record contains rich information, including record type, record time, AI-generated description, thumbnail, etc.
 
-<img width="280" src="https://s2.loli.net/2025/05/23/bYT1HlExqBWSLh5.png" />
+**Basic Information:**
+- **Record Type**: Shows the source method of the record (text, screenshot, image, file, link, voice)
+- **Record Time**: Shows the specific time when the record was created
+- **Record Description**: AI-generated description helping you quickly understand record content
+- **Thumbnail**: For image-type records, displays thumbnail preview
 
-Feature list:
+**Interactions:**
+- **View Details**: Click the description text to open record details dialog
+- **Preview Large Image**: Click thumbnail to preview high-resolution image
+- **Right-Click Menu**: Provides various convenient operations
+  - Transfer Tag: Move records to other tags
+  - Copy Link: Copy sharing link of the record
+  - Delete Record: Remove unwanted records
+  - More management tools...
 
-- Click the description to open record details.
-- Click the thumbnail to preview the full image.
-- Right-click to open a menu with numerous convenient tools, such as tag transfer, link copying, and record management.
+### AI Organization
+
+AI organization serves as the bridge between recording and writing. Through dialog mode, AI organizes record content to generate structured, complete articles.
+
+Click the "Organize Notes" button in the top-right corner of the record page to start using AI organization.
+
+#### Organization Templates
+
+NoteGen provides basic organization templates, but they usually cannot meet all requirements. You can customize organization templates in `Settings` - `Organization Templates`.
+
+Organization templates are similar to Prompts but are specifically used for organization scenarios and support time range selection (filtering by record time). For example, you can select "within one week" to generate weekly reports.
+
+#### Organization Process
+
+After selecting a template, click start organizing. AI will output the article in conversational form within the dialog information.
+
+At the bottom of the dialog information, you can see the "Writing" button (different from the "Record" button in other conversations). Click to save the current article as a Markdown file and jump to the writing page for editing.
+
+#### Article Save Settings
+
+Before saving the article, you can customize the following parameters:
+
+- **Select Directory**: Choose save location based on your writing folder structure
+- **File Name**: Automatically obtained from AI-generated article title, editable (spaces will be converted to underscores)
+- **Delete Records**: Selecting this will delete all records under the current tag
+
+> Even if you delete current records and tags, you can still insert new records in future writing.
