@@ -6,11 +6,33 @@ icon: Sparkles
 
 ### What are Skills
 
-Skills are reusable AI function modules that implement specific tasks through preset Prompt templates. AI automatically matches and invokes appropriate Skills based on conversation content.
+Skills is an **open standard** introduced by Anthropic—a collection of folders containing instructions, scripts, and resources that AI agents can discover and use to complete tasks more accurately and efficiently.
+
+While AI agents are becoming increasingly capable, they often lack the context needed to reliably perform real work. Skills solve this by providing agents with procedural knowledge and company-, team-, and user-specific context that can be loaded on demand.
+
+Agents with access to a set of Skills can extend their capabilities based on the task they're working on.
+
+#### Benefits for Three Parties
+
+| Role | Benefits |
+|-----|----------|
+| **Skill Authors** | Build capabilities once and deploy them across multiple agent products |
+| **Compatible Agents** | Skills support lets end users give agents new capabilities out of the box |
+| **Teams & Enterprises** | Capture organizational knowledge in portable, version-controlled packages |
 
 ### Global Skills
 
 Global Skills are available in all workspaces and are suitable for general task scenarios.
+
+### Local Workspace Skills
+
+In addition to Global Skills, you can also create workspace-specific Skills locally:
+
+1. Create a `skills` folder in the root directory of your workspace
+2. Create subfolders within the `skills` folder following the Agent Skills specification, where each subfolder represents one Skill
+3. Each Skill contains the necessary instructions, scripts, and resource files
+
+The structure of local Skills is identical to Global Skills, but they are only available to the current workspace.
 
 ### Managing Skills
 
@@ -33,6 +55,17 @@ Each Skill displays the following information:
 | Edit | Modify Skill configuration |
 | Delete | Remove the Skill |
 
+### Skills Capabilities
+
+Agent Skills enable the following capabilities:
+
+| Capability | Description |
+|-----------|-------------|
+| **Domain Expertise** | Package specialized knowledge into reusable instructions, from legal review processes to data analysis pipelines |
+| **New Capabilities** | Give agents new capabilities, such as creating presentations, building MCP servers, analyzing datasets |
+| **Repeatable Workflows** | Turn multi-step tasks into consistent and auditable workflows |
+| **Interoperability** | Reuse the same skill across different skills-compatible agent products |
+
 ### Use Cases
 
 Skills can be used for:
@@ -41,6 +74,14 @@ Skills can be used for:
 - Content analysis and summarization
 - Custom workflows
 - Periodic task execution
+- Legal review processes
+- Data analysis pipelines
+- Creating presentations
+- Building MCP servers
+
+### Open Standard
+
+The Agent Skills format was originally developed by Anthropic, released as an open standard, and has been adopted by a growing number of agent products. The standard is open to contributions from the broader ecosystem.
 
 ### Notes
 
