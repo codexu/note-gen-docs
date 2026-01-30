@@ -1,68 +1,194 @@
 ---
 title: Markdown Editor
-description: Powerful Markdown editor supporting multiple editing modes, AI-assisted writing, and real-time sync functionality.
+description: Built with Vditor, this editor provides powerful Markdown editing capabilities, supporting multiple editing modes and rich extended syntax.
 icon: PenTool
 ---
 
-import { MessageCircleQuestion, ListPlus, Lollipop, Languages } from 'lucide-react'
+## Editing Modes
 
-### Features
+The editor supports three editing modes, switchable via the toolbar:
 
-- Supports three editing modes: `WYSIWYG`, instant rendering, split-screen preview.
-- Supports outline.
-- Export, image lazy loading, task lists, multi-platform preview, multi-theme switching, copy to WeChat Official Account/Zhihu functionality.
-- Supports drag-and-drop and clipboard paste for image upload.
-- Real-time content saving to prevent accidental loss.
-- Automatic HTML to Markdown conversion when pasting.
-- Character count.
+| Mode | Icon | Description |
+|------|------|-------------|
+| **Instant Rendering** | Default | Similar to Typora, auto-renders as you type, integrated editing and preview |
+| **WYSIWYG** | Toggle selection | Edit like Microsoft Word, friendly for users unfamiliar with Markdown |
+| **Split View** | Toggle selection | Traditional mode with editor on left, preview on right |
 
-### Editing Modes
+> Tip: Mobile devices use instant rendering mode by default
 
-#### WYSIWYG
+## Toolbar Features
 
-*WYSIWYG* mode is user-friendly for those unfamiliar with Markdown, while those familiar with Markdown can use it seamlessly.
+### Basic Formatting
 
-#### Instant Rendering
+| Button | Shortcut | Function | Syntax Example |
+|--------|----------|----------|----------------|
+| **Undo/Redo** | `Ctrl+Z` / `Ctrl+Y` | Undo/redo operations | - |
+| **Heading** | - | Insert heading | `## Heading` |
+| **Bold** | `Ctrl+B` | Bold text | `**text**` |
+| **Italic** | `Ctrl+I` | Italic text | `*text*` |
+| **Strikethrough** | - | Strikethrough | `~~text~~` |
+| **Horizontal Rule** | - | Insert horizontal line | `---` |
+| **Quote** | `Ctrl+Shift+9` | Quote block | `> quote` |
 
-*Instant rendering* mode should feel familiar to Typora users. Theoretically, this is the most elegant way to edit Markdown.
+### Lists & Code
 
-#### Split-Screen Preview
+| Button | Function | Syntax Example |
+|--------|----------|----------------|
+| **Bullet List** | Bulleted list | `- item` |
+| **Ordered List** | Numbered list | `1. item` |
+| **Task List** | Todo items | `- [ ] task` |
+| **Code Block** | Code area | ` ```js\ncode\n``` ` |
+| **Inline Code** | Inline code | `` `code` `` |
 
-Traditional *split-screen preview* mode is suitable for Markdown editing on large screens.
+### Insert Content
 
-### Syntax Support
+| Button | Function | Usage |
+|--------|----------|-------|
+| **Upload** | Upload images/files | Supports drag & drop, paste upload |
+| **Link** | Insert link | `[text](url)` |
+| **Table** | Insert table | Supports Markdown table syntax |
 
-- All CommonMark syntax: horizontal rules, ATX headings, Setext headings, indented code blocks, fenced code blocks, HTML blocks, link reference definitions, paragraphs, block quotes, lists, backslash escapes, HTML entities, inline code, emphasis, strong emphasis, links, images, inline HTML, hard line breaks, soft line breaks, and plain text.
-- All GFM syntax: tables, task list items, strikethrough, autolinks, XSS filtering
-- Chart syntax
-  - Flowcharts, sequence diagrams, Gantt charts, supported through Mermaid
-  - Graphviz
-  - Line charts, pie charts, mind maps, etc., supported through ECharts
-- Musical notation: supported through abc.js
-- Mathematical formulas: math blocks, inline math formulas, supported through MathJax and KaTeX
-- YAML Front Matter
+### View Switching
 
-### AI Support
+| Button | Function |
+|--------|----------|
+| **Edit Mode** | Switch editing mode |
+| **Preview** | Preview-only mode |
 
-AI can effectively help you complete writing, including continuation and optimization, but please don't rely on it completely.
+## Floating Toolbar
 
-<Cards>
-  <Card icon={<MessageCircleQuestion />} title="Q&A">
-    Similar to AI conversation, you can input questions and AI will return answers.
-  </Card>
-  <Card icon={<ListPlus />} title="Continue Writing">
-    Based on your preceding text, AI will continue writing, helping you continue when lacking inspiration.
-  </Card>
-  <Card icon={<Lollipop />} title="Optimize">
-    Select a piece of text, and AI will polish that text.
-  </Card>
-  <Card icon={<Languages />} title="Translate">
-    Select a piece of text, and AI will translate that text.
-  </Card>
-</Cards>
+Automatically displays when text is selected, providing AI-assisted features:
 
-### Sync
+| Feature | Description |
+|---------|-------------|
+| **Quote** | Add quote formatting to selected content |
+| **Polish** | AI polish selected text |
+| **Erase** | AI remove redundant content |
+| **Expand** | AI expand selected content |
+| **Read** | Read selected text aloud |
 
-The sync button in the bottom right corner allows you to sync the current file to the sync repository, provided you have configured a sync repository in settings.
+## Bottom Toolbar
 
-The adjacent button allows you to view history. Click to query historical sync records, including sync information, time, etc. You can also select a specific record to roll back.
+### Left Side
+
+| Feature | Description |
+|---------|-------------|
+| **Word Count** | Display current document word count |
+| **AI Completion Toggle** | Enable/disable AI auto-completion |
+| **Copy** | Copy Markdown content |
+| **Export** | Export document |
+
+### Right Side
+
+| Feature | Description |
+|---------|-------------|
+| **Vector Calculate** | Vector calculation feature |
+| **Sync** | Sync to remote |
+| **History** | View edit history |
+| **Pull** | Pull remote updates |
+
+## Keyboard Shortcuts
+
+| Shortcut | Function |
+|----------|----------|
+| `Ctrl+Z` | Undo |
+| `Ctrl+Y` / `Ctrl+Shift+Z` | Redo |
+| `Ctrl+B` | Bold |
+| `Ctrl+I` | Italic |
+| `Ctrl+Shift+9` | Quote |
+| `Ctrl+Enter` | Submit/Publish |
+| `Ctrl+F` | Open search |
+| `Tab` | Accept AI completion |
+| `Esc` | Cancel AI completion |
+
+## Markdown Syntax
+
+The editor supports standard Markdown syntax and various extended syntax:
+
+- **Basic Formatting**: Headings, bold, italic, strikethrough, inline code
+- **Lists**: Unordered lists, ordered lists, task lists
+- **Quotes & Links**: Quote blocks, hyperlinks, images
+- **Code Blocks**: Syntax highlighting for `js`, `ts`, `python`, `go`, `java`, `html`, `css`, `bash`, `json`, `sql`, and more
+- **Tables**: Standard Markdown tables
+- **Math Formulas**: Inline formulas `$...$` and multi-line formulas `$$...$$`
+- **Diagrams**: Mermaid flowcharts, sequence diagrams, Gantt charts, and Mindmap mind maps
+- **Footnotes**: `[^1]` syntax
+- **Emojis**: Type `:` to trigger emoji completion
+
+---
+
+## Image Upload
+
+### Supported Upload Methods
+
+1. **Drag & Drop**: Drag images directly into the editor
+2. **Paste Upload**: Copy images and paste into the editor
+3. **Click Upload**: Click the upload button in the toolbar
+
+### Image Hosting Support
+
+- GitHub
+- SM.MS
+- PicGo
+- AWS S3
+
+Image hosting services can be configured in settings.
+
+## Outline Feature
+
+The left outline panel automatically displays document structure:
+- Click outline to jump to corresponding section
+- Supports collapsing/expanding
+- Follows current editing position
+
+## Themes
+
+The editor supports light/dark theme switching, automatically following system settings.
+
+## Search Function
+
+Press `Ctrl+F` to open the search panel, supporting:
+- Text search
+- Replace content
+- Case sensitivity
+- Previous/next navigation
+
+## Auto Save
+
+The editor automatically saves content locally to prevent accidental loss.
+
+## Hint Features
+
+| Input | Trigger |
+|-------|---------|
+| `...` | Continue writing (AI) |
+| `???` | Ask question (AI) |
+
+## Code Themes
+
+Supported code highlighting themes (partial):
+- GitHub Light / Dark
+- Monokai
+- Dracula
+- Solarized Light / Dark
+- Atom One Light / Dark
+
+Code block themes can be switched in settings.
+
+## Multimedia
+
+The following links are automatically parsed as players:
+- Tencent Video (v.qq.com)
+- YouTube (youtube.com)
+- Youku (youku.com)
+- Audio/video files (.mp4, .mp3, .m4v, .ogg, .webm, .wav, etc.)
+
+Simply paste links for automatic recognition and rendering.
+
+---
+
+## More Resources
+
+- [Vditor Official Documentation](https://b3log.org/vditor/)
+- [Markdown Basic Syntax](https://ld246.com/article/1583129520165)
+- [Markdown Extended Syntax](https://ld246.com/article/1583305480675)
