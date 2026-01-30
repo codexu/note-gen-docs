@@ -1,32 +1,52 @@
 ---
 title: 文件管理
-description: 文件管理设置，包括默认工作区和写作资源路径配置。
+description: 文件管理设置，包括工作区路径和资源路径配置。
 icon: FolderOpen
 ---
 
+### 当前工作区
 
+选择写作的默认工作区，可以选择任何文件夹进行写作。
 
-### 默认工作区
+#### 默认工作区路径
 
-选择写作的默认工作区，你可以选择任何文件夹进行写作。
+未设置自定义工作区时，应用使用以下默认路径：
 
-默认工作区的路径：
-
-MacOS:
+**macOS:**
 ```
-/Users/{username}/Library/Application Support/com.codexu.NoteGen
-```
-
-Windows:
-```
-C:\Users\{username}\AppData\Local\com.codexu.NoteGen
+/Users/{username}/Library/Application Support/com.codexu.NoteGen/article
 ```
 
-Linux:
+**Windows:**
 ```
-/home/{username}/.local/share/com.codexu.NoteGen
+C:\Users\{username}\AppData\Local\com.codexu.NoteGen\article
 ```
 
-### 写作资源路径
+**Linux:**
+```
+/home/{username}/.local/share/com.codexu.NoteGen/article
+```
 
-设置写作资源的保存路径，例如图片、视频、文件等，与当前编辑的 markdown 文件同级。
+#### 切换工作区
+
+- 点击工作区输入框打开选择菜单
+- 选择「选择工作区目录」浏览并选择新文件夹
+- 从历史记录中快速切换到之前使用的工作区
+- 选择「重置为默认工作区」恢复到应用默认路径
+
+#### 历史记录
+
+应用会保存最近使用的工作区历史，方便快速切换。
+
+- 鼠标悬停可以删除单条历史记录
+- 选择「清空历史记录」删除所有历史记录
+
+### 资源路径
+
+设置写作资源的保存路径，例如图片、视频、文件等。
+
+- 资源文件将保存在当前编辑的 Markdown 文件同级目录
+- 可以使用相对路径或绝对路径
+- 留空则使用默认路径 `{文件名}.assets`
+
+> 提示：建议使用相对路径，方便项目文件夹的移动和分享。

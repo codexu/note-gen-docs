@@ -1,32 +1,52 @@
 ---
-title: File Management
-description: File management settings, including default workspace and writing resource path configuration.
+title: File Manager
+description: File management settings, including workspace path and resource path configuration.
 icon: FolderOpen
 ---
 
+### Current Workspace
 
+Select the default workspace for writing. You can choose any folder for writing.
 
-### Default Workspace
+#### Default Workspace Path
 
-Choose the default workspace for writing. You can select any folder for writing.
+When no custom workspace is set, the application uses the following default paths:
 
-Default workspace paths:
-
-MacOS:
+**macOS:**
 ```
-/Users/{username}/Library/Application Support/com.codexu.NoteGen
-```
-
-Windows:
-```
-C:\Users\{username}\AppData\Local\com.codexu.NoteGen
+/Users/{username}/Library/Application Support/com.codexu.NoteGen/article
 ```
 
-Linux:
+**Windows:**
 ```
-/home/{username}/.local/share/com.codexu.NoteGen
+C:\Users\{username}\AppData\Local\com.codexu.NoteGen\article
 ```
 
-### Writing Resource Path
+**Linux:**
+```
+/home/{username}/.local/share/com.codexu.NoteGen/article
+```
 
-Set the save path for writing resources, such as images, videos, files, etc., at the same level as the currently edited markdown file.
+#### Switching Workspace
+
+- Click the workspace input field to open the selection menu
+- Select "Select Workspace Directory" to browse and choose a new folder
+- Quickly switch to previously used workspaces from history
+- Select "Reset to Default Workspace" to restore the application's default path
+
+#### History
+
+The application saves recently used workspace history for quick switching.
+
+- Mouse hover to delete a single history record
+- Select "Clear History" to delete all history records
+
+### Resource Path
+
+Set the save path for writing resources, such as images, videos, files, etc.
+
+- Resource files will be saved in the same directory as the currently edited Markdown file
+- Can use relative paths or absolute paths
+- Leave empty to use the default path `{filename}.assets`
+
+> Tip: Recommend using relative paths for easier project folder movement and sharing.

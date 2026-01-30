@@ -1,13 +1,52 @@
 ---
-title: OCR
-description: OCR configuration guide to help you set up image text recognition function parameters and usage methods.
+title: Image Recognition
+description: Image recognition configuration guide, supporting both OCR and VLM recognition methods.
 icon: ScanText
 ---
 
-### Configuration
+### Enable Image Recognition
 
-Language packages, select the language packages you need. Chinese and English are supported by default.
+When enabled, text recognition will be performed automatically when images are uploaded.
 
-Currently uses [Tesseract](https://github.com/tesseract-ocr/tesseract) as the OCR engine, [query languages](https://tesseract-ocr.github.io/tessdoc/Data-Files#data-files-for-version-400-november-29-2016).
+### Primary Recognition Method
 
-Separated by commas, for example: `chi_sim,eng`. Adding new language packages will automatically download the corresponding language packages.
+Select OCR or VLM as the primary recognition method.
+
+### OCR (Optical Character Recognition)
+
+Uses traditional OCR algorithms to recognize text in images.
+
+#### Language Packs
+
+Select the language packs needed for recognition, supporting multiple languages. Use commas to separate multiple languages, e.g., `chi_sim,eng`.
+
+When adding new language packs, corresponding data files will be downloaded automatically.
+
+#### Using Tesseract
+
+Currently uses [Tesseract](https://github.com/tesseract-ocr/tesseract) as the OCR engine, supporting multiple language packs.
+
+### VLM (Vision Language Model)
+
+Uses AI large models for image understanding and text recognition.
+
+#### Model Selection
+
+Select the AI model for image recognition. Needs to be pre-configured in model configuration.
+
+### Method Comparison
+
+| Feature | OCR | VLM |
+|---------|-----|-----|
+| Speed | Fast | Slower |
+| Accuracy | Higher for standard text | Better for complex scenes |
+| Network Requirement | Local execution | Network required |
+| Cost | Free | May incur costs |
+| Understanding | Text only | Can understand image content |
+
+### Usage Recommendations
+
+- **Pure text extraction**: Use OCR for speed and free usage
+- **Complex scenarios**: Use VLM for better recognition of tables, handwriting, complex layouts
+- **Batch processing**: Use OCR to save costs and time
+- **High accuracy**: Use VLM for more accurate recognition results

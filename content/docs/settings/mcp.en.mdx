@@ -1,8 +1,9 @@
 ---
 title: MCP Configuration
-description: MCP (Model Context Protocol) configuration guide to extend AI capabilities through standard protocol, calling external tools and services.
+description: MCP (Model Context Protocol) configuration guide to extend AI capabilities through standard protocols, calling external tools and services.
 icon: Puzzle
 ---
+
 
 ### What is MCP
 
@@ -10,7 +11,7 @@ MCP (Model Context Protocol) is an open standard protocol that allows AI applica
 
 ### Enable MCP
 
-Find MCP configuration in settings page and toggle "Enable MCP" switch to activate this feature.
+Find MCP configuration in the settings page and toggle on "Enable MCP" to enable this feature.
 
 ### Configure MCP Servers
 
@@ -18,12 +19,12 @@ NoteGen supports two types of MCP server connection methods:
 
 #### Standard I/O (stdio)
 
-Suitable for locally running MCP servers that communicate through standard input/output.
+Suitable for locally running MCP servers, communicating through standard input/output.
 
 **Configuration Parameters:**
 - **Name**: Used to identify this MCP server
-- **Command**: Command to start the MCP server, such as `node`, `python`, `./server`
-- **Arguments**: Array of parameters passed when starting the server, such as `["server.js"]`
+- **Command**: Command to start the MCP server, e.g., `node`, `python`, `./server`
+- **Args**: Array of parameters passed when starting the server, e.g., `["server.js"]`
 - **Environment Variables**: Optional, set environment variables for server runtime
 
 **Example Configuration:**
@@ -40,12 +41,12 @@ Suitable for locally running MCP servers that communicate through standard input
 
 #### HTTP (SSE)
 
-Suitable for MCP servers accessed over the network using Server-Sent Events for communication.
+Suitable for MCP servers accessed via network, using server-sent events for communication.
 
 **Configuration Parameters:**
 - **Name**: Used to identify this MCP server
 - **URL**: HTTP address of the MCP server
-- **Headers**: Optional, set HTTP headers for requests
+- **Headers**: Optional, set HTTP header information for requests
 
 **Example Configuration:**
 ```json
@@ -60,13 +61,13 @@ Suitable for MCP servers accessed over the network using Server-Sent Events for 
 
 ### Test Connection
 
-After configuration, use the "Test Connection" function to verify the configuration is correct:
-- Successful connection will display available tools and resources
-- Failed connection will show error messages, please check configuration parameters
+After configuration, use the "Test Connection" feature to verify configuration is correct:
+- Successful connection displays available tools and resources list
+- Failed connection displays error messages, please check configuration parameters
 
 ### Using MCP Tools
 
-Once enabled and configured with MCP servers, in the AI chat on the record page:
+After enabling and configuring MCP servers, in the AI chat on the record page:
 1. Click the MCP tools button
 2. Select available tools
 3. AI will automatically call selected tools to enhance conversation capabilities
@@ -85,11 +86,11 @@ Here are some commonly used MCP server examples:
 
 #### Web Services
 - **Fetch**: Send HTTP requests
-- **Puppeteer**: Web automation
+- **Puppeteer**: Web automation operations
 
-### Important Notes
+### Notes
 
 1. **Security**: Only configure trusted MCP servers to avoid leaking sensitive information
-2. **Performance**: MCP tool calls increase response time, enable selectively as needed
+2. **Performance**: MCP tool calls increase response time; enable selectively as needed
 3. **Compatibility**: Ensure MCP server version is compatible with NoteGen
 4. **Network Requirements**: HTTP-type servers require stable network connection

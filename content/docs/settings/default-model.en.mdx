@@ -1,16 +1,23 @@
 ---
 title: Default Model
-description: Default model configuration refers to using different models for specific functions.
+description: Configure default AI models for different functional scenarios.
 icon: Settings
 ---
 
-
-
 ### Configuration
 
-- Primary model, used for AI conversations. When other models are not configured, the primary model will be used.
-- Record description, used to process records after OCR recognition and generate record descriptions.
-- AI suggestions, AI suggestion prompts for generating placeholder content in AI conversations on the record page.
-- Translation, used for content translation scenarios.
+| Model | Description |
+|-------|-------------|
+| Primary Model | Used for AI chat, will be used when other models are not configured |
+| Quick Complete | Used for text intelligent completion feature |
+| Record Description | Used to generate record descriptions, such as records after OCR recognition |
+| Commit | Used to automatically generate Git commit messages |
 
-Some scenarios don't require powerful models; you can use low-cost models for fast and cost-effective results.
+### Usage Recommendations
+
+Some scenarios don't require powerful models; you can use low-cost models for faster response and reduced costs.
+
+- **Primary Model**: Recommend using a model with strong comprehensive capabilities
+- **Quick Complete**: Recommend using a model with fast response speed
+- **Record Description**: Can use lightweight models
+- **Commit**: Can use specialized code generation models or general-purpose models

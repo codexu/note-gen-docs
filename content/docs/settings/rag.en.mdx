@@ -1,6 +1,6 @@
 ---
 title: Knowledge Base
-description: Knowledge base configuration guide, intelligent retrieval functionality based on RAG principles, requiring configuration of embedding models and reranking models.
+description: Knowledge base configuration guide, intelligent retrieval functionality based on RAG principles, requiring configuration of embedding models and rerank models.
 icon: Database
 ---
 
@@ -8,31 +8,31 @@ icon: Database
 
 ### Configure Models
 
-To use the knowledge base, you need to configure embedding models (required) and reranking models (optional). For related configuration, please refer to [Model Configuration](/en/settings/model-config).
+To use the knowledge base, you need to configure embedding models (required) and rerank models (optional). For related configuration, please refer to [Model Configuration](/en/settings/model-config).
 
-After configuration, you can enable the knowledge base function in the record page dialog:
-
-
-> Model availability status will be detected during the enabling process.
-
-### Knowledge Base Vector Computation
-
-The knowledge base functionality is implemented based on RAG principles, converting Markdown files into vectors for storage and search. The entire process is completed through embedding models.
-
-When using for the first time, if Markdown files already exist in the writing page, you can first perform full computation (optional):
+After configuration, you can enable the knowledge base feature in the chat box on the record page:
 
 
-For subsequent writing, you don't need to perform full computation every time. It will automatically compute during auto-save while writing.
+> During the enabling process, the model availability status will be detected.
 
-> This process will consume embedding model resources. Use judiciously or adopt free models.
+### Knowledge Base Vector Calculation
+
+The knowledge base feature is implemented based on RAG principles, storing and searching by converting Markdown files to vectors. The entire process is completed through embedding models.
+
+When using for the first time, if Markdown files already exist in the writing page, you can first perform a full calculation (optional):
+
+
+Subsequent writing does not require full calculation each time. It will automatically calculate when auto-saving during writing.
+
+> This process consumes embedding model resources; use judiciously or use free models.
 
 ### Parameter Settings
 
-If you're not familiar with knowledge base-related knowledge, you can ignore this and use default values.
+If you are unfamiliar with knowledge base-related knowledge, you can ignore this and use default values.
 
-When using the knowledge base, you may not always get complete matches for the information you need. By adjusting parameters, you can more precisely control the retrieval effectiveness of the knowledge base:
+When using the knowledge base, you may not always find the information you need completely. By adjusting parameters, you can more precisely control the retrieval effect of the knowledge base:
 
-- Chunk Size: Maximum number of characters in text chunks. Larger chunks may contain more context but increase vector computation complexity.
-- Overlap Size: Number of overlapping characters between text chunks. Larger overlaps can maintain context coherence.
-- Retrieval Count: Number of relevant documents returned during retrieval. More documents may provide richer information but may also introduce noise.
-- Similarity Threshold: Minimum similarity threshold between documents and queries. Only documents exceeding this threshold will be returned. Value range 0.0-1.0, higher values are more strict.
+- Chunk Size: Maximum character count for text chunks. Larger chunks may contain more context but increase vector calculation complexity.
+- Overlap Size: Overlap character count between text chunks. Larger overlap maintains context coherence.
+- Retrieval Count: Number of relevant documents returned during retrieval. More documents may provide richer information but may introduce noise.
+- Similarity Threshold: Minimum similarity threshold between document and query. Only documents exceeding this threshold will be returned. Value range 0.0-1.0, higher means stricter requirements.

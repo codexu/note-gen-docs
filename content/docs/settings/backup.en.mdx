@@ -1,14 +1,58 @@
 ---
-title: Backup Solution
-description: Backup solution for data archiving to reduce the risk of data loss. Requires manual backup or local pull, currently only supports WebDAV.
+title: Backup
+description: Data backup configuration guide, supporting local backup and WebDAV cloud backup.
 icon: Shield
 ---
 
+### Local Backup
 
+Manually export application data as a ZIP file, or restore data from a backup file.
 
-### WebDAV
+#### Export Backup
 
-- WebDAV server address, for example: https://webdav.example.com
-- Username, WebDAV username.
-- Password, WebDAV password.
-- Backup path, WebDAV backup path, for example: /note-gen/backup
+Click the "Export Backup" button, select a save location, and the application will package all data into a ZIP file. The filename format is `note-gen-backup-YYYY-MM-DD_HH-mm-ss.zip`.
+
+#### Import Backup
+
+Click the "Import Backup" button, select the previously exported ZIP file, and the application will restore all data. You need to restart the application for the import to take effect.
+
+### WebDAV Backup
+
+Backup data to cloud servers via WebDAV protocol, enabling cross-device data synchronization.
+
+#### Configuration Items
+
+| Item | Description |
+|------|-------------|
+| Server URL | WebDAV server address, e.g., https://webdav.example.com |
+| Username | WebDAV login username |
+| Password | WebDAV login password |
+| Backup Path | Cloud backup path, e.g., /note-gen/backup |
+
+#### Connection Status
+
+The system automatically detects WebDAV connection status, displayed as:
+- **Success**: Connection is normal, backup and sync available
+- **Checking**: Verifying connection
+- **Failed**: Connection failed, please check configuration
+
+#### Backup Operations
+
+| Operation | Description |
+|-----------|-------------|
+| Backup to WebDAV | Upload local data to WebDAV server |
+| Sync from WebDAV | Download data from WebDAV server to local |
+| Create Directory | Create new directory if backup path doesn't exist |
+
+#### Use Cases
+
+WebDAV backup is suitable for:
+- Using self-hosted cloud storage services (e.g., Nextcloud, ownCloud)
+- Enterprise internal file servers
+- Cloud storage services supporting WebDAV
+
+#### Notes
+
+- WebDAV backup does not support historical rollback functionality
+- Please ensure server address and credentials are configured correctly
+- Recommend using HTTPS protocol to ensure data security

@@ -1,15 +1,79 @@
 ---
-title: Image Hosting Configuration
-description: Image hosting configuration guide to help you set up image upload functionality. Currently only supports Github image hosting, with support for other third-party image hosts coming in the future.
+title: Image Hosting
+description: Image hosting configuration guide to help you set up image upload functionality, supporting GitHub, SM.MS, PicGo, S3, and other image hosting services.
 icon: Image
 ---
 
+### Enable Image Hosting
 
+When image hosting is enabled, uploaded images will be automatically saved to the configured image hosting service.
 
-### Github Image Hosting
+### Primary Image Hosting
 
-Configuration method is similar to sync configuration.
+Select GitHub, SM.MS, PicGo, or S3 as the primary image hosting. Settings take effect only after configuration.
 
-- Local/Image hosting, use local as image host or use Github repository as image host. Gitee cannot support image hosting functionality.
-- jsDelivr acceleration, when enabled, uploaded images will automatically use jsDelivr links.
-- Github will create an additional public repository for image hosting (private repositories will not allow normal image access).
+### GitHub Image Hosting
+
+Use GitHub repository to store images.
+
+#### Configuration Items
+
+| Item | Description |
+|------|-------------|
+| Repository | GitHub repository for storing images |
+| Branch | Repository branch name |
+| Token | GitHub Personal Access Token |
+
+#### jsDelivr Acceleration
+
+When enabled, image links will use jsDelivr CDN acceleration to improve domestic access speed.
+
+> Note: GitHub image hosting requires creating a public repository, otherwise images will not be accessible.
+
+### SM.MS Image Hosting
+
+Use SM.MS image hosting service to store images.
+
+#### Configuration Items
+
+| Item | Description |
+|------|-------------|
+| API Key | SM.MS API key |
+
+#### Storage Usage
+
+Displays the current storage space usage of the SM.MS account.
+
+### PicGo Image Hosting
+
+Upload images via PicGo service. Requires PicGo application to be started first.
+
+#### Configuration Items
+
+| Item | Description |
+|------|-------------|
+| Service URL | PicGo service address, default is http://127.0.0.1:36677/upload |
+
+### S3 Image Hosting
+
+Use AWS S3 or S3 API-compatible storage services.
+
+#### Configuration Items
+
+| Item | Description |
+|------|-------------|
+| Access Key | Access key ID |
+| Secret Key | Secret access key |
+| Bucket | Bucket name |
+| Region | Bucket region |
+| Custom Domain | Optional CDN acceleration domain |
+
+#### Compatible Services
+
+S3 image hosting supports the following services:
+- AWS S3
+- Alibaba Cloud OSS
+- Tencent Cloud COS
+- Qiniu Cloud
+- MinIO
+- Other S3 API-compatible services

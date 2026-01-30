@@ -1,6 +1,6 @@
 ---
 title: Model Configuration
-description: NoteGen integrates mainstream AI model services and also supports custom configuration to meet different needs.
+description: NoteGen integrates mainstream AI model services and supports custom configuration to meet different needs.
 icon: Brain
 ---
 
@@ -10,46 +10,45 @@ icon: Brain
 
 Click the `Create New Configuration` button to open custom and mainstream model provider templates for selection:
 
-
-Note that each configuration corresponds to only one model. Under the same provider, you can click the copy button to quickly create new configurations.
+Note that each configuration corresponds to only one model. Under the same provider, you can click the copy button to quickly create a new configuration.
 
 ### Configuration
 
 #### Custom Name
 
-Used to distinguish different model configurations, can be filled in arbitrarily and can be duplicated.
+Used to distinguish different model configurations. Can be filled in arbitrarily and can be duplicated.
 
 #### BaseURL
 
-Note that you only need to configure up to the **version number**, for example: https://api.openai.com/v1. The suffix will be added automatically. This applies to other vendors as well. Please do not include `chat/completions`, `/embeddings`, etc.
+Note that you only need to configure up to the **version number**, e.g., https://api.openai.com/v1. The suffix will be added automatically. The same applies to other providers. Please do not fill in `chat/completions`, `/embeddings`, etc.
 
 #### API Key
 
-Fill in your corresponding key here. For Ollama, LM Studio, etc., you can fill in anything.
+Fill in your corresponding key here. If using Ollama, LM Studio, etc., you can fill in anything.
 
 #### Model
 
-Generally, after BaseURL and API Key are configured correctly, Model will be automatically retrieved and presented as a dropdown list. If it cannot be retrieved, you can fill it in manually.
+Generally, after BaseURL and API Key are configured correctly, Model will be automatically obtained and presented as a dropdown list. If not obtained, you can fill it in manually.
 
 #### Model Type
 
-Select the model type to distinguish different models. Selecting the wrong model type may cause it to not work properly.
+Select the model type to distinguish different models. Selecting the wrong model type may result in inability to use normally.
 
-Currently supported: Conversation, Speech, Embedding, Reranking.
+Currently supported: Chat, Voice, Embedding, Rerank.
 
-- Conversation: The most commonly used model type for conversations, writing, and other scenarios.
-- Speech: Used for speech recognition (STT) and text-to-speech (TTS) features, configurable in audio settings.
-- Embedding and reranking models: Suitable for knowledge base usage scenarios.
+- Chat: The most common model type, used for dialogue, writing, and other scenarios.
+- Voice: Used for speech recognition (STT) and text-to-speech (TTS) functions, configurable in audio settings.
+- Embedding and Rerank models: Suitable for scenarios using knowledge base.
 - Other model types will be gradually supported in future versions.
 
 #### Advanced Configuration
 
-If you don't understand these configurations, you can ignore them and use the default values.
+If you don't understand these configurations, you can ignore them and use default values.
 
 ##### Temperature
 
-What sampling temperature to use, between 0 and 2. Higher values (like 0.8) will make the output more random, while lower values (like 0.2) will make it more focused and deterministic. We generally recommend altering this or top_p but not both.
+What sampling temperature to use, between 0 and 2. Higher values (e.g., 0.8) will make the output more random, while lower values (e.g., 0.2) will make the output more focused and deterministic. We generally recommend modifying this or top_p but not both.
 
 ##### Top P
 
-An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both.
+An alternative to temperature sampling, called nucleus sampling, where the model considers the results of tokens with top_p probability mass. So 0.1 means only considering tokens comprising the top 10% probability mass. We generally recommend modifying this or temperature but not both.

@@ -6,42 +6,32 @@ icon: RefreshCw
 
 
 
-### Primary Sync Methods
+### Primary Sync Method
 
-Primary sync methods currently support GitHub, Gitee, GitLab, and Gitea, because the history rollback feature requires Git support (no need to install Git locally).
+The primary sync method currently supports GitHub, Gitee, GitLab, and Gitea. The reason is that the historical rollback functionality requires Git support (Git does not need to be installed locally).
 
 #### Configuration
 
 ##### GitHub/Gitee
-- GitHub Access Token, you need to get a token from [GitHub](https://github.com/settings/tokens/new) or [Gitee](https://gitee.com/profile/personal_access_tokens). Note that repository access permissions are required.
-- Auto sync, when enabled, automatic quick backup will occur * seconds after stopping input during writing. Commit content uses a fixed template and can be collapsed.
+- GitHub Access Token, needs to be obtained from [GitHub](https://github.com/settings/tokens/new) or [Gitee](https://gitee.com/profile/personal_access_tokens). Note that repository access permissions are required.
+- Auto Sync, when enabled, will perform automatic quick backup after * seconds of stopping input during writing. The commit content is a fixed template and can be collapsed.
 
 ##### GitLab/Gitea
-- Supports GitLab and Gitea self-hosted instances, requires configuring server address and access token.
-- Also supports history rollback feature, all Markdown files will be stored in private repositories.
+- Supports GitLab and Gitea self-hosted instances. Requires configuring server address and access token.
+- Also supports historical rollback functionality. All Markdown files will be stored in a private repository.
 
 - Note that you must select GitHub, Gitee, GitLab, or Gitea as the primary backup method for it to take effect. The button is located at the bottom of the page.
 
-### WebDAV Sync
+### Auto Sync Interval
 
-In addition to Git-based sync methods, NoteGen also supports data synchronization via the WebDAV protocol.
+Set the frequency of automatic data synchronization. When writing, automatic backup will be performed after the set time is reached following input stop.
 
-#### Configuration
+### Primary Backup Method
 
-- **Server URL**: The complete URL address of the WebDAV server
-- **Username**: Username for logging into the WebDAV server
-- **Password**: Password for logging into the WebDAV server
-- **Path**: Optional, specifies the root directory path for synchronization
+Select GitHub, Gitee, GitLab, or Gitea as the primary backup method. Settings take effect only after configuration.
 
-#### Use Cases
+### Notes
 
-WebDAV sync is suitable for:
-- Self-hosted cloud storage services (like Nextcloud, ownCloud)
-- Enterprise internal file servers
-- WebDAV-supported cloud storage services
-
-#### Important Notes
-
-- WebDAV sync does not support history rollback feature
-- Please ensure server address and credentials are configured correctly
-- It is recommended to use HTTPS protocol for data security
+- Deleting cloud sync files will also delete files in the remote repository
+- Please ensure access tokens are configured correctly and have repository access permissions
+- Recommend using private repositories to protect data security
