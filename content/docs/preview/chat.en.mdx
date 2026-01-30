@@ -1,74 +1,238 @@
 ---
-title: AI Assistant
-description: The AI assistant is an important component of recording, enhancing recording efficiency through conversational interaction.
+title: AI Agent Assistant
+description: The AI assistant offers both Chat conversation and Agent intelligent modes, combined with note recording and editor tools, helping you create content more efficiently.
 icon: Bot
 ---
 
-import { Drama, BotMessageSquare, MessageSquarePlus, Trash2, Globe, Link, Lightbulb, Clipboard, AlignVerticalJustifyCenter, Eraser, Book } from 'lucide-react'
+## I. Chat Conversation Feature
 
-### Top Status Bar
+Chat is the core interface for interacting with the AI assistant, supporting Q&A, discussions, and getting advice.
 
-<Cards>
-  <Card icon={<Drama />} title="Prompt">
-    You can configure prompts in settings. The AI will converse based on your input prompts. NoteGen only provides a very simple writing assistant prompt.
-  </Card>
-  <Card icon={<BotMessageSquare />} title="AI Model">
-    AI model, including model name and vendor name, for display only.
-  </Card>
-  <Card icon={<MessageSquarePlus />} title="Start New Conversation with New Tag">
-    Click to open a dialog, input a new tag name, start a new conversation, and create a new tag simultaneously.
-  </Card>
-  <Card icon={<Trash2 />} title="Delete Conversation">
-    Delete the current tag along with all conversations and records under the current tag (use with caution).
-  </Card>
-</Cards>
+### 1.1 Accessing Chat
 
-### Conversation History
+- **Desktop**: Click the Chat icon in the left sidebar
+- **Mobile**: Switch to the Chat tab
 
-The middle area displays conversation history, including user input, AI responses, clipboard detection information, etc. The left side shows bot information, and the right side shows user input information.
+### 1.2 Chat and Agent Modes
 
-- Conversation history is isolated under different tags.
-- AI response content can be recorded as text using the `Record` toolbar below each message.
-- Translation: Translate AI conversations to your desired language.
-- Clipboard events are triggered when the program gains focus (when switching to the window).
-- Clipboard content only exists for 5 seconds and will disappear if not recorded.
-- Clicking `X` will delete this conversation and clear the clipboard.
-- Some models support `thinking`.
+On the left side of the bottom toolbar, you can switch between **Chat** and **Agent** modes:
 
-### Dialog Tools
+#### Chat Mode (💬 Conversation)
 
-<Cards>
-  <Card icon={<BotMessageSquare />} title="Select AI Model">
-    Multiple AI models can be configured in settings and switched here to handle different scenarios.
-  </Card>
-  <Card icon={<Drama />} title="Select Prompt">
-    Multiple prompts can be configured in settings and switched here to handle different scenarios. NoteGen presets a simple prompt; it's recommended to write prompts based on actual needs.
-  </Card>
-  <Card icon={<Globe />} title="Select Conversation Language">
-    Select a language, and the AI will converse with you in that language.
-  </Card>
-  <Card icon={<Link />} title="Associate Tags">
-    When enabled, AI conversations will carry all record information within the current tag.
-  </Card>
-  <Card icon={<Book />} title="Knowledge Base Retrieval">
-    Through RAG (Retrieval Augmented Generation) technology, retrieve existing articles to improve AI conversation quality. Requires configuration of embedding models (required) and reranking models (optional).
-  </Card>
-  <Card icon={<Lightbulb />} title="AI Suggestions">
-    Based on conversations and records, AI will provide suggestions generated in placeholders. Use the `TAB` key to use suggestions.
-    
-    You can configure this AI model in Settings - Default Model. It's recommended to use fast and inexpensive models.
-  </Card>
-  <Card icon={<Clipboard />} title="Clipboard Monitoring">
-    When enabled, monitors clipboard content, supporting text and images. Messages are automatically removed after 5 seconds. Clicking record will save as `text` or `image` under the current tag.
-  </Card>
-  <Card icon={<AlignVerticalJustifyCenter />} title="Clear Context">
-    Does not delete current conversation content but truncates the context available to the AI model. Hover over the clear context message to delete this context clearing and restore AI context.
-  </Card>
-  <Card icon={<Eraser />} title="Clear Conversation">
-    Clear all conversation content under the current tag without deleting the tag.
-  </Card>
-</Cards>
+Chat mode is the standard conversation mode, suitable for daily communication and simple Q&A.
 
-### Modes
+**Features**:
+- **One Question, One Answer**: Send a question and AI responds directly
+- **Quick Response**: No complex reasoning process, results are output immediately
 
-The right side of the dialog box switches between `Organize/Chat` modes, and the buttons change accordingly.
+**Suitable for**:
+- Asking knowledge-based questions
+- Getting suggestions and opinions
+- Text polishing and editing
+- Simple translation tasks
+
+#### Agent Mode (🤖 Intelligent Agent)
+
+Agent mode uses the ReAct framework, allowing AI to autonomously call tools to complete complex tasks.
+
+**Features**:
+- **Think-Act-Observe**: AI displays the complete thought process and execution steps
+- **Tool Calling**: Can call tools like search, create notes, modify files, etc.
+- **Multi-step Iteration**: Up to 15 iterations to complete complex tasks
+- **User Confirmation**: Certain important operations will request your confirmation
+
+**Execution Process Display**:
+```
+Thought: [AI's thought process]
+Action: [Tool name being called]
+Action Input: [Tool parameters]
+Observation: [Tool execution result]
+```
+
+**Suitable for**:
+- Searching and organizing notes
+- Creating or modifying files
+- Complex tasks requiring multiple steps
+- Tasks requiring MCP services
+
+### 1.3 Chat Interface Overview
+
+The Chat interface consists of the following parts:
+
+#### Top Toolbar
+
+The top toolbar is divided into left and right sections, providing various AI conversation enhancement features:
+
+**Left Toolbar**
+
+| Tool | Icon | Description |
+|------|------|-------------|
+| **Link Notes** | 🔗 | When enabled, notes in the current tab will be used as context for AI conversations; the button displays the count of linked notes |
+| **Link Files** | @ | Click to select files or folders to link; AI will converse based on the content of these files |
+| **MCP Servers** | 🖥️ | Select MCP (Model Context Protocol) servers to enable, extending AI's capabilities |
+| **Clipboard Monitoring** | 📋 | When enabled, AI automatically monitors clipboard content changes (enabled by default) |
+
+**Right Toolbar**
+
+| Tool | Icon | Description |
+|------|------|-------------|
+| **Clear Context** | 🗑️ | Insert a system message; subsequent conversations will not include history before this message |
+| **Clear Conversation** | 🧹 | Clear all conversation history under the current tab |
+
+#### Input Area (Bottom)
+
+The input box is located at the bottom of the interface, providing the following functions:
+
+- **Input Box**: Enter the content you want to send to AI
+- **Send Message**: Click the send button or press `Enter` key
+- **New Line**: Press `Shift + Enter` for a new line
+- **Browse History**: Press `↑` / `↓` arrow keys to browse input history
+
+#### Bottom Toolbar
+
+| Tool | Description |
+|------|-------------|
+| **Model Selection** | Select which AI model to use for conversation |
+| **Prompt Template** | Use preset prompt templates to quickly set AI's role or task |
+| **Reply Language** | Set the language for AI responses |
+| **Upload Image** | Upload images for AI to recognize or analyze |
+
+### 1.4 AI Smart Input Suggestions
+
+In the input box, you can use the following shortcut features:
+
+- Press `Tab` key: Insert smart placeholder (placeholders are automatically generated based on your notes, linked files, etc.)
+- Press `↑` / `↓` arrow keys: Browse input history
+
+---
+
+## II. Note Recording Feature
+
+The Record feature is used to quickly record inspiration, fragments, and other content. These notes automatically become context for AI conversations.
+
+### 2.1 Recording Notes
+
+1. Click the **note icon** in the left sidebar to enter the recording interface
+2. Click the **text record button** (copy icon)
+3. In the dialog that appears:
+   - Directly type or paste text content
+   - Check "Auto-read clipboard" to automatically get clipboard content
+   - Click **Save** to complete recording
+
+### 2.2 Managing Notes
+
+- **View Notes**: View all saved content in the notes list
+- **Multi-select Operations**: Enter multi-select mode to batch delete notes
+- **Tag Categories**: Add tags to notes for better organization
+
+### 2.3 Notes and AI Integration
+
+Your saved notes are used by AI in the following scenarios:
+
+- During Chat conversations, notes serve as context reference
+- When using smart placeholders, note content is automatically included
+- In the editor, you can quickly insert notes into articles
+
+---
+
+## III. Editor AI Tools
+
+The article editor provides multiple AI-assisted writing tools.
+
+### 3.1 Continue Writing
+
+Let AI continue generating text based on the content at the current cursor position.
+
+**How to Use**:
+1. Place the cursor where you want to continue writing
+2. Click the **Continue Writing button** in the toolbar
+3. AI will stream the generated content
+4. Click the stop button if you need to interrupt
+
+### 3.2 Translation
+
+Quickly translate selected text.
+
+**How to Use**:
+1. Select the text you want to translate
+2. Click the **Translation button** in the toolbar
+3. The translation result will be automatically inserted into the editor
+
+### 3.3 Insert Notes
+
+Quickly insert saved notes at the current editing position.
+
+**How to Use**:
+1. Place the cursor where you want to insert
+2. Click the **Insert Notes button** in the toolbar
+3. Select the note you want to insert from the list
+4. The note content will be inserted into the article, and the original note will be deleted
+
+---
+
+## IV. Prompt Templates
+
+Prompt templates help you quickly set AI's role or task type.
+
+### 4.1 Using Prompt Templates
+
+1. Above the Chat input box, click the **Prompt Template button** (🎭 icon)
+2. Select a template from the dropdown list
+3. The template will be applied to subsequent AI conversations
+
+### 4.2 Common Template Types
+
+- **Writing Assistant**: Help optimize articles and provide writing suggestions
+- **Translation Assistant**: Focus on translation tasks
+- **Analysis Assistant**: Analyze and summarize content
+- **Custom Templates**: You can create your own prompt templates
+
+---
+
+## V. Usage Tips
+
+### 5.1 Improving Conversation Quality
+
+- **Use Linked Files**: Let AI answer questions based on current file content
+- **Make Good Use of Notes**: Record relevant background as notes, AI will automatically reference them
+- **Set Reply Language**: Ensure AI responds in your expected language
+
+### 5.2 Shortcut Operations
+
+| Key | Function |
+|-----|----------|
+| `Enter` | Send message |
+| `Shift + Enter` | New line |
+| `Tab` | Insert smart placeholder |
+| `↑` / `↓` | Browse input history |
+
+### 5.3 Multimodal Input
+
+- **Text**: Directly enter questions or content
+- **Images**: Upload images for AI to recognize, analyze, or describe
+- **Files**: Link files for AI to converse based on file content
+
+---
+
+## VI. Common Scenario Examples
+
+### Scenario 1: Let AI Help You Rewrite a Paragraph
+
+1. Select the text you want to rewrite in the editor
+2. Open Chat, ensure the current file is linked
+3. Enter: "Help me rewrite this text to make it more concise"
+4. AI will provide rewrite suggestions based on the selected content
+
+### Scenario 2: Generate Article Outline Based on Notes
+
+1. First record some key points and materials in the notes feature
+2. Open Chat, notes will automatically serve as context
+3. Enter: "Generate an article outline based on my notes"
+4. AI will analyze the note content and generate an outline
+
+### Scenario 3: Continue Creating When Facing Writer's Block
+
+1. Place the cursor where you need to continue
+2. Click the **Continue Writing** button in the toolbar
+3. AI will continue writing based on context
+4. You can continue editing or ask AI to generate again

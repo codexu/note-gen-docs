@@ -66,6 +66,10 @@ jobs:
             cd $APP_DIR
             pnpm install --frozen-lockfile
 
+            # PM2 kill
+            echo "🛑 Stopping existing application..."
+            pm2 del note-gen-docs || true
+
             # Build project
             echo "🔨 Building project..."
             pnpm build
@@ -91,7 +95,7 @@ jobs:
           port: ${{ secrets.ALIYUN_PORT }}
           script: |
             echo "🏥 Running health check..."
-            sleep 30
+            sleep 5
             if pm2 describe note-gen-docs | grep -q "online"; then
                 echo "✅ Application is running"
                 exit 0
