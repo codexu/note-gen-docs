@@ -1,66 +1,142 @@
 ---
 title: File Manager
-description: The file manager is used to manage writing files, supporting operations like create, delete, rename, and is associated with sync repositories.
+description: The file manager is a core module of the note-taking application, providing complete file and folder management capabilities, supporting local storage, cloud sync, vector retrieval, and other advanced features.
 icon: FolderOpen
 ---
 
-import { CloudCog, FolderPlus, FilePlus, SortAsc, ChevronsDownUp, FolderSync } from 'lucide-react'
+## Interface Layout
 
-If you follow the previous chapters, you should now be automatically redirected to the writing page:
+- **Top Toolbar**: Vector database sync, remote repository access
+- **Action Toolbar**: New file, new folder, batch import
+- **File Tree Area**: Displays files and folder structure of the current workspace
+- **Bottom Status Bar**: Workspace switching, sorting method, expand/collapse controls
 
+## Basic Operations
 
-The left side is the file manager, and the right side is the Markdown editor.
+### Creating Files/Folders
 
-Recording and writing are interconnected but can also be used completely independently.
+**Method 1: Toolbar Button**
+1. Click the "New File" or "New Folder" button in the top action bar
+2. Enter a file name and press Enter to confirm
 
-### Toolbar
+**Method 2: Context Menu**
+1. Right-click in an empty area of the file tree
+2. Select "New File" or "New Folder"
+3. Enter a file name and press Enter to confirm
 
-The file manager has a toolbar at the top with the following buttons:
+**Method 3: Create Inside Folder**
+1. Right-click the target folder
+2. Select "New Subfile" or "New Subfolder"
 
-<Cards>
-  <Card icon={<CloudCog />} title="Access Repository">
-    Click to open the currently used sync repository (Github/Gitee). Shows loading state when loading repository files.
-  </Card>
-  <Card icon={<FilePlus />} title="New File">
-    Create a new file at the same level as the currently selected file. If nothing is selected, creates in the root directory. Note that folders cannot be selected; to create files inside folders, right-click the folder and select `New File`.
-  </Card>
-  <Card icon={<FolderPlus />} title="New Folder">
-    Create a new folder, similar to creating new files.
-  </Card>
-  <Card icon={<SortAsc />} title="Sort">
-    Select file sorting method, supporting name, creation time, modification time, ascending/descending order.
-  </Card>
-  <Card icon={<ChevronsDownUp />} title="Expand/Collapse">
-    Expand/collapse all folders.
-  </Card>
-  <Card icon={<FolderSync />} title="Refresh">
-    Refresh file list and sync information.
-  </Card>
-</Cards>
+> Tip: The system automatically generates unique file names to avoid naming conflicts
 
-### Context Menu
+### Opening Files
 
-`Right-click folder` provides the following menu:
+- **Single-click** a file: Opens the file in the editor area
+- **Double-click** a folder: Expands or collapses the folder
 
-- New File (create inside folder)
-- New Folder (create inside folder)
-- Show in Folder, opens the folder in the system file manager
-- Cut
-- Copy
-- Paste
-- Rename
-- Delete
+### Renaming
 
-`Right-click file` provides the following menu:
+**Method 1: Double-click to Rename**
+1. Double-click the file name to enter edit mode
+2. Modify the name and press Enter to confirm, or press Escape to cancel
 
-- Show in Folder
-- Cut
-- Copy
-- Paste
-- Rename
-- Delete Sync File (delete file in sync repository)
-- Delete Local File
+**Method 2: Context Menu**
+1. Right-click the file and select "Rename"
+2. Modify the name and press Enter to confirm
 
-### Drag and Drop Support
+> Tip: Spaces in file names are automatically replaced with underscores
 
-- Supports dragging files into other folders
+### Deleting Files
+
+1. Right-click the file and select "Delete"
+2. Click confirm in the confirmation dialog
+
+> Note: Deleting cloud-synced files will also delete the file from the remote repository
+
+### Moving Files
+
+**Method 1: Clipboard Operations**
+1. Right-click the file and select "Cut"
+2. Right-click the target folder and select "Paste"
+
+**Method 2: Drag and Drop**
+1. Hold and drag the file item
+2. Release over the target folder
+
+---
+
+## Advanced Features
+
+### Batch Import
+
+1. Click the "Import" button in the action bar
+2. Select a folder in the file dialog
+3. The system will automatically recursively import all Markdown files and images
+
+After import completes, the number of successfully imported files will be displayed.
+
+### Workspace Management
+
+**Switching Workspaces**
+1. Click the workspace name in the bottom status bar
+2. Select from history or create a new workspace
+
+**Workspace Types**
+- **Default Workspace**: Built-in default storage location
+- **Custom Workspace**: Any user-specified folder
+
+The system saves the last 10 used workspaces in history.
+
+### Sorting Methods
+
+Click the sort button in the bottom status bar to select:
+
+| Sort Method | Description |
+|------------|-------------|
+| By Name | File names sorted A-Z |
+| By Creation Time | Sorted by file creation time |
+| By Modification Time | Sorted by last modification time |
+
+Supports ascending/descending toggle.
+
+### Expand/Collapse Controls
+
+- **Single folder**: Click folder icon to expand/collapse
+- **Expand All**: Click the "Expand All" button at the bottom
+- **Collapse All**: Click the "Collapse All" button at the bottom
+
+## Special Features
+
+### Vector Computation
+
+The file manager integrates vector database functionality for semantic retrieval:
+
+- **Computation Status**: Shows vector computation progress on file items
+- **Index Statistics**: Folders display count of indexed files
+- **Manual Trigger**: Can manually trigger vector computation
+
+### Cloud Sync
+
+Supported sync platforms:
+- GitHub
+- Gitee
+- GitLab
+- Gitea
+
+Cloud files display a cloud icon on the file item.
+
+### Skills Folder
+
+Skills is a special folder for managing application skill files:
+- Marked with a special icon
+- Does not participate in vector computation
+- Supports creating and managing skill files
+
+## Mobile Usage
+
+Mobile provides an optimized interaction experience:
+
+- **Action Menu**: Tap the "..." button after selecting a file to open the action menu
+- **Touch Optimized**: Larger tap areas and gesture support
+- **Simplified Interface**: Only shows common operations for improved usability

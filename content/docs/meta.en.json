@@ -3,11 +3,10 @@
   "pages": [
     "index",
     "---Function---",
-    "preview/record",
     "preview/chat",
-    "preview/writing",
+    "preview/record",
     "preview/files",
-    "preview/search",
+    "preview/writing",
     "---Configuration---",
     "settings/sync",
     "settings/image-hosting",

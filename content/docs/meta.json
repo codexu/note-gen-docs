@@ -3,11 +3,10 @@
   "pages": [
     "index",
     "---功能介绍---",
-    "preview/record",
     "preview/chat",
-    "preview/writing",
+    "preview/record",
     "preview/files",
-    "preview/search",
+    "preview/writing",
     "---配置方式---",
     "settings/sync",
     "settings/image-hosting",
