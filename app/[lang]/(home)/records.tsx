@@ -198,7 +198,7 @@ export default function HomeRecords() {
               <h2 className="text-xl font-semibold mb-4">{sectionTitle}</h2>
               <p className="text-fd-muted-foreground text-sm">{sectionDescription}</p>
             </div>
-            <div className="flex justify-center items-center max-md:mb-24 min-h-[240px] -translate-x-16">
+            <div className="flex justify-center items-center max-md:mb-24 min-h-[240px] lg:-translate-x-16">
               <DisplayCards cards={displayCardsConfig} />
             </div>
           </div>
