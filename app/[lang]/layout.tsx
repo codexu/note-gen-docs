@@ -43,7 +43,7 @@ export default async function Layout(
             translations: { cn }[lang],
           }}
           search={{
-            enabled: false,
+            enabled: true,
           }}>{children}</RootProvider>
       </body>
       <GoogleAnalytics gaId="G-SEWZ8WZX0C" />
