@@ -63,7 +63,8 @@ export async function getAppStatistics(appKey: string): Promise<AppStatistics> {
     
     const result = await response.json();
     
-    if (result.code !== 0) {
+    // Accept both 0 (legacy) and 200 (HTTP-style) as success codes
+    if (result.code !== 0 && result.code !== 200) {
       throw new Error(`API error: ${result.msg} (code: ${result.code})`);
     }
     
