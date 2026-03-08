@@ -92,12 +92,12 @@ export default function HomeFeature() {
         en: "WYSIWYG",
       },
       shortDescription: {
-        cn: "Vditor",
-        en: "Vditor",
+        cn: "Tiptap",
+        en: "Tiptap",
       },
       description: {
-        cn: "使用 Vditor 编辑器，支持所见即所得模式，类似 Typora 的即时渲染体验。",
-        en: "Powered by Vditor editor, supports WYSIWYG mode with instant rendering experience like Typora.",
+        cn: "使用 Tiptap 编辑器，支持所见即所得模式，类似 Typora 的即时渲染体验。",
+        en: "Powered by Tiptap editor, supports WYSIWYG mode with instant rendering experience like Typora.",
       },
       link: "https://github.com/Vanessa219/vditor",
     },
