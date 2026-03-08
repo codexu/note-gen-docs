@@ -91,27 +91,26 @@ export default function HomeSync() {
       category: 'primary',
     },
     {
-      icon: <Download className="size-8" />,
-      name: "Local Backup",
-      title: {
-        cn: "本地备份",
-        en: "Local Backup",
-      },
-      category: 'backup',
-    },
-    {
-      icon: <Cloud className="size-8" />,
+      icon: <Cloud />,
       name: "WebDAV",
       title: {
         cn: "WebDAV",
         en: "WebDAV",
       },
-      category: 'backup',
+      category: 'primary',
+    },
+    {
+      icon: <Cloud />,
+      name: "S3",
+      title: {
+        cn: "S3",
+        en: "S3",
+      },
+      category: 'primary',
     },
   ];
 
   const primarySolutions = syncSolutions.filter(solution => solution.category === 'primary');
-  const backupSolutions = syncSolutions.filter(solution => solution.category === 'backup');
 
   return (
     <SectionWrap isPadding={false}>
@@ -123,67 +122,21 @@ export default function HomeSync() {
         
         <div className="space-y-8">
           <div>
-            <h2 className="text-xl font-semibold mb-4">
-              {lang === 'cn' ? '主要同步方案' : 'Primary Sync Solutions'}
-            </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {primarySolutions.map((solution, index) => (
                 <SyncItem key={`primary-${index}`} solution={solution} lang={lang} />
               ))}
             </div>
           </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-4">
-              {lang === 'cn' ? '备用备份方案' : 'Backup Solutions'}
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {backupSolutions.map((solution, index) => (
-                <SyncItem key={`backup-${index}`} solution={solution} lang={lang} />
-              ))}
-            </div>
-          </div>
         </div>
-        
-        <ul className="mt-6 list-disc">
-          <li className="text-sm text-fd-muted-foreground leading-relaxed mt-6">
-            {lang === 'cn' 
-              ? '使用主要同步方案可以支持历史回滚功能，自动创建私有仓库，保证数据安全。'
-              : 'Primary sync solutions support history rollback functionality and automatically create private repositories to ensure data security.'
-            }
-          </li>
-          <li className="text-sm text-fd-muted-foreground leading-relaxed mt-2">
-            {lang === 'cn' 
-              ? '备用方案适合作为额外的数据保护措施。'
-              : 'Backup solutions are suitable as additional data protection measures.'
-            }
-          </li>
-        </ul>
-        
       </div>
     </SectionWrap>
   );
 }
 
 function SyncItem({ solution, lang }: { solution: SyncSolution, lang: 'cn' | 'en' }) {
-  const categoryLabel = {
-    primary: {
-      cn: "主要",
-      en: "Primary",
-    },
-    backup: {
-      cn: "备用",
-      en: "Backup",
-    },
-  }[solution.category][lang];
-
-  const categoryColor = solution.category === 'primary' ? 'bg-primary text-primary-foreground' : 'bg-primary/20 text-primary';
-
   return (
     <div className="relative flex flex-col items-center gap-2 py-8 border-[0.5px] border-fd-border rounded-lg hover:bg-fd-muted/50 transition-colors text-center overflow-hidden bg-gray-950/[2.5%] after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:inset-ring after:inset-ring-gray-950/5 dark:after:inset-ring-white/10 bg-[image:radial-gradient(var(--pattern-fg)_1px,_transparent_0)] bg-[size:10px_10px] bg-fixed [--pattern-fg:var(--color-gray-950)]/5 dark:[--pattern-fg:var(--color-white)]/10">
-      <div className={`absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded-full ${categoryColor}`}>
-        {categoryLabel}
-      </div>
       <div className="text-fd-primary mb-2">
         {solution.icon}
       </div>
