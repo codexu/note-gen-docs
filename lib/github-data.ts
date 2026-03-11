@@ -15,7 +15,7 @@ type GitHubStats = {
   watchers_count: number;
 };
 
-type GitHubIssue = {
+export type GitHubIssue = {
   id: number;
   number: number;
   title: string;
