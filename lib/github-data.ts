@@ -15,6 +15,29 @@ type GitHubStats = {
   watchers_count: number;
 };
 
+type GitHubIssue = {
+  id: number;
+  number: number;
+  title: string;
+  html_url: string;
+  state: string;
+  created_at: string;
+  comments: number;
+  user: {
+    login: string;
+    avatar_url: string;
+  };
+  labels: {
+    name: string;
+    color: string;
+  }[];
+};
+
+type GitHubIssuesData = {
+  issues: GitHubIssue[];
+  totalCount: number;
+};
+
 type ApiModel = {
   id: string;
   object: string;
@@ -73,7 +96,7 @@ export const getGitHubStats = unstable_cache(
   async (): Promise<GitHubStats> => {
     try {
       const token = process.env.GITHUB_TOKEN;
-      
+
       if (!token) {
         console.warn('GITHUB_TOKEN not found in environment variables');
         return { stargazers_count: 0, forks_count: 0, watchers_count: 0 };
@@ -83,7 +106,7 @@ export const getGitHubStats = unstable_cache(
       headers.set('Authorization', `Bearer ${token}`);
       headers.set('Accept', 'application/vnd.github.v3+json');
       headers.set('User-Agent', 'NoteGen-Website');
-      
+
       const response = await fetch('https://api.github.com/repos/codexu/note-gen', {
         headers,
         cache: 'no-store',
@@ -95,7 +118,7 @@ export const getGitHubStats = unstable_cache(
       }
 
       const repoData = await response.json();
-      
+
       return {
         stargazers_count: repoData.stargazers_count || 0,
         forks_count: repoData.forks_count || 0,
@@ -109,6 +132,82 @@ export const getGitHubStats = unstable_cache(
   ['github-stats'],
   {
     revalidate: 3600, // 1小时缓存
+    tags: ['github-data']
+  }
+);
+
+// 获取 GitHub Issues（带缓存）
+export const getGitHubIssues = unstable_cache(
+  async (): Promise<GitHubIssuesData> => {
+    try {
+      const token = process.env.GITHUB_TOKEN;
+
+      if (!token) {
+        console.warn('GITHUB_TOKEN not found in environment variables');
+        return { issues: [], totalCount: 0 };
+      }
+
+      const headers = new Headers();
+      headers.set('Authorization', `Bearer ${token}`);
+      headers.set('Accept', 'application/vnd.github.v3+json');
+      headers.set('User-Agent', 'NoteGen-Website');
+
+      // 使用搜索 API 获取所有 open issues 的总数
+      const searchResponse = await fetch('https://api.github.com/search/issues?q=repo:codexu/note-gen+is:issue+state:open', {
+        headers,
+        cache: 'no-store',
+      });
+
+      let totalCount = 0;
+      if (searchResponse.ok) {
+        const searchData = await searchResponse.json();
+        totalCount = searchData.total_count || 0;
+      }
+
+      // 获取最新的 12 个 issues
+      const response = await fetch('https://api.github.com/repos/codexu/note-gen/issues?state=open&labels=feature&sort=updated&per_page=12', {
+        headers,
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        console.error('GitHub API error:', response.status, response.statusText);
+        return { issues: [], totalCount };
+      }
+
+      const issues = await response.json();
+
+      // 过滤掉 pull requests
+      const filteredIssues = issues.filter((issue: any) => !issue.pull_request);
+
+      return {
+        issues: filteredIssues.map((issue: any) => ({
+          id: issue.id,
+          number: issue.number,
+          title: issue.title,
+          html_url: issue.html_url,
+          state: issue.state,
+          created_at: issue.created_at,
+          comments: issue.comments,
+          user: {
+            login: issue.user.login,
+            avatar_url: issue.user.avatar_url,
+          },
+          labels: issue.labels.map((label: any) => ({
+            name: label.name,
+            color: label.color,
+          })),
+        })),
+        totalCount
+      };
+    } catch (error) {
+      console.error('Error fetching GitHub issues:', error);
+      return { issues: [], totalCount: 0 };
+    }
+  },
+  ['github-issues'],
+  {
+    revalidate: 1800, // 30分钟缓存
     tags: ['github-data']
   }
 );

@@ -6,8 +6,9 @@ import HomeModels from './models';
 import HomeSync from './sync';
 import HomeFooter from './footer';
 import HomeContributors from './contributors';
+import HomeIssues from './issues';
 import SectionWrap from './section-wrap';
-import { getContributors, getGitHubStats, getNoteGenModels } from '@/lib/github-data';
+import { getContributors, getGitHubStats, getNoteGenModels, getGitHubIssues } from '@/lib/github-data';
 
 export default async function HomePage({
   params
@@ -17,10 +18,11 @@ export default async function HomePage({
   const { lang } = await params;
   
   // 在服务端预获取数据，减少客户端 API 调用
-  const [contributors, githubStats, premiumModels] = await Promise.all([
+  const [contributors, githubStats, premiumModels, issuesData] = await Promise.all([
     getContributors(),
     getGitHubStats(),
-    getNoteGenModels()
+    getNoteGenModels(),
+    getGitHubIssues()
   ]);
 
   return <main>
@@ -36,6 +38,8 @@ export default async function HomePage({
     <HomeSync />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeContributors contributors={contributors} />
+    <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
+    <HomeIssues issues={issuesData.issues} totalCount={issuesData.totalCount} lang={lang as 'cn' | 'en'} />
     <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
     <HomeFooter />
   </main>
