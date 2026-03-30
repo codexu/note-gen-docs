@@ -218,6 +218,7 @@ export default function HomeHero({ githubStats }: HomeHeroProps) {
                   alt={activeSlide.imageAlt}
                   width={1280}
                   height={720}
+                  unoptimized={activeSlide.imageSrc.includes('files.seeusercontent.com')}
                   className="w-full max-w-[720px] object-contain"
                 />
               </div>
