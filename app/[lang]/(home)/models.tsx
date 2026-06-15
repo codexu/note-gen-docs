@@ -79,6 +79,10 @@ export default async function HomeModels({ premiumModels, lang }: { premiumModel
       <div className="p-6 md:p-8 lg:p-12">
         <div className="flex justify-between items-start mb-6">
           <div>
+            <div className="flex items-center gap-2 text-fd-muted-foreground text-xs mb-4">
+              <Sparkles className="size-4" />
+              {lang === 'cn' ? '模型服务' : 'Model service'}
+            </div>
             <h1 className="text-3xl font-bold mb-4">{sectionTitle}</h1>
             <p className="text-fd-muted-foreground text-sm">{sectionDescription}</p>
           </div>
@@ -128,6 +132,10 @@ export default async function HomeModels({ premiumModels, lang }: { premiumModel
         {premiumModels.length > 0 && (
           <div className="mt-12">
             <div className="mb-6">
+              <div className="flex items-center gap-2 text-fd-muted-foreground text-xs mb-3">
+                <Sparkles className="size-4" />
+                {lang === 'cn' ? '体验模型' : 'Trial access'}
+              </div>
               <h2 className="text-2xl font-bold mb-2">
                 {lang === 'cn' ? '限时体验模型' : 'Limited-Time Trial Models'}
               </h2>

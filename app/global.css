@@ -247,3 +247,600 @@
     rgba(255, 255, 255, 0.05) 11px
   );
 }
+
+.record-illustration {
+  --record-cycle: 6400ms;
+}
+
+.record-source-wrap {
+  z-index: 12;
+}
+
+.record-source-card {
+  transform-origin: center;
+  box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+  will-change: transform, opacity;
+  animation: record-source-flight var(--record-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.record-card-line {
+  transform-origin: left center;
+}
+
+.record-connector {
+  animation: record-connector-focus var(--record-cycle) ease-in-out infinite;
+}
+
+.record-inbox {
+  z-index: 8;
+  animation: organize-stage-in 700ms ease-out 220ms both;
+}
+
+.record-inbox-stream {
+  --record-row-step: 1.875rem;
+}
+
+.record-inbox-row {
+  top: 0;
+  opacity: 0;
+  transform: translateY(calc(var(--record-row-step) * 3)) scale(0.96);
+  will-change: transform, opacity;
+  animation: record-inbox-row-fill var(--record-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.record-inbox-row .record-card-line {
+  transform: scaleX(0);
+  animation: record-inbox-line-fill var(--record-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: inherit;
+}
+
+.record-flight-1 {
+  --record-fly-x: 0rem;
+  --record-fly-y: 10.75rem;
+}
+
+.record-flight-2 {
+  --record-fly-x: 6.6rem;
+  --record-fly-y: 7.6rem;
+}
+
+.record-flight-3 {
+  --record-fly-x: -6.6rem;
+  --record-fly-y: 7.6rem;
+}
+
+.record-flight-4 {
+  --record-fly-x: 8.3rem;
+  --record-fly-y: 1.5rem;
+}
+
+.record-flight-5 {
+  --record-fly-x: -8.3rem;
+  --record-fly-y: 1.5rem;
+}
+
+.record-flight-6 {
+  --record-fly-x: 5.8rem;
+  --record-fly-y: -5rem;
+}
+
+.record-flight-7 {
+  --record-fly-x: -5.8rem;
+  --record-fly-y: -5rem;
+}
+
+.record-flight-8 {
+  --record-fly-x: 0rem;
+  --record-fly-y: -7.25rem;
+}
+
+.organize-illustration {
+  --organize-cycle: 8800ms;
+}
+
+.organize-stage {
+  position: relative;
+  animation: organize-stage-in 700ms ease-out both;
+  z-index: 2;
+}
+
+.organize-stage-inbox {
+  animation: organize-stage-in 700ms ease-out 80ms both;
+}
+
+.organize-stage-ai {
+  animation: organize-stage-in 700ms ease-out 240ms both;
+  overflow: hidden;
+}
+
+.organize-stage-ai::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-left: 1px solid color-mix(in oklab, var(--primary) 50%, transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 12%, transparent), transparent);
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: organize-ai-scan var(--organize-cycle) ease-in-out infinite;
+}
+
+.organize-stage-draft {
+  animation: organize-stage-in 700ms ease-out 420ms both;
+}
+
+.organize-ai-brain {
+  animation: organize-breathe var(--organize-cycle) ease-in-out infinite;
+}
+
+.organize-material-row {
+  box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+  animation: organize-row-focus var(--organize-cycle) ease-in-out infinite;
+}
+
+.organize-material-content {
+  will-change: transform, opacity;
+  animation: organize-material-empty var(--organize-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.organize-ai-step {
+  animation: organize-step-focus var(--organize-cycle) ease-in-out infinite;
+}
+
+.organize-draft-block {
+  opacity: 0;
+  transform: translateY(3px);
+  box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+  will-change: transform, opacity;
+  animation: organize-draft-write var(--organize-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite, organize-draft-block-focus var(--organize-cycle) ease-in-out infinite;
+}
+
+.organize-line {
+  transform-origin: left center;
+}
+
+.organize-motion-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.organize-moving-card,
+.organize-result-card {
+  position: absolute;
+  opacity: 0;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--background) 85%, transparent);
+}
+
+.organize-moving-card {
+  left: 0;
+  top: 50%;
+  will-change: transform, opacity;
+  animation: organize-material-flight var(--organize-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  transform-origin: center;
+}
+
+.organize-moving-card:nth-child(1) {
+  --start-y: -73px;
+}
+
+.organize-moving-card:nth-child(2) {
+  --start-y: -41px;
+}
+
+.organize-moving-card:nth-child(3) {
+  --start-y: -9px;
+}
+
+.organize-moving-card:nth-child(4) {
+  --start-y: 23px;
+}
+
+.organize-moving-card:nth-child(5) {
+  --start-y: 55px;
+}
+
+.organize-moving-card:nth-child(6) {
+  --start-y: 87px;
+}
+
+.organize-result-card {
+  left: 13.2rem;
+  top: 50%;
+  display: flex;
+  gap: 0.375rem;
+  border: 1px dashed var(--border);
+  background: var(--background);
+  color: var(--primary);
+  padding: 0.375rem 0.5rem;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 3.6rem;
+  will-change: transform, opacity;
+  animation: organize-result-flight var(--organize-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  transform-origin: center;
+}
+
+.organize-result-card:nth-child(7) {
+  --result-y: -36px;
+}
+
+.organize-result-card:nth-child(8) {
+  --result-y: 0px;
+}
+
+.organize-result-card:nth-child(9) {
+  --result-y: 36px;
+}
+
+.organize-ai-pulse {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed color-mix(in oklab, var(--primary) 42%, var(--border));
+  color: var(--primary);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
+  animation: organize-ai-pulse var(--organize-cycle) ease-in-out infinite;
+}
+
+.organize-draft-block .organize-line {
+  transform: scaleX(0);
+  animation: organize-line-write var(--organize-cycle) ease-in-out infinite;
+  animation-delay: inherit;
+}
+
+@keyframes organize-stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes record-source-flight {
+  0%, 2% {
+    opacity: 1;
+    background-color: var(--background);
+    box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+    transform: translate(0, 0) scale(1);
+  }
+  4%, 7% {
+    opacity: 1;
+    background-color: color-mix(in oklab, var(--muted) 68%, var(--background));
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 28%, transparent);
+    transform: translate(0, 0) scale(1);
+  }
+  18% {
+    opacity: 1;
+    background-color: var(--background);
+    box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+    transform: translate(var(--record-fly-x), var(--record-fly-y)) scale(0.38);
+  }
+  21% {
+    opacity: 0;
+    transform: translate(var(--record-fly-x), var(--record-fly-y)) scale(0.12);
+  }
+  24% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.96);
+  }
+  31% {
+    opacity: 0.55;
+    transform: translate(0, 0) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    background-color: var(--background);
+    box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes record-connector-focus {
+  0%, 2%, 26%, 100% {
+    opacity: 0.42;
+  }
+  4%, 18% {
+    opacity: 0.78;
+  }
+  22%, 25% {
+    opacity: 0.18;
+  }
+}
+
+@keyframes record-inbox-row-fill {
+  0%, 22%, 100% {
+    opacity: 0;
+    background-color: transparent;
+    box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+    transform: translateY(calc(var(--record-row-step) * 3.35)) scale(0.96);
+  }
+  24% {
+    opacity: 0.45;
+    background-color: color-mix(in oklab, var(--muted) 42%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 10%, transparent);
+    transform: translateY(calc(var(--record-row-step) * 3.15)) scale(0.98);
+  }
+  26%, 34% {
+    opacity: 1;
+    background-color: color-mix(in oklab, var(--muted) 56%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent);
+    transform: translateY(calc(var(--record-row-step) * 3)) scale(1);
+  }
+  36.5%, 46.5% {
+    opacity: 1;
+    background-color: color-mix(in oklab, var(--muted) 44%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent);
+    transform: translateY(calc(var(--record-row-step) * 2)) scale(1);
+  }
+  49%, 59% {
+    opacity: 1;
+    background-color: color-mix(in oklab, var(--muted) 36%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 8%, transparent);
+    transform: translateY(var(--record-row-step)) scale(1);
+  }
+  61.5%, 71.5% {
+    opacity: 1;
+    background-color: color-mix(in oklab, var(--muted) 30%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 6%, transparent);
+    transform: translateY(0) scale(1);
+  }
+  75% {
+    opacity: 0;
+    background-color: transparent;
+    box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+    transform: translateY(calc(var(--record-row-step) * -1)) scale(0.98);
+  }
+}
+
+@keyframes record-inbox-line-fill {
+  0%, 24%, 100% {
+    transform: scaleX(0);
+  }
+  27% {
+    transform: scaleX(0.35);
+  }
+  30%, 72% {
+    transform: scaleX(1);
+  }
+  75% {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes organize-breathe {
+  0%, 40%, 63%, 100% {
+    opacity: 0.62;
+    transform: scale(1);
+  }
+  43%, 59% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes organize-material-flight {
+  0%, 7%, 100% {
+    opacity: 0;
+    transform: translate(0, var(--start-y)) scale(0.9);
+  }
+  8% {
+    opacity: 0.45;
+    transform: translate(0, var(--start-y)) scale(0.93);
+  }
+  11% {
+    opacity: 1;
+    transform: translate(0, var(--start-y)) scale(0.96);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(4.5rem, calc(var(--start-y) * 0.55 - 0.4rem)) scale(0.82);
+  }
+  24% {
+    opacity: 1;
+    transform: translate(11rem, -0.9rem) scale(0.62);
+  }
+  28% {
+    opacity: 1;
+    transform: translate(11rem, -0.9rem) scale(0.34);
+  }
+  32% {
+    opacity: 0;
+    transform: translate(11rem, -0.9rem) scale(0.1);
+  }
+}
+
+@keyframes organize-result-flight {
+  0%, 62%, 100% {
+    opacity: 0;
+    transform: translate(0, var(--result-y)) scale(0.88);
+  }
+  64% {
+    opacity: 0.45;
+    transform: translate(0, var(--result-y)) scale(0.95);
+  }
+  67% {
+    opacity: 1;
+    transform: translate(0, var(--result-y)) scale(1);
+  }
+  72% {
+    opacity: 1;
+    transform: translate(9.6rem, var(--result-y)) scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(9.6rem, var(--result-y)) scale(1.06);
+  }
+  79% {
+    opacity: 0;
+    transform: translate(9.6rem, var(--result-y)) scale(0.14);
+  }
+}
+
+@keyframes organize-ai-pulse {
+  0%, 40%, 63%, 100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
+  }
+  43%, 59% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.25) rotate(12deg);
+  }
+}
+
+@keyframes organize-ai-scan {
+  0%, 40%, 63%, 100% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  43% {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+  59% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes organize-row-focus {
+  0%, 34%, 100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+    opacity: 1;
+  }
+  8%, 15% {
+    background-color: color-mix(in oklab, var(--muted) 75%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 26%, transparent);
+    opacity: 1;
+  }
+}
+
+@keyframes organize-material-empty {
+  0%, 9% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  12%, 88% {
+    opacity: 0;
+    transform: translateX(0.35rem) scale(0.92);
+  }
+  96% {
+    opacity: 0;
+    transform: translateX(0) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes organize-step-focus {
+  0%, 100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+    color: var(--muted-foreground);
+    opacity: 0.45;
+  }
+  43%, 59% {
+    background-color: color-mix(in oklab, var(--muted) 58%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 26%, transparent);
+    color: var(--primary);
+    opacity: 1;
+  }
+}
+
+@keyframes organize-draft-write {
+  0%, 88% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  90% {
+    opacity: 0.45;
+    transform: translateY(2px);
+  }
+  93%, 97% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes organize-line-write {
+  0%, 88% {
+    transform: scaleX(0);
+  }
+  92% {
+    transform: scaleX(0.35);
+  }
+  94%, 97% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes organize-draft-block-focus {
+  0%, 88%, 100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent);
+  }
+  90%, 97% {
+    background-color: color-mix(in oklab, var(--muted) 52%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record-source-card,
+  .record-connector,
+  .record-inbox,
+  .record-inbox-row,
+  .record-inbox-row .record-card-line,
+  .organize-stage,
+  .organize-ai-brain,
+  .organize-material-row,
+  .organize-material-content,
+  .organize-ai-step,
+  .organize-draft-block,
+  .organize-moving-card,
+  .organize-result-card,
+  .organize-ai-pulse,
+  .organize-stage-ai::after,
+  .organize-draft-block .organize-line {
+    animation: none;
+  }
+
+  .record-source-card,
+  .record-inbox-row,
+  .record-inbox-row .record-card-line {
+    opacity: 1;
+    transform: none;
+  }
+
+  .record-inbox-stream {
+    height: auto;
+    overflow: visible;
+  }
+
+  .record-inbox-row {
+    position: relative;
+  }
+
+  .record-inbox-row + .record-inbox-row {
+    margin-top: 0.375rem;
+  }
+}

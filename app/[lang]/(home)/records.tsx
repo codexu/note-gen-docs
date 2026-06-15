@@ -172,72 +172,72 @@ export default function HomeRecords() {
 
   const aiOrganizeInfo = {
     title: {
-      cn: '整理时再决定结构',
-      en: 'Organize when it matters',
+      cn: '按模板整理成文',
+      en: 'Turn captures into notes',
     },
     subtitle: {
-      cn: '记录先自由进入记录箱，真正要写的时候，再让 AI 帮你归并、排序并生成草稿。',
-      en: 'Keep captures loose first. When you need to write, let AI group, order, and draft.',
+      cn: '选择整理模板和记录范围，确认要整理的素材，再让 AI 生成一篇可继续编辑的 Markdown 笔记。',
+      en: 'Choose a template, select records, and let AI draft an editable Markdown note.',
     },
     features: [
       {
         icon: <Sparkles className="size-5" />,
         title: {
-          cn: '筛选相关记录',
-          en: 'Select related captures',
+          cn: '模板驱动整理',
+          en: 'Template-based organizing',
+        },
+        tag: {
+          cn: '模板',
+          en: 'Template',
+        },
+        description: {
+          cn: '选择已启用的整理模板，也可以沿用上次使用的模板。',
+          en: 'Use enabled templates or continue with your last one.',
+        },
+      },
+      {
+        icon: <Brain className="size-5" />,
+        title: {
+          cn: '灵活选择素材',
+          en: 'Flexible record selection',
         },
         tag: {
           cn: '选择',
           en: 'Select',
         },
         description: {
-          cn: '从记录箱里挑出同一主题的素材。',
-          en: 'Pick material around one topic.',
-        },
-      },
-      {
-        icon: <Brain className="size-5" />,
-        title: {
-          cn: '交给 AI 整理',
-          en: 'Ask AI to organize',
-        },
-        tag: {
-          cn: '整理',
-          en: 'Organize',
-        },
-        description: {
-          cn: '自动归并重点、删除重复并补齐上下文。',
-          en: 'Group points, remove repeats, and add context.',
+          cn: '可按时间范围和标签筛选，也可以手动勾选要整理的记录。',
+          en: 'Filter by range or tags, or manually pick records.',
         },
       },
       {
         icon: <Lightbulb className="size-5" />,
         title: {
-          cn: '生成笔记大纲',
-          en: 'Create an outline',
+          cn: '多类型素材预览',
+          en: 'Preview every record type',
         },
         tag: {
-          cn: '大纲',
-          en: 'Outline',
+          cn: '预览',
+          en: 'Preview',
         },
         description: {
-          cn: '先得到标题、层级和段落顺序。',
-          en: 'Get headings, hierarchy, and section order.',
+          cn: '文本、图片、链接、录音、待办等内容都能一起整理。',
+          en: 'Text, images, links, audio, and todos can be combined.',
         },
       },
       {
         icon: <FileOutput className="size-5" />,
         title: {
-          cn: '补成 Markdown 草稿',
-          en: 'Draft in Markdown',
+          cn: '实时生成成文',
+          en: 'Stream into a note',
         },
         tag: {
-          cn: '草稿',
+          cn: '生成',
           en: 'Draft',
         },
         description: {
-          cn: '把素材放进合适位置，生成可继续编辑的文档。',
-          en: 'Place material into an editable note.',
+          cn: '设置标题、保存位置和生成要求，输出可编辑的 Markdown。',
+          en: 'Set title, location, and rules, then draft Markdown.',
         },
       },
     ],
@@ -251,9 +251,9 @@ export default function HomeRecords() {
             <div>
               <div className="flex items-center gap-2 text-fd-muted-foreground text-xs mb-4">
                 <Inbox className="size-4" />
-                {lang === 'cn' ? '记录列表' : 'Record list'}
+                {lang === 'cn' ? '记录工作台' : 'Capture desk'}
               </div>
-              <h2 className="text-xl font-semibold mb-4">{sectionTitle}</h2>
+              <h1 className="text-3xl font-bold mb-4">{sectionTitle}</h1>
               <p className="text-fd-muted-foreground text-sm leading-relaxed">{sectionDescription}</p>
             </div>
 
@@ -270,6 +270,8 @@ export default function HomeRecords() {
         </div>
       </SectionWrap>
 
+      <SectionWrap isPadding={false} className="h-6 sm:h-8 lg:h-12"><span></span></SectionWrap>
+
       <SectionWrap isPadding={false}>
         <div className="grid grid-cols-1 lg:grid-cols-2">
           <div className="p-6 md:p-8 lg:p-12 border-b lg:border-b-0 border-fd-border border-dashed">
@@ -278,7 +280,7 @@ export default function HomeRecords() {
                 <Sparkles className="size-4" />
                 {lang === 'cn' ? '整理工作台' : 'Organize desk'}
               </div>
-              <h2 className="text-xl font-semibold mb-4">{aiOrganizeInfo.title[lang]}</h2>
+              <h1 className="text-3xl font-bold mb-4">{aiOrganizeInfo.title[lang]}</h1>
               <p className="text-fd-muted-foreground text-sm leading-relaxed">{aiOrganizeInfo.subtitle[lang]}</p>
             </div>
 
@@ -316,53 +318,67 @@ function RecordListItem({ feature, lang, isLast }: { feature: RecordFeature, lan
 function RecordIllustration({ lang }: { lang: 'cn' | 'en' }) {
   const copy = {
     title: {
-      cn: '统一进入记录箱',
-      en: 'One record inbox',
-    },
-    note: {
-      cn: '不用先判断位置，也不用立刻写成文章。',
-      en: 'No folder choice, no writing pressure.',
+      cn: '记录箱',
+      en: 'Records',
     },
   };
 
   const floatingRecords = [
-    { icon: <FileText className="size-4" />, className: 'left-6 top-8 w-40', lineClassName: 'left-44 top-[4.25rem] w-28 rotate-[28deg]' },
-    { icon: <Camera className="size-4" />, className: 'right-6 top-10 w-36', lineClassName: 'right-40 top-[4.75rem] w-28 -rotate-[30deg]' },
-    { icon: <ImagePlus className="size-4" />, className: 'left-16 top-28 w-32', lineClassName: 'left-48 top-[8.75rem] w-24 rotate-[18deg]' },
-    { icon: <Link className="size-4" />, className: 'right-16 top-30 w-40', lineClassName: 'right-56 top-[9.25rem] w-24 -rotate-[18deg]' },
-    { icon: <File className="size-4" />, className: 'left-8 top-48 w-36', lineClassName: 'left-44 top-[13.5rem] w-28 rotate-[6deg]' },
-    { icon: <Mic className="size-4" />, className: 'right-8 top-52 w-32', lineClassName: 'right-40 top-[14.25rem] w-28 -rotate-[8deg]' },
-    { icon: <ListTodo className="size-4" />, className: 'left-1/2 top-20 w-36 -translate-x-1/2', lineClassName: 'left-1/2 top-[8rem] h-36 border-l -translate-x-1/2' },
+    { icon: <FileText className="size-4" />, className: 'left-1/2 top-2 w-32 -translate-x-1/2', lineClassName: 'left-1/2 top-[4rem] h-14 border-l -translate-x-1/2', flightClassName: 'record-flight-1', lineWidth: 'w-16' },
+    { icon: <Camera className="size-4" />, className: 'left-9 top-14 w-28', lineClassName: 'left-[8.5rem] top-[6.75rem] w-16 rotate-[22deg] border-t', flightClassName: 'record-flight-2', lineWidth: 'w-12' },
+    { icon: <ImagePlus className="size-4" />, className: 'right-9 top-14 w-28', lineClassName: 'right-[8.5rem] top-[6.75rem] w-16 -rotate-[22deg] border-t', flightClassName: 'record-flight-3', lineWidth: 'w-14' },
+    { icon: <Link className="size-4" />, className: 'left-5 top-[11rem] w-28', lineClassName: 'left-[8.25rem] top-[12.4rem] w-20 border-t', flightClassName: 'record-flight-4', lineWidth: 'w-16' },
+    { icon: <File className="size-4" />, className: 'right-5 top-[11rem] w-28', lineClassName: 'right-[8.25rem] top-[12.4rem] w-20 border-t', flightClassName: 'record-flight-5', lineWidth: 'w-12' },
+    { icon: <Mic className="size-4" />, className: 'left-12 bottom-12 w-28', lineClassName: 'left-[9rem] bottom-[8rem] w-16 -rotate-[22deg] border-t', flightClassName: 'record-flight-6', lineWidth: 'w-10' },
+    { icon: <ListTodo className="size-4" />, className: 'right-12 bottom-12 w-28', lineClassName: 'right-[9rem] bottom-[8rem] w-16 rotate-[22deg] border-t', flightClassName: 'record-flight-7', lineWidth: 'w-14' },
+    { icon: <Sparkles className="size-4" />, className: 'left-1/2 bottom-2 w-32 -translate-x-1/2', lineClassName: 'left-1/2 bottom-[4rem] h-12 border-l -translate-x-1/2', flightClassName: 'record-flight-8', lineWidth: 'w-12' },
   ];
 
   return (
-    <div className="relative min-h-[420px] w-full overflow-hidden">
+    <div className="record-illustration relative min-h-[380px] w-full overflow-hidden">
       {floatingRecords.map((record, index) => (
-        <div key={`line-${index}`} className={`absolute border-t border-fd-border border-dashed opacity-70 ${record.lineClassName}`} />
+        <div
+          key={`line-${index}`}
+          className={`record-connector absolute border-fd-border border-dashed opacity-70 ${record.lineClassName}`}
+          style={{ animationDelay: `${index * 800}ms` }}
+        />
       ))}
 
       {floatingRecords.map((record, index) => (
-        <div key={index} className={`absolute ${record.className} border border-fd-border border-dashed bg-background p-3 flex items-center gap-3 text-fd-muted-foreground`}>
-          <div className="text-fd-primary">
-            {record.icon}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="h-2 w-16 bg-fd-muted-foreground/30" />
-            <div className="h-2 w-full bg-fd-muted-foreground/15 mt-2" />
+        <div key={index} className={`record-source-wrap absolute ${record.className} ${record.flightClassName}`}>
+          <div
+            className="record-source-card w-full border border-fd-border border-dashed bg-background p-2.5 flex items-center gap-2.5 text-fd-muted-foreground"
+            style={{ animationDelay: `${index * 800}ms` }}
+          >
+            <div className="text-fd-primary">
+              {record.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="record-card-line h-2 w-16 bg-fd-muted-foreground/30" />
+              <div className="record-card-line h-2 w-full bg-fd-muted-foreground/15 mt-2" />
+            </div>
           </div>
         </div>
       ))}
 
-      <div className="absolute left-1/2 bottom-8 w-72 -translate-x-1/2 border border-fd-border border-dashed bg-background">
+      <div className="record-inbox absolute left-1/2 top-1/2 w-60 -translate-x-1/2 -translate-y-1/2 border border-fd-border border-dashed bg-background">
         <div className="border-b border-fd-border border-dashed p-4 flex items-center justify-between">
           <div className="font-semibold text-sm">{copy.title[lang]}</div>
           <Inbox className="size-4 text-fd-primary" />
         </div>
         <div className="p-4">
-          <div className="h-2 w-28 bg-fd-muted-foreground/30" />
-          <div className="h-2 w-36 bg-fd-muted-foreground/15 mt-3" />
-          <div className="h-2 w-20 bg-fd-muted-foreground/15 mt-3" />
-          <p className="text-xs text-fd-muted-foreground mt-5 leading-relaxed">{copy.note[lang]}</p>
+          <div className="record-inbox-stream relative h-[7.5rem] overflow-hidden">
+            {floatingRecords.map((record, index) => (
+              <div
+                key={`slot-${index}`}
+                className="record-inbox-row absolute left-0 right-0 flex h-6 items-center gap-2 border border-fd-border border-dashed px-2 text-fd-primary"
+                style={{ animationDelay: `${index * 800}ms` }}
+              >
+                {record.icon}
+                <div className={`record-card-line h-1.5 ${record.lineWidth} bg-fd-muted-foreground/20`} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -387,8 +403,8 @@ function OrganizeListItem({ feature, lang, isLast }: { feature: OrganizeFeature,
 function OrganizeIllustration({ lang }: { lang: 'cn' | 'en' }) {
   const labels = {
     inbox: {
-      cn: '收集箱',
-      en: 'Inbox',
+      cn: '记录箱',
+      en: 'Records',
     },
     ai: {
       cn: 'AI',
@@ -416,56 +432,94 @@ function OrganizeIllustration({ lang }: { lang: 'cn' | 'en' }) {
   ];
 
   return (
-    <div className="relative flex min-h-[420px] w-full max-w-[30rem] items-center overflow-hidden">
-      <div className="grid w-full grid-cols-[8rem_minmax(0.75rem,0.25fr)_8rem_minmax(0.75rem,0.25fr)_8rem] items-center">
-        <div className="border border-fd-border border-dashed bg-background">
+    <div className="organize-illustration relative flex min-h-[420px] w-full max-w-[30rem] items-center overflow-hidden">
+      <div className="organize-motion-layer" aria-hidden="true">
+        {materialItems.map((item, index) => (
+          <div
+            key={index}
+            className="organize-moving-card flex h-8 w-32 items-center gap-2 border border-fd-border border-dashed bg-background px-3 text-fd-primary"
+            style={{ animationDelay: `${index * 150}ms` }}
+          >
+            {item.icon}
+            <div className={`h-1.5 ${item.lineWidth} bg-fd-muted-foreground/20`} />
+          </div>
+        ))}
+
+        {[0, 1, 2].map((index) => (
+          <div
+            key={index}
+            className="organize-result-card"
+            style={{ animationDelay: `${index * 90}ms` }}
+          >
+            <div className="h-1 w-8 bg-fd-primary/35" />
+            <div className="h-1 w-5 bg-fd-muted-foreground/25" />
+          </div>
+        ))}
+
+        <div className="organize-ai-pulse">
+          <Sparkles className="size-4" />
+        </div>
+      </div>
+
+      <div className="relative z-10 grid w-full grid-cols-[8rem_minmax(0.75rem,0.25fr)_8rem_minmax(0.75rem,0.25fr)_8rem] items-center">
+        <div className="organize-stage organize-stage-inbox border border-fd-border border-dashed bg-background">
           <div className="border-b border-fd-border border-dashed p-3 flex items-center justify-between">
             <span className="text-xs font-semibold">{labels.inbox[lang]}</span>
             <Inbox className="size-5 text-fd-primary" />
           </div>
           <div>
             {materialItems.map((item, index) => (
-              <div key={index} className={`flex h-8 items-center gap-2 border-fd-border border-dashed px-3 text-fd-primary ${index === materialItems.length - 1 ? '' : 'border-b'}`}>
-                {item.icon}
-                <div className={`h-1.5 ${item.lineWidth} bg-fd-muted-foreground/20`} />
+              <div
+                key={index}
+                className={`organize-material-row flex h-8 items-center gap-2 border-fd-border border-dashed px-3 text-fd-primary ${index === materialItems.length - 1 ? '' : 'border-b'}`}
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                <div className="organize-material-content flex items-center gap-2" style={{ animationDelay: `${index * 150}ms` }}>
+                  {item.icon}
+                  <div className={`organize-line h-1.5 ${item.lineWidth} bg-fd-muted-foreground/20`} />
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border-t border-fd-border border-dashed" />
+        <div className="organize-flow-space" />
 
-        <div className="border border-fd-border border-dashed bg-background p-4">
+        <div className="organize-stage organize-stage-ai border border-fd-border border-dashed bg-background p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold">{labels.ai[lang]}</span>
-            <Brain className="size-7 text-fd-primary" />
+            <Brain className="organize-ai-brain size-7 text-fd-primary" />
           </div>
           <div className="mt-5 grid grid-cols-3 border border-fd-border border-dashed">
             {organizeIcons.map((icon, index) => (
-              <div key={index} className={`flex h-9 items-center justify-center text-fd-muted-foreground ${index === organizeIcons.length - 1 ? '' : 'border-r'} border-fd-border border-dashed`}>
+              <div
+                key={index}
+                className={`organize-ai-step flex h-9 items-center justify-center text-fd-muted-foreground ${index === organizeIcons.length - 1 ? '' : 'border-r'} border-fd-border border-dashed`}
+                style={{ animationDelay: `${index * 110}ms` }}
+              >
                 {icon}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border-t border-fd-border border-dashed" />
+        <div className="organize-flow-space" />
 
-        <div className="border border-fd-border border-dashed bg-background">
+        <div className="organize-stage organize-stage-draft border border-fd-border border-dashed bg-background">
           <div className="border-b border-fd-border border-dashed p-3 flex items-center justify-between">
             <span className="text-xs font-semibold">{labels.draft[lang]}</span>
             <FileText className="size-5 text-fd-primary" />
           </div>
-          <div className="p-4 space-y-4">
-            {[0, 1, 2].map((index) => (
-              <div key={index}>
+          <div className="flex h-48 flex-col justify-center gap-3 p-4">
+            {[0, 1, 2, 3].map((index) => (
+              <div key={index} className="organize-draft-block" style={{ animationDelay: `${index * 80}ms` }}>
                 <div className="flex items-center gap-2">
                   <div className="size-2 border border-fd-border border-dashed" />
-                  <div className="h-1.5 w-14 bg-fd-muted-foreground/35" />
+                  <div className={`organize-line h-1.5 bg-fd-muted-foreground/35 ${index % 2 === 0 ? 'w-12' : 'w-14'}`} />
                 </div>
                 <div className="mt-2 ml-4 space-y-1.5">
-                  <div className="h-1.5 w-full bg-fd-muted-foreground/15" />
-                  <div className="h-1.5 w-4/5 bg-fd-muted-foreground/15" />
+                  <div className="organize-line h-1.5 w-full bg-fd-muted-foreground/15" />
+                  <div className={`organize-line h-1.5 bg-fd-muted-foreground/15 ${index === 3 ? 'w-2/3' : 'w-4/5'}`} />
                 </div>
               </div>
             ))}

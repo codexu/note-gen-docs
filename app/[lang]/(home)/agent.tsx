@@ -100,6 +100,10 @@ export default function HomeAgent() {
     <SectionWrap isPadding={false}>
       <div className="p-6 md:p-8 lg:p-12">
         <div className="mb-8">
+          <div className="flex items-center gap-2 text-fd-muted-foreground text-xs mb-4">
+            <Sparkles className="size-4" />
+            {lang === 'cn' ? 'AI 工作台' : 'AI workspace'}
+          </div>
           <h1 className="text-3xl font-bold mb-4">{sectionTitle}</h1>
           <p className="text-fd-muted-foreground text-sm">{sectionDescription}</p>
         </div>
