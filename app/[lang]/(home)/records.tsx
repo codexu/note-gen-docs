@@ -323,65 +323,77 @@ function RecordIllustration({ lang }: { lang: 'cn' | 'en' }) {
     },
   };
 
-  const floatingRecords = [
-    { icon: <FileText className="size-4" />, className: 'left-1/2 top-2 w-32 -translate-x-1/2', lineClassName: 'left-1/2 top-[4rem] h-14 border-l -translate-x-1/2', flightClassName: 'record-flight-1', lineWidth: 'w-16' },
-    { icon: <Camera className="size-4" />, className: 'left-9 top-14 w-28', lineClassName: 'left-[8.5rem] top-[6.75rem] w-16 rotate-[22deg] border-t', flightClassName: 'record-flight-2', lineWidth: 'w-12' },
-    { icon: <ImagePlus className="size-4" />, className: 'right-9 top-14 w-28', lineClassName: 'right-[8.5rem] top-[6.75rem] w-16 -rotate-[22deg] border-t', flightClassName: 'record-flight-3', lineWidth: 'w-14' },
-    { icon: <Link className="size-4" />, className: 'left-5 top-[11rem] w-28', lineClassName: 'left-[8.25rem] top-[12.4rem] w-20 border-t', flightClassName: 'record-flight-4', lineWidth: 'w-16' },
-    { icon: <File className="size-4" />, className: 'right-5 top-[11rem] w-28', lineClassName: 'right-[8.25rem] top-[12.4rem] w-20 border-t', flightClassName: 'record-flight-5', lineWidth: 'w-12' },
-    { icon: <Mic className="size-4" />, className: 'left-12 bottom-12 w-28', lineClassName: 'left-[9rem] bottom-[8rem] w-16 -rotate-[22deg] border-t', flightClassName: 'record-flight-6', lineWidth: 'w-10' },
-    { icon: <ListTodo className="size-4" />, className: 'right-12 bottom-12 w-28', lineClassName: 'right-[9rem] bottom-[8rem] w-16 rotate-[22deg] border-t', flightClassName: 'record-flight-7', lineWidth: 'w-14' },
-    { icon: <Sparkles className="size-4" />, className: 'left-1/2 bottom-2 w-32 -translate-x-1/2', lineClassName: 'left-1/2 bottom-[4rem] h-12 border-l -translate-x-1/2', flightClassName: 'record-flight-8', lineWidth: 'w-12' },
+  const recordItems: SvgRecordItem[] = [
+    { kind: 'text', x: 202, y: 18, dx: '0px', dy: '148px', lineWidth: 52 },
+    { kind: 'camera', x: 48, y: 64, dx: '154px', dy: '118px', lineWidth: 44 },
+    { kind: 'image', x: 356, y: 64, dx: '-154px', dy: '118px', lineWidth: 50 },
+    { kind: 'link', x: 28, y: 146, dx: '174px', dy: '53px', lineWidth: 56 },
+    { kind: 'file', x: 376, y: 146, dx: '-174px', dy: '53px', lineWidth: 46 },
+    { kind: 'mic', x: 58, y: 270, dx: '144px', dy: '-88px', lineWidth: 40 },
+    { kind: 'todo', x: 346, y: 270, dx: '-144px', dy: '-88px', lineWidth: 52 },
+    { kind: 'sparkles', x: 202, y: 326, dx: '0px', dy: '-144px', lineWidth: 44 },
   ];
 
   return (
-    <div className="record-illustration relative min-h-[380px] w-full overflow-hidden">
-      {floatingRecords.map((record, index) => (
-        <div
-          key={`line-${index}`}
-          className={`record-connector absolute border-fd-border border-dashed opacity-70 ${record.lineClassName}`}
-          style={{ animationDelay: `${index * 800}ms` }}
-        />
-      ))}
-
-      {floatingRecords.map((record, index) => (
-        <div key={index} className={`record-source-wrap absolute ${record.className} ${record.flightClassName}`}>
-          <div
-            className="record-source-card w-full border border-fd-border border-dashed bg-background p-2.5 flex items-center gap-2.5 text-fd-muted-foreground"
+    <svg
+      className="record-svg-illustration"
+      viewBox="0 0 520 380"
+      role="img"
+      aria-label={copy.title[lang]}
+    >
+      <g>
+        {recordItems.map((record, index) => (
+          <line
+            key={`connector-${index}`}
+            className="record-svg-connector"
+            x1={record.x + 58}
+            y1={record.y + 17}
+            x2="260"
+            y2="204"
             style={{ animationDelay: `${index * 800}ms` }}
+          />
+        ))}
+      </g>
+
+      {recordItems.map((record, index) => (
+        <g key={`source-${index}`} transform={`translate(${record.x} ${record.y})`}>
+          <g
+            className="record-svg-source"
+            style={{
+              animationDelay: `${index * 800}ms`,
+              '--record-svg-x': record.dx,
+              '--record-svg-y': record.dy,
+            } as React.CSSProperties}
           >
-            <div className="text-fd-primary">
-              {record.icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="record-card-line h-2 w-16 bg-fd-muted-foreground/30" />
-              <div className="record-card-line h-2 w-full bg-fd-muted-foreground/15 mt-2" />
-            </div>
-          </div>
-        </div>
+            <rect className="flow-svg-panel" width="116" height="34" />
+            <SvgIcon kind={record.kind} x={12} y={9} size={16} />
+            <rect className="flow-svg-line-strong" x="36" y="10" width={record.lineWidth} height="4" rx="2" />
+            <rect className="flow-svg-line" x="36" y="20" width="66" height="4" rx="2" />
+          </g>
+        </g>
       ))}
 
-      <div className="record-inbox absolute left-1/2 top-1/2 w-60 -translate-x-1/2 -translate-y-1/2 border border-fd-border border-dashed bg-background">
-        <div className="border-b border-fd-border border-dashed p-4 flex items-center justify-between">
-          <div className="font-semibold text-sm">{copy.title[lang]}</div>
-          <Inbox className="size-4 text-fd-primary" />
-        </div>
-        <div className="p-4">
-          <div className="record-inbox-stream relative h-[7.5rem] overflow-hidden">
-            {floatingRecords.map((record, index) => (
-              <div
-                key={`slot-${index}`}
-                className="record-inbox-row absolute left-0 right-0 flex h-6 items-center gap-2 border border-fd-border border-dashed px-2 text-fd-primary"
-                style={{ animationDelay: `${index * 800}ms` }}
-              >
-                {record.icon}
-                <div className={`record-card-line h-1.5 ${record.lineWidth} bg-fd-muted-foreground/20`} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+      <g className="record-svg-inbox" transform="translate(180 126)">
+        <rect className="flow-svg-panel" width="160" height="150" />
+        <line className="flow-svg-border" x1="0" y1="42" x2="160" y2="42" />
+        <text className="flow-svg-title" x="16" y="27">{copy.title[lang]}</text>
+        <SvgIcon kind="inbox" x={132} y={13} size={17} />
+
+        <svg x="16" y="56" width="128" height="78" overflow="hidden">
+          {recordItems.map((record, index) => (
+            <g
+              key={`row-${index}`}
+              className="record-svg-row"
+              style={{ animationDelay: `${index * 800}ms` }}
+            >
+              <rect className="flow-svg-panel-soft" width="128" height="22" />
+              <SvgIcon kind={record.kind} x={8} y={4} size={14} />
+              <rect className="flow-svg-line" x="30" y="9" width={record.lineWidth} height="4" rx="2" />
+            </g>
+          ))}
+        </svg>
+      </g>
+    </svg>
   );
 }
 
@@ -416,116 +428,239 @@ function OrganizeIllustration({ lang }: { lang: 'cn' | 'en' }) {
     },
   };
 
-  const materialItems = [
-    { icon: <FileText className="size-4" />, lineWidth: 'w-12' },
-    { icon: <Camera className="size-4" />, lineWidth: 'w-10' },
-    { icon: <ImagePlus className="size-4" />, lineWidth: 'w-14' },
-    { icon: <Link className="size-4" />, lineWidth: 'w-11' },
-    { icon: <File className="size-4" />, lineWidth: 'w-12' },
-    { icon: <Mic className="size-4" />, lineWidth: 'w-10' },
+  const materialItems: SvgMaterialItem[] = [
+    { kind: 'text', lineWidth: 48 },
+    { kind: 'camera', lineWidth: 40 },
+    { kind: 'image', lineWidth: 54 },
+    { kind: 'link', lineWidth: 44 },
+    { kind: 'file', lineWidth: 48 },
+    { kind: 'mic', lineWidth: 40 },
   ];
 
-  const organizeIcons = [
-    <Sparkles key="sparkles" className="size-4" />,
-    <Lightbulb key="lightbulb" className="size-4" />,
-    <FileOutput key="file-output" className="size-4" />,
+  const aiSteps: SvgIconKind[] = [
+    'sparkles',
+    'lightbulb',
+    'output',
   ];
 
   return (
-    <div className="organize-illustration relative flex min-h-[420px] w-full max-w-[30rem] items-center overflow-hidden">
-      <div className="organize-motion-layer" aria-hidden="true">
-        {materialItems.map((item, index) => (
-          <div
-            key={index}
-            className="organize-moving-card flex h-8 w-32 items-center gap-2 border border-fd-border border-dashed bg-background px-3 text-fd-primary"
-            style={{ animationDelay: `${index * 150}ms` }}
-          >
-            {item.icon}
-            <div className={`h-1.5 ${item.lineWidth} bg-fd-muted-foreground/20`} />
-          </div>
-        ))}
+    <svg
+      className="organize-svg-illustration"
+      viewBox="0 0 520 380"
+      role="img"
+      aria-label={labels.draft[lang]}
+    >
+      <g className="organize-svg-stage" transform="translate(32 92)">
+        <rect className="flow-svg-panel" width="132" height="196" />
+        <line className="flow-svg-border" x1="0" y1="38" x2="132" y2="38" />
+        <text className="flow-svg-title" x="14" y="25">{labels.inbox[lang]}</text>
+        <SvgIcon kind="inbox" x={104} y={12} size={16} />
 
-        {[0, 1, 2].map((index) => (
-          <div
+        {materialItems.map((item, index) => (
+          <g
             key={index}
-            className="organize-result-card"
+            className="organize-svg-row"
+            transform={`translate(14 ${52 + index * 24})`}
+            style={{ animationDelay: `${index * 120}ms` }}
+          >
+            <rect className="flow-svg-panel-soft" width="104" height="20" />
+            <SvgIcon kind={item.kind} x={8} y={3} size={14} />
+            <rect className="flow-svg-line" x="30" y="8" width={item.lineWidth} height="4" rx="2" />
+          </g>
+        ))}
+      </g>
+
+      <g className="organize-svg-stage organize-svg-ai" transform="translate(210 138)">
+        <rect className="flow-svg-panel" width="100" height="104" />
+        <text className="flow-svg-title" x="14" y="25">{labels.ai[lang]}</text>
+        <SvgIcon kind="brain" x={66} y={11} size={20} />
+        <g transform="translate(14 56)">
+          <rect className="flow-svg-panel-soft" width="72" height="30" />
+          {aiSteps.map((kind, index) => (
+            <g
+              key={kind}
+              className="organize-svg-ai-step"
+              transform={`translate(${index * 24} 0)`}
+              style={{ animationDelay: `${index * 110}ms` }}
+            >
+              <SvgIcon kind={kind} x={5} y={7} size={13} />
+            </g>
+          ))}
+        </g>
+      </g>
+
+      <g className="organize-svg-stage" transform="translate(356 92)">
+        <rect className="flow-svg-panel" width="132" height="196" />
+        <line className="flow-svg-border" x1="0" y1="38" x2="132" y2="38" />
+        <text className="flow-svg-title" x="14" y="25">{labels.draft[lang]}</text>
+        <SvgIcon kind="text" x={104} y={11} size={17} />
+
+        {[0, 1, 2, 3].map((index) => (
+          <g
+            key={index}
+            className="organize-svg-draft-block"
+            transform={`translate(16 ${56 + index * 32})`}
             style={{ animationDelay: `${index * 90}ms` }}
           >
-            <div className="h-1 w-8 bg-fd-primary/35" />
-            <div className="h-1 w-5 bg-fd-muted-foreground/25" />
-          </div>
+            <rect className="flow-svg-dot" x="0" y="1" width="7" height="7" />
+            <rect className="organize-svg-draft-line flow-svg-line-strong" x="14" y="2" width={index % 2 === 0 ? 44 : 54} height="4" rx="2" />
+            <rect className="organize-svg-draft-line flow-svg-line" x="14" y="14" width="90" height="4" rx="2" />
+            <rect className="organize-svg-draft-line flow-svg-line" x="14" y="23" width={index === 3 ? 58 : 76} height="4" rx="2" />
+          </g>
+        ))}
+      </g>
+
+      <g aria-hidden="true">
+        {materialItems.map((item, index) => {
+          const startY = 144 + index * 24;
+          return (
+            <g key={`moving-${index}`} transform={`translate(46 ${startY})`}>
+              <g
+                className="organize-svg-moving-card"
+                style={{
+                  animationDelay: `${index * 120}ms`,
+                  '--organize-move-x': '166px',
+                  '--organize-move-y': `${190 - (startY + 10)}px`,
+                  '--organize-mid-y': `${(190 - (startY + 10)) * 0.68}px`,
+                } as React.CSSProperties}
+              >
+                <rect className="flow-svg-panel" width="104" height="20" />
+                <SvgIcon kind={item.kind} x={8} y={3} size={14} />
+                <rect className="flow-svg-line" x="30" y="8" width={item.lineWidth} height="4" rx="2" />
+              </g>
+            </g>
+          );
+        })}
+
+        {[0, 1, 2].map((index) => (
+          <g key={`result-${index}`} transform={`translate(242 ${174 + index * 18})`}>
+            <g
+              className="organize-svg-result-card"
+              style={{
+                animationDelay: `${index * 90}ms`,
+                '--organize-result-y': `${(index - 1) * 4}px`,
+              } as React.CSSProperties}
+            >
+              <rect className="flow-svg-panel" width="44" height="14" />
+              <rect className="flow-svg-line-strong" x="7" y="4" width="26" height="3" rx="1.5" />
+              <rect className="flow-svg-line" x="7" y="9" width="18" height="3" rx="1.5" />
+            </g>
+          </g>
         ))}
 
-        <div className="organize-ai-pulse">
-          <Sparkles className="size-4" />
-        </div>
-      </div>
+        <g transform="translate(260 190)">
+          <g className="organize-svg-ai-pulse">
+            <circle className="organize-svg-pulse-ring" r="21" />
+            <SvgIcon kind="sparkles" x={-8} y={-8} size={16} />
+          </g>
+        </g>
+      </g>
+    </svg>
+  );
+}
 
-      <div className="relative z-10 grid w-full grid-cols-[8rem_minmax(0.75rem,0.25fr)_8rem_minmax(0.75rem,0.25fr)_8rem] items-center">
-        <div className="organize-stage organize-stage-inbox border border-fd-border border-dashed bg-background">
-          <div className="border-b border-fd-border border-dashed p-3 flex items-center justify-between">
-            <span className="text-xs font-semibold">{labels.inbox[lang]}</span>
-            <Inbox className="size-5 text-fd-primary" />
-          </div>
-          <div>
-            {materialItems.map((item, index) => (
-              <div
-                key={index}
-                className={`organize-material-row flex h-8 items-center gap-2 border-fd-border border-dashed px-3 text-fd-primary ${index === materialItems.length - 1 ? '' : 'border-b'}`}
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
-                <div className="organize-material-content flex items-center gap-2" style={{ animationDelay: `${index * 150}ms` }}>
-                  {item.icon}
-                  <div className={`organize-line h-1.5 ${item.lineWidth} bg-fd-muted-foreground/20`} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+type SvgIconKind = 'text' | 'camera' | 'image' | 'link' | 'file' | 'mic' | 'todo' | 'sparkles' | 'inbox' | 'brain' | 'lightbulb' | 'output';
 
-        <div className="organize-flow-space" />
+type SvgRecordItem = {
+  kind: SvgIconKind;
+  x: number;
+  y: number;
+  dx: string;
+  dy: string;
+  lineWidth: number;
+}
 
-        <div className="organize-stage organize-stage-ai border border-fd-border border-dashed bg-background p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold">{labels.ai[lang]}</span>
-            <Brain className="organize-ai-brain size-7 text-fd-primary" />
-          </div>
-          <div className="mt-5 grid grid-cols-3 border border-fd-border border-dashed">
-            {organizeIcons.map((icon, index) => (
-              <div
-                key={index}
-                className={`organize-ai-step flex h-9 items-center justify-center text-fd-muted-foreground ${index === organizeIcons.length - 1 ? '' : 'border-r'} border-fd-border border-dashed`}
-                style={{ animationDelay: `${index * 110}ms` }}
-              >
-                {icon}
-              </div>
-            ))}
-          </div>
-        </div>
+type SvgMaterialItem = {
+  kind: SvgIconKind;
+  lineWidth: number;
+}
 
-        <div className="organize-flow-space" />
-
-        <div className="organize-stage organize-stage-draft border border-fd-border border-dashed bg-background">
-          <div className="border-b border-fd-border border-dashed p-3 flex items-center justify-between">
-            <span className="text-xs font-semibold">{labels.draft[lang]}</span>
-            <FileText className="size-5 text-fd-primary" />
-          </div>
-          <div className="flex h-48 flex-col justify-center gap-3 p-4">
-            {[0, 1, 2, 3].map((index) => (
-              <div key={index} className="organize-draft-block" style={{ animationDelay: `${index * 80}ms` }}>
-                <div className="flex items-center gap-2">
-                  <div className="size-2 border border-fd-border border-dashed" />
-                  <div className={`organize-line h-1.5 bg-fd-muted-foreground/35 ${index % 2 === 0 ? 'w-12' : 'w-14'}`} />
-                </div>
-                <div className="mt-2 ml-4 space-y-1.5">
-                  <div className="organize-line h-1.5 w-full bg-fd-muted-foreground/15" />
-                  <div className={`organize-line h-1.5 bg-fd-muted-foreground/15 ${index === 3 ? 'w-2/3' : 'w-4/5'}`} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+function SvgIcon({ kind, x = 0, y = 0, size = 16 }: { kind: SvgIconKind, x?: number, y?: number, size?: number }) {
+  return (
+    <g
+      className="flow-svg-icon"
+      transform={`translate(${x} ${y}) scale(${size / 16})`}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {kind === 'text' && (
+        <>
+          <path d="M4 2.5h5.2L12 5.3v8.2H4z" />
+          <path d="M9.2 2.5v3h2.8" />
+          <path d="M6 8h4.8M6 10.5h4.8" />
+        </>
+      )}
+      {kind === 'camera' && (
+        <>
+          <path d="M3 5.2h2.7l1-1.7h2.6l1 1.7H13v7.3H3z" />
+          <circle cx="8" cy="8.8" r="2" />
+        </>
+      )}
+      {kind === 'image' && (
+        <>
+          <rect x="3" y="3.5" width="10" height="9" />
+          <path d="M4.5 11l2.3-2.4 1.7 1.7 2.1-2.7 1.9 3.4" />
+          <circle cx="6.2" cy="6.1" r=".8" />
+        </>
+      )}
+      {kind === 'link' && (
+        <>
+          <path d="M6.8 5.3l1-1a3 3 0 0 1 4.2 4.2l-1 1" />
+          <path d="M9.2 10.7l-1 1A3 3 0 0 1 4 7.5l1-1" />
+          <path d="M6.6 9.4l2.8-2.8" />
+        </>
+      )}
+      {kind === 'file' && (
+        <>
+          <path d="M4 2.5h5.4L12 5.1v8.4H4z" />
+          <path d="M9.4 2.5v2.8H12" />
+          <path d="M6 8h4M6 10.5h3.2" />
+        </>
+      )}
+      {kind === 'mic' && (
+        <>
+          <rect x="6" y="2.5" width="4" height="7" rx="2" />
+          <path d="M4 8a4 4 0 0 0 8 0M8 12v2M6 14h4" />
+        </>
+      )}
+      {kind === 'todo' && (
+        <>
+          <rect x="3" y="3" width="10" height="10" />
+          <path d="M5.2 7.8l1.5 1.5 3.8-4" />
+          <path d="M5.5 11h5" />
+        </>
+      )}
+      {kind === 'sparkles' && (
+        <>
+          <path d="M8 2.5l1.2 3.1L12.5 7 9.2 8.4 8 11.5 6.8 8.4 3.5 7l3.3-1.4z" />
+          <path d="M12.2 2.2v2M13.2 3.2h-2M3.8 11.8v2M4.8 12.8h-2" />
+        </>
+      )}
+      {kind === 'inbox' && (
+        <>
+          <path d="M3 4h10l-1.2 5.2H9.4a1.8 1.8 0 0 1-2.8 0H4.2z" />
+          <path d="M4.2 9.2v3.3h7.6V9.2" />
+        </>
+      )}
+      {kind === 'brain' && (
+        <>
+          <path d="M6.2 4.2a2.2 2.2 0 0 1 3.6 0 2.4 2.4 0 0 1 2.4 2.4 2.5 2.5 0 0 1-.8 1.8 2.4 2.4 0 0 1-2.3 3.5H6.9a2.4 2.4 0 0 1-2.3-3.5 2.5 2.5 0 0 1-.8-1.8 2.4 2.4 0 0 1 2.4-2.4z" />
+          <path d="M8 4.2v7.7M6.2 7h3.6M5.5 9.4h2.2M8.3 9.4h2.2" />
+        </>
+      )}
+      {kind === 'lightbulb' && (
+        <>
+          <path d="M5.2 7.2a2.8 2.8 0 1 1 5.6 0c0 1.1-.6 1.7-1.2 2.4-.4.4-.7.8-.8 1.4H7.2c-.1-.6-.4-1-.8-1.4-.6-.7-1.2-1.3-1.2-2.4z" />
+          <path d="M7.1 12h1.8M7.4 14h1.2" />
+        </>
+      )}
+      {kind === 'output' && (
+        <>
+          <path d="M4 2.5h5.2L12 5.3v8.2H4z" />
+          <path d="M9.2 2.5v3h2.8" />
+          <path d="M6 9.5h4M8 7v5" />
+        </>
+      )}
+    </g>
   );
 }

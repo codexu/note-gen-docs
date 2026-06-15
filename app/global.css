@@ -248,6 +248,330 @@
   );
 }
 
+.record-svg-illustration,
+.organize-svg-illustration {
+  display: block;
+  width: 100%;
+  max-width: 30rem;
+  height: auto;
+  margin: 0 auto;
+  overflow: visible;
+  contain: layout paint style;
+}
+
+.record-svg-illustration {
+  --record-svg-cycle: 6400ms;
+}
+
+.organize-svg-illustration {
+  --organize-svg-cycle: 9800ms;
+}
+
+.flow-svg-panel,
+.flow-svg-panel-soft {
+  fill: var(--background);
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.flow-svg-panel-soft {
+  fill: color-mix(in oklab, var(--muted) 42%, transparent);
+}
+
+.flow-svg-border,
+.record-svg-connector {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.flow-svg-icon {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+}
+
+.flow-svg-title {
+  fill: var(--foreground);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.flow-svg-line,
+.flow-svg-line-strong {
+  fill: color-mix(in oklab, var(--muted-foreground) 18%, transparent);
+}
+
+.flow-svg-line-strong {
+  fill: color-mix(in oklab, var(--muted-foreground) 34%, transparent);
+}
+
+.flow-svg-dot {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.record-svg-source,
+.record-svg-row,
+.organize-svg-moving-card,
+.organize-svg-result-card,
+.organize-svg-ai-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.record-svg-source {
+  animation: record-svg-source-flight var(--record-svg-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.record-svg-connector {
+  opacity: 0.36;
+  animation: record-svg-connector-focus var(--record-svg-cycle) ease-in-out infinite;
+}
+
+.record-svg-inbox,
+.organize-svg-stage {
+  animation: flow-svg-fade-in 520ms ease-out both;
+}
+
+.record-svg-row {
+  opacity: 0;
+  transform: translateY(78px) scale(0.96);
+  animation: record-svg-row-fill var(--record-svg-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.organize-svg-ai {
+  animation-delay: 160ms;
+}
+
+.organize-svg-row {
+  animation: organize-svg-row-empty var(--organize-svg-cycle) ease-in-out infinite;
+}
+
+.organize-svg-ai-step {
+  opacity: 0.42;
+  animation: organize-svg-step-focus var(--organize-svg-cycle) ease-in-out infinite;
+}
+
+.organize-svg-moving-card {
+  opacity: 0;
+  animation: organize-svg-material-flight var(--organize-svg-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.organize-svg-result-card {
+  opacity: 0;
+  animation: organize-svg-result-flight var(--organize-svg-cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.organize-svg-ai-pulse {
+  opacity: 0;
+  animation: organize-svg-ai-pulse var(--organize-svg-cycle) ease-in-out infinite;
+}
+
+.organize-svg-pulse-ring {
+  fill: var(--background);
+  stroke: color-mix(in oklab, var(--primary) 44%, var(--border));
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.organize-svg-draft-block {
+  opacity: 0;
+  animation: organize-svg-draft-appear var(--organize-svg-cycle) ease-in-out infinite;
+}
+
+.organize-svg-draft-line {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: organize-svg-line-write var(--organize-svg-cycle) ease-in-out infinite;
+  animation-delay: inherit;
+}
+
+@keyframes flow-svg-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes record-svg-source-flight {
+  0%, 2% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  4%, 8% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1.03);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(var(--record-svg-x), var(--record-svg-y)) scale(0.38);
+  }
+  21% {
+    opacity: 0;
+    transform: translate(var(--record-svg-x), var(--record-svg-y)) scale(0.12);
+  }
+  24% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.96);
+  }
+  32% {
+    opacity: 0.5;
+    transform: translate(0, 0) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes record-svg-connector-focus {
+  0%, 2%, 24%, 100% {
+    opacity: 0.26;
+  }
+  4%, 18% {
+    opacity: 0.62;
+  }
+}
+
+@keyframes record-svg-row-fill {
+  0%, 22%, 100% {
+    opacity: 0;
+    transform: translateY(78px) scale(0.96);
+  }
+  24%, 33% {
+    opacity: 1;
+    transform: translateY(52px) scale(1);
+  }
+  36%, 45% {
+    opacity: 1;
+    transform: translateY(26px) scale(1);
+  }
+  48%, 57% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  60% {
+    opacity: 0;
+    transform: translateY(-26px) scale(0.98);
+  }
+}
+
+@keyframes organize-svg-row-empty {
+  0%, 10%, 94%, 100% {
+    opacity: 1;
+  }
+  16%, 88% {
+    opacity: 0.18;
+  }
+}
+
+@keyframes organize-svg-step-focus {
+  0%, 40%, 63%, 100% {
+    opacity: 0.42;
+  }
+  43%, 59% {
+    opacity: 1;
+  }
+}
+
+@keyframes organize-svg-material-flight {
+  0%, 7%, 100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.92);
+  }
+  9% {
+    opacity: 0.55;
+    transform: translate(0, 0) scale(0.96);
+  }
+  13% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  22% {
+    opacity: 1;
+    transform: translate(var(--organize-move-x), var(--organize-mid-y)) scale(0.7);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(var(--organize-move-x), var(--organize-move-y)) scale(0.34);
+  }
+  34% {
+    opacity: 0;
+    transform: translate(var(--organize-move-x), var(--organize-move-y)) scale(0.1);
+  }
+}
+
+@keyframes organize-svg-result-flight {
+  0%, 62%, 100% {
+    opacity: 0;
+    transform: translate(0, var(--organize-result-y)) scale(0.9);
+  }
+  65% {
+    opacity: 0.55;
+    transform: translate(0, var(--organize-result-y)) scale(0.95);
+  }
+  68% {
+    opacity: 1;
+    transform: translate(0, var(--organize-result-y)) scale(1);
+  }
+  76% {
+    opacity: 1;
+    transform: translate(108px, var(--organize-result-y)) scale(1);
+  }
+  80% {
+    opacity: 0;
+    transform: translate(108px, var(--organize-result-y)) scale(0.14);
+  }
+}
+
+@keyframes organize-svg-ai-pulse {
+  0%, 40%, 63%, 100% {
+    opacity: 0;
+    transform: scale(0.82) rotate(0deg);
+  }
+  43%, 59% {
+    opacity: 1;
+    transform: scale(1.18) rotate(10deg);
+  }
+}
+
+@keyframes organize-svg-draft-appear {
+  0%, 84%, 100% {
+    opacity: 0;
+  }
+  88%, 99% {
+    opacity: 1;
+  }
+}
+
+@keyframes organize-svg-line-write {
+  0%, 84% {
+    transform: scaleX(0);
+  }
+  87% {
+    transform: scaleX(0.35);
+  }
+  89%, 99% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+
 .record-illustration {
   --record-cycle: 6400ms;
 }
@@ -820,13 +1144,31 @@
   .organize-result-card,
   .organize-ai-pulse,
   .organize-stage-ai::after,
-  .organize-draft-block .organize-line {
+  .organize-draft-block .organize-line,
+  .record-svg-source,
+  .record-svg-connector,
+  .record-svg-inbox,
+  .record-svg-row,
+  .organize-svg-stage,
+  .organize-svg-row,
+  .organize-svg-ai-step,
+  .organize-svg-moving-card,
+  .organize-svg-result-card,
+  .organize-svg-ai-pulse,
+  .organize-svg-draft-block,
+  .organize-svg-draft-line {
     animation: none;
   }
 
   .record-source-card,
   .record-inbox-row,
-  .record-inbox-row .record-card-line {
+  .record-inbox-row .record-card-line,
+  .record-svg-source,
+  .record-svg-row,
+  .organize-svg-row,
+  .organize-svg-ai-step,
+  .organize-svg-draft-block,
+  .organize-svg-draft-line {
     opacity: 1;
     transform: none;
   }
