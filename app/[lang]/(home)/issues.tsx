@@ -1,5 +1,8 @@
 import SectionWrap from './section-wrap';
 import { GitHubIssue } from '@/lib/github-data';
+import { RoadmapList } from '@/components/ui/roadmap-list';
+import type { RoadmapListItem } from '@/components/ui/roadmap-list';
+import { ArrowRight } from 'lucide-react';
 
 export default function HomeIssues({
   issues,
@@ -11,6 +14,16 @@ export default function HomeIssues({
   lang: string;
 }) {
   const isCn = lang === 'cn';
+  const roadmapItems: RoadmapListItem[] = issues.map((issue) => ({
+    id: issue.id,
+    title: cleanIssueTitle(issue.title),
+    href: issue.html_url,
+    meta: isCn
+      ? `#${issue.number} / ${formatIssueDate(issue.created_at, 'zh-CN')}`
+      : `#${issue.number} / ${formatIssueDate(issue.created_at, 'en-US')}`,
+    comments: isCn ? `${issue.comments} 条讨论` : `${issue.comments} comments`,
+    labels: issue.labels.map((label) => label.name),
+  }));
 
   return (
     <SectionWrap>
@@ -19,57 +32,37 @@ export default function HomeIssues({
           {isCn ? '开发计划' : 'Development Plan'}
         </h2>
         <p className="text-fd-muted-foreground">
-          {isCn ? '欢迎提交 Issue 和功能建议' : 'Welcome to submit Issues and feature requests'}
+          {isCn ? '公开跟进正在推进的功能、问题和建议' : 'Track active features, issues, and suggestions in public'}
         </p>
       </div>
 
-      {issues.length === 0 ? (
-        <div className="text-center py-8 text-fd-muted-foreground">
-          {isCn ? '暂无功能建议' : 'No feature requests'}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {issues.map((issue) => (
-            <a
-              key={issue.id}
-              href={issue.html_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-4 rounded-lg border border-fd-border bg-fd-card hover:bg-fd-accent hover:text-fd-accent-foreground transition-colors"
-            >
-              <span className="text-sm font-medium text-fd-foreground line-clamp-1">
-                #{issue.number} {issue.title.replace(/^\[(?:bug|feat|fix|docs|refactor|chore||style|test|ci|perf|build|revert)]\s*/i, '')}
-              </span>
-            </a>
-          ))}
-        </div>
-      )}
+      <RoadmapList
+        items={roadmapItems}
+        emptyText={isCn ? '暂无功能建议' : 'No feature requests'}
+      />
 
       <div className="text-center mt-6">
         <a
           href="https://github.com/codexu/note-gen/issues"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-fd-border bg-fd-card hover:bg-fd-accent hover:text-fd-accent-foreground transition-colors"
+          className="inline-flex items-center gap-2 border border-fd-border border-dashed bg-fd-card px-4 py-2 text-sm font-medium transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <path d="M12 17h.01" />
-          </svg>
           {isCn ? `查看全部 (${totalCount})` : `View all (${totalCount})`}
+          <ArrowRight className="size-4" />
         </a>
       </div>
     </SectionWrap>
   );
+}
+
+function cleanIssueTitle(title: string) {
+  return title.replace(/^\[(?:bug|feat|fix|docs|refactor|chore|style|test|ci|perf|build|revert)]\s*/i, '');
+}
+
+function formatIssueDate(date: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(date));
 }

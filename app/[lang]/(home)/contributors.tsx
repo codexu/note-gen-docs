@@ -20,6 +20,7 @@ interface HomeContributorsProps {
 export default function HomeContributors({ contributors = [] }: HomeContributorsProps) {
   const params = useParams();
   const lang = (params?.lang as 'cn' | 'en') || 'cn';
+  const contributorsPerRow = 16;
 
   const titleText = {
     cn: "开源贡献者",
@@ -27,13 +28,13 @@ export default function HomeContributors({ contributors = [] }: HomeContributors
   }[lang];
 
   const subtitleText = {
-    cn: "感谢所有为 NoteGen 项目贡献代码的开发者们",
-    en: "Thanks to all developers who contributed code to the NoteGen project",
+    cn: "感谢每一位参与代码、文档和问题反馈的贡献者",
+    en: "Thanks to everyone contributing code, docs, and feedback to NoteGen",
   }[lang];
 
   const promotionalText = {
-    cn: "🚀 加入我们的开源社区，体验协作开发的乐趣！无论是修复 Bug、添加新功能，还是改进文档，每一个贡献都让 NoteGen 变得更好。开源不仅是代码的分享，更是知识与创意的碰撞。让我们一起构建更优秀的工具，让更多人受益！",
-    en: "🚀 Join our open source community and experience the joy of collaborative development! Whether fixing bugs, adding new features, or improving documentation, every contribution makes NoteGen better. Open source is not just about sharing code, but also about the collision of knowledge and creativity. Let's build better tools together and benefit more people!",
+    cn: "NoteGen 保持开源透明，也欢迎修复问题、补充文档、提出想法或参与功能实现。",
+    en: "NoteGen stays open and transparent. Fixes, docs, ideas, and feature contributions are all welcome.",
   }[lang];
 
   const viewOnGithubText = {
@@ -62,31 +63,28 @@ export default function HomeContributors({ contributors = [] }: HomeContributors
           {subtitleText}
         </p>
 
-        <div className="flex flex-row items-center justify-center mb-12 flex-wrap">
+        <div className="mb-12 space-y-4">
           {(() => {
-            const displayContributors = contributors.slice(0, 30);
-            const remainingCount = contributors.length - displayContributors.length;
-
-            const tooltipItems = displayContributors.map((contributor) => ({
-              id: contributor.id,
-              name: contributor.login,
-              designation: `${contributor.contributions} ${contributionsText}`,
-              image: contributor.avatar_url,
-            }));
+            const rows = Array.from({ length: Math.ceil(contributors.length / contributorsPerRow) }, (_, index) =>
+              contributors.slice(index * contributorsPerRow, (index + 1) * contributorsPerRow)
+            );
 
             return (
               <>
-                <AnimatedTooltip items={tooltipItems} />
-                {remainingCount > 0 && (
-                  <div
-                    className="relative h-14 w-14 rounded-full bg-fd-muted flex items-center justify-center border-2 border-fd-border hover:border-fd-primary transition-all duration-200 cursor-pointer"
-                    onClick={() => window.open('https://github.com/codexu/note-gen/graphs/contributors', '_blank')}
-                  >
-                    <span className="text-sm font-bold text-fd-muted-foreground">
-                      +{remainingCount}
-                    </span>
-                  </div>
-                )}
+                {rows.map((row, rowIndex) => {
+                  const tooltipItems = row.map((contributor) => ({
+                    id: contributor.id,
+                    name: contributor.login,
+                    designation: `${contributor.contributions} ${contributionsText}`,
+                    image: contributor.avatar_url,
+                  }));
+
+                  return (
+                    <div key={rowIndex} className="flex flex-row flex-wrap items-center justify-center gap-y-4 pr-4">
+                      <AnimatedTooltip items={tooltipItems} />
+                    </div>
+                  );
+                })}
               </>
             );
           })()}

@@ -51,34 +51,47 @@ export const getContributors = unstable_cache(
   async (): Promise<Contributor[]> => {
     try {
       const token = process.env.GITHUB_TOKEN;
-      
-      if (!token) {
-        console.warn('GITHUB_TOKEN not found in environment variables');
-        return [];
-      }
 
       const headers = new Headers();
-      headers.set('Authorization', `Bearer ${token}`);
-      
-      const response = await fetch('https://api.github.com/repos/codexu/note-gen/contributors?per_page=24', {
-        headers,
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        console.error('GitHub API error:', response.status, response.statusText);
-        return [];
+      headers.set('Accept', 'application/vnd.github.v3+json');
+      headers.set('User-Agent', 'NoteGen-Website');
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
       }
 
-      const contributors = await response.json();
-      
-      return contributors.map((contributor: any) => ({
-        login: contributor.login,
-        id: contributor.id,
-        avatar_url: contributor.avatar_url,
-        html_url: contributor.html_url,
-        contributions: contributor.contributions,
-      }));
+      const contributors: Contributor[] = [];
+      const perPage = 100;
+
+      for (let page = 1; page <= 10; page++) {
+        const response = await fetch(`https://api.github.com/repos/codexu/note-gen/contributors?per_page=${perPage}&page=${page}`, {
+          headers,
+          cache: 'no-store',
+        });
+
+        if (!response.ok) {
+          console.error('GitHub API error:', response.status, response.statusText);
+          return contributors;
+        }
+
+        const pageContributors = await response.json();
+        if (!Array.isArray(pageContributors) || pageContributors.length === 0) {
+          break;
+        }
+
+        contributors.push(...pageContributors.map((contributor: any) => ({
+          login: contributor.login,
+          id: contributor.id,
+          avatar_url: contributor.avatar_url,
+          html_url: contributor.html_url,
+          contributions: contributor.contributions,
+        })));
+
+        if (pageContributors.length < perPage) {
+          break;
+        }
+      }
+
+      return contributors;
     } catch (error) {
       console.error('Error fetching contributors:', error);
       return [];
