@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from 'next/navigation';
-import { FileEdit, Puzzle, Sparkles, Database } from 'lucide-react';
+import { Database, FileEdit, Plug, Sparkles } from 'lucide-react';
 import SectionWrap from './section-wrap';
 
 type AgentFeature = {
@@ -24,74 +24,74 @@ export default function HomeAgent() {
   const lang = (params?.lang as 'cn' | 'en') || 'cn';
 
   const sectionTitle = {
-    cn: "AI Agent",
-    en: "AI Agent",
+    cn: "让 AI 读懂你的笔记",
+    en: "Let AI understand your notes",
   }[lang];
 
   const sectionDescription = {
-    cn: "让 AI 成为你的写作助手，智能辅助内容创作与文档管理",
-    en: "Make AI your writing assistant, intelligently assisting with content creation and document management",
+    cn: "不止是聊天。NoteGen 的 AI 可以读取当前文档和本地笔记，帮你改写、查找、整理和完成更复杂的任务。",
+    en: "More than chat. NoteGen AI can read your documents and local notes to help rewrite, search, organize, and complete complex tasks.",
   }[lang];
 
   const agentFeatures: AgentFeature[] = [
     {
       icon: <FileEdit className="size-4" />,
       title: {
-        cn: "智能笔记编辑",
-        en: "Intelligent Note Editing",
+        cn: "按上下文改写",
+        en: "Rewrite with context",
       },
       shortDescription: {
-        cn: "上下文感知编辑",
-        en: "Context-Aware Editing",
+        cn: "读懂当前文档",
+        en: "Understands the note",
       },
       description: {
-        cn: "Agent 可以精准读取文档内容，理解写作上下文后进行智能修改。支持批量操作和多文档联动，让内容创作和文档修改变得简单高效。",
-        en: "Agent can accurately read document contents, understand writing context, and make intelligent edits. Supports batch operations and multi-document collaboration, making content creation and document modification simple and efficient.",
-      },
-    },
-    {
-      icon: <Puzzle className="size-4" />,
-      title: {
-        cn: "MCP",
-        en: "MCP",
-      },
-      shortDescription: {
-        cn: "扩展 AI 能力边界",
-        en: "Extend AI Capabilities",
-      },
-      description: {
-        cn: "通过模型上下文协议（MCP），Agent 可以访问外部工具、数据库和服务，如网络搜索、API 调用、系统操作等，实现真正的智能交互。",
-        en: "Through Model Context Protocol (MCP), Agent can access external tools, databases and services, such as web search, API calls, system operations, achieving true intelligent interaction.",
-      },
-    },
-    {
-      icon: <Sparkles className="size-4" />,
-      title: {
-        cn: "Skills",
-        en: "Skills",
-      },
-      shortDescription: {
-        cn: "可定制的工作流",
-        en: "Customizable Workflows",
-      },
-      description: {
-        cn: "内置丰富的技能系统，支持自定义工作流和任务链。Agent 可以根据任务需求自动选择合适的技能，完成复杂的多步骤操作。",
-        en: "Built-in rich skill system, supports customizable workflows and task chains. Agent can automatically select appropriate skills based on task requirements, completing complex multi-step operations.",
+        cn: "AI 会读取当前笔记内容，帮你补充、改写、润色或调整结构。",
+        en: "AI reads the current note, then helps expand, rewrite, polish, or restructure it.",
       },
     },
     {
       icon: <Database className="size-4" />,
       title: {
-        cn: "RAG",
-        en: "RAG",
+        cn: "从笔记里查找",
+        en: "Search your notes",
       },
       shortDescription: {
         cn: "本地知识检索",
-        en: "Local Knowledge Retrieval",
+        en: "Local knowledge",
       },
       description: {
-        cn: "基于你的笔记构建本地知识库，使用向量和重排序模型进行智能检索。Agent 可以从你的知识库中提取相关信息，生成更准确的回答。",
-        en: "Build local knowledge base from your notes, using vector and re-ranking models for intelligent retrieval. Agent can extract relevant information from your knowledge base to generate more accurate responses.",
+        cn: "基于你的本地笔记检索相关内容，让回答更贴近已有资料。",
+        en: "Retrieve related local notes so answers stay grounded in your own material.",
+      },
+    },
+    {
+      icon: <Sparkles className="size-4" />,
+      title: {
+        cn: "完成多步骤任务",
+        en: "Handle multi-step tasks",
+      },
+      shortDescription: {
+        cn: "Skills 自定义技能",
+        en: "Custom Skills",
+      },
+      description: {
+        cn: "把常用流程做成 Skills，让 AI 按步骤整理、生成或处理内容。",
+        en: "Turn repeat workflows into Skills so AI can organize, generate, or process content step by step.",
+      },
+    },
+    {
+      icon: <Plug className="size-4" />,
+      title: {
+        cn: "连接外部工具",
+        en: "Connect external tools",
+      },
+      shortDescription: {
+        cn: "MCP 扩展能力",
+        en: "MCP extensions",
+      },
+      description: {
+        cn: "通过 MCP 接入搜索、API 或其他服务，扩展更高级的工作流。",
+        en: "Use MCP to connect search, APIs, or services for advanced workflows.",
       },
     },
   ];
@@ -124,7 +124,7 @@ function AgentFeatureItem({ feature, lang }: { feature: AgentFeature, lang: 'cn'
       <h5 className="text-xs text-fd-muted-foreground font-medium">
         {feature.shortDescription[lang]}
       </h5>
-      <p className="text-sm text-fd-muted-foreground leading-relaxed">
+      <p className="text-sm text-fd-muted-foreground leading-relaxed line-clamp-2">
         {feature.description[lang]}
       </p>
     </div>
