@@ -104,9 +104,9 @@ export default function HomeAgent() {
           <p className="text-fd-muted-foreground text-sm">{sectionDescription}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 border border-fd-border border-dashed">
           {agentFeatures.map((feature, index) => (
-            <AgentFeatureItem key={index} feature={feature} lang={lang} />
+            <AgentFeatureItem key={index} feature={feature} lang={lang} index={index} />
           ))}
         </div>
       </div>
@@ -114,9 +114,15 @@ export default function HomeAgent() {
   );
 }
 
-function AgentFeatureItem({ feature, lang }: { feature: AgentFeature, lang: 'cn' | 'en' }) {
+function AgentFeatureItem({ feature, lang, index }: { feature: AgentFeature, lang: 'cn' | 'en', index: number }) {
+  const isTopRow = index < 2;
+  const isLeftCol = index % 2 === 0;
+  const isLast = index === 3;
+  const bottomBorder = isTopRow ? 'border-b' : !isLast ? 'border-b md:border-b-0' : '';
+  const rightBorder = isLeftCol ? 'md:border-r' : '';
+
   return (
-    <div className="p-6 relative overflow-hidden rounded-lg bg-gray-950/[2.5%] after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:inset-ring after:inset-ring-gray-950/5 dark:after:inset-ring-white/10 bg-[image:radial-gradient(var(--pattern-fg)_1px,_transparent_0)] bg-[size:10px_10px] bg-fixed [--pattern-fg:var(--color-gray-950)]/5 dark:[--pattern-fg:var(--color-white)]/10 flex flex-col gap-3 border-[0.5px] border-fd-border hover:bg-fd-muted/50 transition-colors">
+    <div className={`p-6 md:p-8 lg:p-10 flex flex-col gap-3 border-fd-border border-dashed hover:bg-fd-muted/50 transition-colors ${bottomBorder} ${rightBorder}`}>
       <div className="flex items-center gap-2 text-fd-primary">
         {feature.icon}
         <h3 className="font-semibold text-lg">{feature.title[lang]}</h3>
