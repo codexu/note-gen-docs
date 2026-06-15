@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from 'next/navigation';
-import { Eye, ExternalLink, Heart, Palette, Shield, SquareM, TabletSmartphone } from 'lucide-react';
+import { FileText, Heart, Inbox, Shield, Sparkles, TabletSmartphone } from 'lucide-react';
 import SectionWrap from './section-wrap';
 
 type Feature = {
@@ -17,7 +17,6 @@ type Feature = {
     cn: string;
     en: string;
   };
-  link?: string;
 }
 
 export default function HomeFeature() {
@@ -26,94 +25,93 @@ export default function HomeFeature() {
 
   const features = [
     {
-      icon: <Heart className="size-4" />,
+      icon: <Inbox className="size-4" />,
       title: {
-        cn: "开源免费",
-        en: "Open Source & Free",
+        cn: "先记录，不打断",
+        en: "Capture without breaking flow",
       },
       shortDescription: {
-        cn: "永久免费使用",
-        en: "Free Forever",
+        cn: "灵感先留下",
+        en: "Save it first",
       },
       description: {
-        cn: "完全开源，永久免费。软件内无广告，无隐藏收费，纯净的笔记体验。",
-        en: "Fully open source and free forever. No ads, no hidden fees, just a pure note-taking experience.",
+        cn: "灵感、截图、链接、语音、文件先放进来，不用分类、排序，也不用立刻成文。",
+        en: "Capture ideas, screenshots, links, voice, and files first. Sort later.",
       },
     },
     {
-      icon: <TabletSmartphone className="size-4" />,
+      icon: <Sparkles className="size-4" />,
       title: {
-        cn: "跨平台",
-        en: "Cross Platform",
+        cn: "AI 自动整理",
+        en: "AI organizes for you",
       },
       shortDescription: {
-        cn: "支持主流设备",
-        en: "Supports Mainstream Devices",
+        cn: "零散变清晰",
+        en: "From scattered to clear",
       },
       description: {
-        cn: "基于 Tarui2 框架开发，支持 Windows、Mac、Linux、Android、iOS，安装包仅 20MB 左右",
-        en: "Based on Tarui2 framework, supports Windows, Mac, Linux, Android, iOS. Only 20MB.",
+        cn: "把零散记录交给 AI，自动整理成结构清晰、可以继续编辑的笔记。",
+        en: "Drop in scattered records. AI turns them into clear, editable notes.",
+      },
+    },
+    {
+      icon: <FileText className="size-4" />,
+      title: {
+        cn: "继续写下去",
+        en: "Keep writing",
+      },
+      shortDescription: {
+        cn: "标准 Markdown",
+        en: "Standard Markdown",
+      },
+      description: {
+        cn: "整理后的内容是标准 Markdown，可以继续编辑、补充、改写和沉淀。",
+        en: "Organized notes stay in Markdown, ready to edit, expand, and keep.",
       },
     },
     {
       icon: <Shield className="size-4" />,
       title: {
+        cn: "数据在你手里",
+        en: "Your data stays yours",
+      },
+      shortDescription: {
         cn: "本地优先",
-        en: "Local First",
-      },
-      shortDescription: {
-        cn: "数据本地存储",
-        en: "Data Stored Locally",
+        en: "Local first",
       },
       description: {
-        cn: "所有数据存储在本地，完全掌控你的笔记。无需登录即可使用，隐私安全有保障。",
-        en: "All data is stored locally, giving you full control over your notes. No login required, privacy and security guaranteed.",
+        cn: "数据优先保存在本地，无需登录也能开始使用，自己的笔记自己掌控。",
+        en: "Stored locally first. Start without login and keep control of your notes.",
       },
     },
     {
-      icon: <SquareM className="size-4" />,
+      icon: <TabletSmartphone className="size-4" />,
       title: {
-        cn: "Markdown",
-        en: "Markdown",
+        cn: "多端记录，免费同步",
+        en: "Capture anywhere, sync for free",
       },
       shortDescription: {
-        cn: "标准语法 + 扩展语法",
-        en: "Standard + Extended",
+        cn: "桌面端 + 移动端",
+        en: "Desktop + mobile",
       },
       description: {
-        cn: "支持标准 Markdown 语法，同时支持扩展语法，如数学公式、脑图、图表、流程图等",
-        en: "Supports standard Markdown and extends syntax, such as math formula, mind map, chart, flow chart, etc.",
+        cn: "桌面端和移动端都能记录，数据可在设备之间免费同步，随时接上自己的笔记现场。",
+        en: "Record on desktop or mobile, then sync across devices for free.",
       },
     },
     {
-      icon: <Eye className="size-4" />,
+      icon: <Heart className="size-4" />,
       title: {
-        cn: "所见即所得",
-        en: "WYSIWYG",
+        cn: "开源且免费",
+        en: "Open source and free",
       },
       shortDescription: {
-        cn: "Tiptap",
-        en: "Tiptap",
+        cn: "适合长期使用",
+        en: "Built for the long run",
       },
       description: {
-        cn: "使用 Tiptap 编辑器，支持所见即所得模式，类似 Typora 的即时渲染体验。",
-        en: "Powered by Tiptap editor, supports WYSIWYG mode with instant rendering experience like Typora.",
-      },
-      link: "https://github.com/Vanessa219/vditor",
-    },
-    {
-      icon: <Palette className="size-4" />,
-      title: {
-        cn: "主题",
-        en: "Themes",
-      },
-      shortDescription: {
-        cn: "多主题 + 深色模式",
-        en: "Multiple Themes + Dark Mode",
-      },
-      description: {
-        cn: "内置 12 种精心设计的预设主题，支持自定义主题颜色。提供深色模式，保护你的眼睛。",
-        en: "Supports 12 preset themes with customizable theme colors. Includes dark mode.",
+        cn: "无广告、完全免费，代码开放，适合长期使用。",
+        en: "No ads, no fees, open source. Built for long-term use.",
       },
     },
   ];
@@ -140,15 +138,8 @@ function FeatureItem({ feature, lang, index }: { feature: Feature, lang: 'cn' | 
         {feature.icon}
         {feature.shortDescription[lang]}
       </h5>
-      {feature.link ? (
-        <a href={feature.link} target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-fd-primary hover:underline flex items-center gap-1">
-          {feature.title[lang]}
-          <ExternalLink className="size-3" />
-        </a>
-      ) : (
-        <h3 className="text-lg font-bold">{feature.title[lang]}</h3>
-      )}
-      <p className="text-fd-muted-foreground text-sm">{feature.description[lang]}</p>
+      <h3 className="text-lg font-bold">{feature.title[lang]}</h3>
+      <p className="text-fd-muted-foreground text-sm line-clamp-2">{feature.description[lang]}</p>
     </div>
   );
 }

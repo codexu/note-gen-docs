@@ -23,29 +23,25 @@ interface HomeHeroProps {
   githubStats?: GitHubStats;
 }
 
+const heroCopy = {
+  cn: {
+    titleLines: ['先记录，再整理。'],
+    description: '灵感、截图、链接、语音和文件，先自然地进入记录箱。等到需要输出时，再让 AI 帮你整理成清晰、可继续编辑的 Markdown 笔记。',
+    downloadLink: '下载客户端',
+    docsLink: '使用文档',
+  },
+  en: {
+    titleLines: ['Capture first, organize later.'],
+    description: 'Drop ideas, screenshots, links, voice notes, and files into one inbox first. When it is time to write, let AI shape them into clear, editable Markdown notes.',
+    downloadLink: 'Download Client',
+    docsLink: 'Get Started',
+  },
+} as const;
+
 export default function HomeHero({ githubStats }: HomeHeroProps) {
   const params = useParams();
   const lang = (params?.lang as 'cn' | 'en') || 'cn';
-
-  const h1Text = {
-    cn: "一款跨平台的 Markdown AI Agent 笔记软件",
-    en: "A cross-platform Markdown AI Agent note-taking software.",
-  }[lang];
-
-  const pText = {
-    cn: "致力于使用 AI 建立记录和写作的桥梁",
-    en: "Bridging the Gap Between Recording and Writing with LLM.",
-  }[lang];
-
-  const downloadLink = {
-    cn: "下载客户端",
-    en: "Download Client",
-  }[lang];
-
-  const docsLink = {
-    cn: "使用文档",
-    en: "Get Started",
-  }[lang];
+  const copy = heroCopy[lang];
 
   // 使用服务端传入的数据，避免客户端 API 调用
   const starCount = githubStats?.stargazers_count || 0;
@@ -53,21 +49,24 @@ export default function HomeHero({ githubStats }: HomeHeroProps) {
   return (
     <SectionWrap className='flex flex-col lg:flex-row justify-between gap-8 md:gap-16 lg:gap-24'>
       <div className="flex flex-col justify-center items-center lg:items-start text-center lg:text-left">
-        <div className="flex items-center">
-          <p className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">NoteGen</p>
-        </div>
-        <h1 className="mb-3 text-lg sm:text-xl lg:text-2xl font-bold">{h1Text}</h1>
-        <p className="text-fd-muted-foreground max-w-prose">
-          {pText}
+        <h1 className={`mb-4 sm:mb-5 text-3xl sm:text-4xl ${lang === 'en' ? 'lg:text-4xl' : 'lg:text-5xl'} font-bold leading-tight`}>
+          {copy.titleLines.map((line, index) => (
+            <span key={line} className={index > 0 ? 'block text-fd-muted-foreground' : 'block'}>
+              {line}
+            </span>
+          ))}
+        </h1>
+        <p className="text-fd-muted-foreground max-w-prose text-base sm:text-lg leading-7 sm:leading-8">
+          {copy.description}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-10 lg:mt-12 w-full sm:w-auto">
           <Button className="w-full sm:w-auto" onClick={() => window.location.href = `/${lang}/download`} variant="default">
             <Download />
-            {downloadLink}
+            {copy.downloadLink}
           </Button>
           <Button className="w-full sm:w-auto" onClick={() => window.location.href = `/${lang}/docs`} variant="default">
             <Book />
-            {docsLink}
+            {copy.docsLink}
           </Button>
           <Button className="w-full sm:w-auto" onClick={() => window.open('https://github.com/codexu/note-gen', '_blank')} variant="outline">
             <Github /> Github {starCount ? formatNumber(starCount) : ''}

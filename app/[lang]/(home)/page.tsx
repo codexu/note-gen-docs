@@ -53,16 +53,16 @@ export async function generateMetadata({
   const { lang } = await params;
   return {
     title: {
-      cn: 'NoteGen - Markdown AI 笔记软件',
-      en: 'NoteGen - Markdown AI Note-taking Software',
+      cn: 'NoteGen - 先记录，再整理',
+      en: 'NoteGen - Capture first, organize later',
     }[lang],
     description: {
-      cn: '一款跨平台的 Markdown AI 笔记软件，致力于使用 AI 建立记录和写作的桥梁',
-      en: 'A cross-platform Markdown AI note-taking software, bridging the gap between recording and writing with LLM.',
+      cn: 'NoteGen 让灵感、截图、链接、语音和文件先进入记录箱，再由 AI 整理成可编辑的 Markdown 笔记。',
+      en: 'NoteGen lets you capture ideas, screenshots, links, voice notes, and files first, then organize them into editable Markdown notes with AI.',
     }[lang],
     keywords: {
-      cn: ['NoteGen', 'Markdown', "AI", '跨平台', '记录', '写作', '笔记', '软件', '记录和写作的桥梁'],
-      en: ['NoteGen', 'Markdown', 'Cross-platform', 'Recording', 'Writing', 'AI', 'Note-taking', 'Software', 'Bridge between recording and writing with LLM'],
+      cn: ['NoteGen', 'Markdown', "AI", '跨平台', '记录', '整理', '写作', '笔记', '软件', '先记录再整理'],
+      en: ['NoteGen', 'Markdown', 'Cross-platform', 'Capture', 'Organize', 'Writing', 'AI', 'Note-taking', 'Software', 'Capture first organize later'],
     }[lang],
   };
 }
