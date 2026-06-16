@@ -3,13 +3,22 @@ import { RootProvider } from 'fumadocs-ui/provider';
 import type { ReactNode } from 'react';
 import type { Translations } from 'fumadocs-ui/i18n';
 import { GoogleAnalytics } from '@next/third-parties/google';
-import type { Viewport } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { getHtmlLang, normalizeLang, siteConfig } from '@/lib/seo';
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+};
+
+export const metadata: Metadata = {
+  metadataBase: siteConfig.url,
+  applicationName: siteConfig.name,
+  creator: 'codexu',
+  publisher: 'codexu',
+  referrer: 'origin-when-cross-origin',
 };
 
 const cn: Partial<Translations> = {
@@ -32,9 +41,10 @@ export default async function Layout(
   { children: ReactNode, params: Promise<{ lang: string }>}
 ) {
   const lang = (await params).lang;
+  const htmlLang = getHtmlLang(normalizeLang(lang));
 
   return (
-    <html lang={lang} suppressHydrationWarning>
+    <html lang={htmlLang} suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
         <RootProvider
           i18n={{
