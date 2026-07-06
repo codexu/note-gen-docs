@@ -3,9 +3,12 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import Image from 'next/image';
 
 export function baseOptions(locale: string): BaseLayoutProps {
+  const lang = locale === 'en' ? 'en' : 'cn';
+
   return {
     i18n,
     nav: {
+      url: `/${lang}`,
       title: (
         <>
           <Image
@@ -18,7 +21,23 @@ export function baseOptions(locale: string): BaseLayoutProps {
         </>
       ),
     },
-    links: [],
+    links: [
+      {
+        text: lang === 'en' ? 'Docs' : '文档',
+        url: `/${lang}/docs`,
+        active: 'nested-url',
+      },
+      {
+        text: lang === 'en' ? 'Download' : '下载',
+        url: `/${lang}/download`,
+        active: 'url',
+      },
+      {
+        text: lang === 'en' ? 'Donate' : '捐赠',
+        url: `/${lang}/donate`,
+        active: 'url',
+      },
+    ],
     githubUrl: 'https://github.com/codexu/note-gen',
   };
 }

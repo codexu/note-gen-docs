@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Download, Github, Book } from 'lucide-react';
+import { Download, Github, Book, HeartHandshake } from 'lucide-react';
 import SectionWrap from './section-wrap';
 import Image from 'next/image';
 
@@ -29,12 +29,14 @@ const heroCopy = {
     description: '灵感、截图、链接、语音和文件，先自然地进入记录箱。等到需要输出时，再让 AI 帮你整理成清晰、可继续编辑的 Markdown 笔记。',
     downloadLink: '下载客户端',
     docsLink: '使用文档',
+    donateLink: '支持项目',
   },
   en: {
     titleLines: ['Capture first, organize later.'],
     description: 'Drop ideas, screenshots, links, voice notes, and files into one inbox first. When it is time to write, let AI shape them into clear, editable Markdown notes.',
     downloadLink: 'Download Client',
     docsLink: 'Get Started',
+    donateLink: 'Support Project',
   },
 } as const;
 
@@ -61,15 +63,19 @@ export default function HomeHero({ githubStats }: HomeHeroProps) {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-10 lg:mt-12 w-full sm:w-auto">
           <Button className="w-full sm:w-auto" onClick={() => window.location.href = `/${lang}/download`} variant="default">
-            <Download />
+            <Download data-icon="inline-start" />
             {copy.downloadLink}
           </Button>
           <Button className="w-full sm:w-auto" onClick={() => window.location.href = `/${lang}/docs`} variant="default">
-            <Book />
+            <Book data-icon="inline-start" />
             {copy.docsLink}
           </Button>
+          <Button className="w-full sm:w-auto" onClick={() => window.location.href = `/${lang}/donate`} variant="outline">
+            <HeartHandshake data-icon="inline-start" />
+            {copy.donateLink}
+          </Button>
           <Button className="w-full sm:w-auto" onClick={() => window.open('https://github.com/codexu/note-gen', '_blank')} variant="outline">
-            <Github /> Github {starCount ? formatNumber(starCount) : ''}
+            <Github data-icon="inline-start" /> Github {starCount ? formatNumber(starCount) : ''}
           </Button>
         </div>
       </div>
