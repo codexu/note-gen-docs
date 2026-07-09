@@ -12,52 +12,50 @@ import { normalizeLang, siteConfig } from '@/lib/seo';
 const content = {
   cn: {
     meta: {
-      title: '捐赠 NoteGen - 支持开源持续维护',
-      description: '通过自愿捐赠支持 NoteGen 这个开源 AI Markdown 笔记项目持续维护。',
+      title: 'NoteGen 交流群 - QQ 群与微信群入口',
+      description: '加入 NoteGen 交流群，反馈问题、交流使用经验，或联系微信群管理员入群。',
     },
-    title: '支持 NoteGen',
+    title: '加入 NoteGen 交流群',
     description:
-      'NoteGen 会继续坚持免费开源、无广告、无捆绑。如果这个项目对你有帮助，可以通过下面的收款码自愿支持维护。',
-    note: '捐赠不影响 NoteGen 的免费开源使用，也不等同于购买服务或承诺特定功能排期。',
+      '可以在交流群反馈问题、交流使用经验。QQ 群可直接扫码加入，微信群请备注 NoteGen 入群。',
     qrcodes: {
-      alipay: {
-        title: '支付宝',
-        description: '支付宝扫码支持。',
-        alt: 'NoteGen 支付宝收款码',
+      qq: {
+        title: 'QQ 群',
+        description: '扫码加入 QQ 交流群。',
+        alt: 'NoteGen QQ 群二维码',
       },
-      wechatPay: {
-        title: '微信支付',
-        description: '微信支付扫码支持。',
-        alt: 'NoteGen 微信支付收款码',
+      wechatAdmin: {
+        title: '微信群管理员',
+        description: '备注 NoteGen 入群。',
+        alt: 'NoteGen 微信群管理员二维码',
       },
     },
   },
   en: {
     meta: {
-      title: 'Donate to NoteGen - Support Open Source Maintenance',
-      description: 'Support NoteGen through voluntary donations for this open-source AI Markdown notes project.',
+      title: 'NoteGen Community - QQ and WeChat Group Access',
+      description: 'Join the NoteGen community for feedback, usage discussions, and WeChat group access.',
     },
-    title: 'Support NoteGen',
+    title: 'Join the NoteGen community',
     description:
-      'NoteGen will stay free, open source, ad-free, and bundle-free. If it helps you, you can voluntarily support maintenance with the QR codes below.',
-    note: 'Donations do not affect free open-source usage and are not a service purchase or a promise of a feature schedule.',
+      'Use the community groups for feedback and usage discussions. Scan the QQ group QR directly, or mention NoteGen for WeChat group access.',
     qrcodes: {
-      alipay: {
-        title: 'Alipay',
-        description: 'Scan with Alipay.',
-        alt: 'NoteGen Alipay donation QR code',
+      qq: {
+        title: 'QQ group',
+        description: 'Scan to join the QQ community.',
+        alt: 'NoteGen QQ group QR code',
       },
-      wechatPay: {
-        title: 'WeChat Pay',
-        description: 'Scan with WeChat Pay.',
-        alt: 'NoteGen WeChat Pay donation QR code',
+      wechatAdmin: {
+        title: 'WeChat group admin',
+        description: 'Mention NoteGen for group access.',
+        alt: 'NoteGen WeChat group admin QR code',
       },
     },
   },
 } as const;
 
-const alipayDonationQrUrl = 'https://files.seeusercontent.com/2026/07/06/yCr6/b42e33564e77e762d6ac8083144debb2.jpg';
-const wechatPayDonationQrUrl = 'https://files.seeusercontent.com/2026/07/09/5hAw/f3bb03edcf2a3b3987118e7eb56dd1d9.jpg';
+const qqGroupQrUrl = 'https://files.seeusercontent.com/2026/07/06/wy6R/448631047-08d1ccbc-5909-483d-a41.png';
+const wechatAdminQrUrl = 'https://files.seeusercontent.com/2026/07/06/W6mi/590254361-d7e2773a-0c31-4247-a4d.png';
 
 export async function generateMetadata({
   params,
@@ -72,17 +70,17 @@ export async function generateMetadata({
     title: t.meta.title,
     description: t.meta.description,
     alternates: {
-      canonical: `/${language}/donate`,
+      canonical: `/${language}/community`,
       languages: {
-        'zh-CN': '/cn/donate',
-        en: '/en/donate',
-        'x-default': '/cn/donate',
+        'zh-CN': '/cn/community',
+        en: '/en/community',
+        'x-default': '/cn/community',
       },
     },
     openGraph: {
       title: t.meta.title,
       description: t.meta.description,
-      url: `/${language}/donate`,
+      url: `/${language}/community`,
       siteName: siteConfig.name,
       type: 'website',
       locale: language === 'cn' ? 'zh_CN' : 'en_US',
@@ -100,7 +98,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function DonatePage({
+export default async function CommunityPage({
   params,
 }: {
   params: Promise<{ lang: string }>;
@@ -111,22 +109,20 @@ export default async function DonatePage({
 
   const qrItems = [
     {
-      title: t.qrcodes.alipay.title,
-      description: t.qrcodes.alipay.description,
+      title: t.qrcodes.qq.title,
+      description: t.qrcodes.qq.description,
       image: {
-        src: alipayDonationQrUrl,
-        alt: t.qrcodes.alipay.alt,
+        src: qqGroupQrUrl,
+        alt: t.qrcodes.qq.alt,
       },
-      priority: true,
     },
     {
-      title: t.qrcodes.wechatPay.title,
-      description: t.qrcodes.wechatPay.description,
+      title: t.qrcodes.wechatAdmin.title,
+      description: t.qrcodes.wechatAdmin.description,
       image: {
-        src: wechatPayDonationQrUrl,
-        alt: t.qrcodes.wechatPay.alt,
+        src: wechatAdminQrUrl,
+        alt: t.qrcodes.wechatAdmin.alt,
       },
-      priority: false,
     },
   ];
 
@@ -141,9 +137,6 @@ export default async function DonatePage({
             <p className="text-base leading-7 text-muted-foreground md:text-lg md:leading-8">
               {t.description}
             </p>
-            <p className="text-sm leading-6 text-muted-foreground">
-              {t.note}
-            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -153,7 +146,6 @@ export default async function DonatePage({
                 title={item.title}
                 description={item.description}
                 image={item.image}
-                priority={item.priority}
               />
             ))}
           </div>
@@ -172,12 +164,10 @@ function QrCard({
   title,
   description,
   image,
-  priority,
 }: {
   title: string;
   description: string;
   image: QrImage;
-  priority: boolean;
 }) {
   return (
     <Card className="h-full">
@@ -186,25 +176,19 @@ function QrCard({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <PosterImage image={image} priority={priority} />
+        <PosterImage image={image} />
       </CardContent>
     </Card>
   );
 }
 
-function PosterImage({
-  image,
-  priority = false,
-}: {
-  image: QrImage;
-  priority?: boolean;
-}) {
+function PosterImage({ image }: { image: QrImage }) {
   return (
     <div className="mx-auto flex h-[260px] w-[180px] items-center justify-center overflow-hidden rounded-md border bg-background p-3">
       <img
         src={image.src}
         alt={image.alt}
-        loading={priority ? 'eager' : 'lazy'}
+        loading="lazy"
         decoding="async"
         className="max-h-full max-w-full object-contain"
       />

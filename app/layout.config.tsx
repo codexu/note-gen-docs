@@ -33,6 +33,16 @@ export function baseOptions(locale: string): BaseLayoutProps {
         active: 'url',
       },
       {
+        text: lang === 'en' ? 'Community' : '交流群',
+        url: `/${lang}/community`,
+        active: 'url',
+      },
+      {
+        text: lang === 'en' ? 'Business' : '商务合作',
+        url: `/${lang}/business`,
+        active: 'url',
+      },
+      {
         text: lang === 'en' ? 'Donate' : '捐赠',
         url: `/${lang}/donate`,
         active: 'url',
