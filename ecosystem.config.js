@@ -1,9 +1,11 @@
 module.exports = {
   apps: [{
     name: 'note-gen-docs',
-    script: 'pnpm',
-    args: 'start',
-    cwd: '/root/note-gen-docs',
+    script: 'node_modules/next/dist/bin/next',
+    args: 'start -p 8080',
+    cwd: '/root/note-gen-docs/current',
+    exec_mode: 'cluster',
+    instances: 2,
     env: {
       NODE_ENV: 'production',
       PORT: 8080,
