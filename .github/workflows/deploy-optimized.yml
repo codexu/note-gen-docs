@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: aliyun-production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,8 +18,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create source package
-        run: git archive --format=tar.gz -o source.tar.gz HEAD
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deploy/.next
+          cp -R .next/standalone/. deploy/
+          cp -R .next/static deploy/.next/static
+          cp -R public deploy/public
+          cp ecosystem.config.js deploy/ecosystem.config.js
+          tar -czf release.tar.gz -C deploy .
 
       - name: Upload to server
         uses: appleboy/scp-action@v0.1.7
@@ -24,7 +51,7 @@ jobs:
           username: ${{ secrets.ALIYUN_USERNAME }}
           key: ${{ secrets.ALIYUN_SSH_KEY }}
           port: ${{ secrets.ALIYUN_PORT }}
-          source: "source.tar.gz"
+          source: "release.tar.gz"
           target: "/tmp"
           timeout: 300s
 
@@ -58,19 +85,10 @@ jobs:
                 ls -t $BACKUP_DIR/backup_*.tar.gz | tail -n +6 | xargs -r rm || true
             fi
 
-            # Extract new source into an isolated release directory.
-            echo "📂 Extracting source code..."
-            tar -xzf /tmp/source.tar.gz -C "$RELEASE_DIR"
-            rm /tmp/source.tar.gz
-
-            # Install dependencies
-            echo "📦 Installing dependencies..."
-            cd "$RELEASE_DIR"
-            pnpm install --frozen-lockfile
-
-            # Build project
-            echo "🔨 Building project..."
-            pnpm build
+            # Extract the prebuilt standalone artifact into an isolated release directory.
+            echo "📂 Extracting release package..."
+            tar -xzf /tmp/release.tar.gz -C "$RELEASE_DIR"
+            rm /tmp/release.tar.gz
 
             # Atomically promote the fully built release, then reload PM2.
             echo "🔄 Reloading application..."
