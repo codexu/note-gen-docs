@@ -1,4 +1,4 @@
-export const FALLBACK_VERSION = '0.30.1';
+export const FALLBACK_VERSION = '0.31.1';
 
 const CDN_BASE_URL = 'https://download.notegen.top';
 
@@ -14,7 +14,7 @@ export function getDownloadUrls(version: string) {
     linuxAppImage: `${releasePath}/NoteGen_${version}_amd64.AppImage`,
     linuxDeb: `${releasePath}/NoteGen_${version}_amd64.deb`,
     linuxRpm: `${releasePath}/NoteGen-${version}-1.x86_64.rpm`,
-    androidApk: `${releasePath}/NoteGen_${version}_android-universal.apk`,
+    androidApk: `${releasePath}/NoteGen_${version}_android-arm64.apk`,
   } as const;
 }
 

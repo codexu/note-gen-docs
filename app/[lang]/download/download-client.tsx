@@ -82,8 +82,8 @@ export default function DownloadClient({ version, downloadUrls }: DownloadClient
           description: '适用于 Fedora / RHEL / openSUSE',
         },
         android: {
-          title: 'Android APK',
-          description: 'Universal 通用版本，支持所有 Android 设备',
+          title: 'Android APK (ARM64)',
+          description: '适用于 arm64-v8a Android 设备',
         },
         ios: {
           title: 'iOS TestFlight',
@@ -164,8 +164,8 @@ export default function DownloadClient({ version, downloadUrls }: DownloadClient
           description: 'For Fedora / RHEL / openSUSE',
         },
         android: {
-          title: 'Android APK',
-          description: 'Universal version for all Android devices',
+          title: 'Android APK (ARM64)',
+          description: 'For arm64-v8a Android devices',
         },
         ios: {
           title: 'iOS TestFlight',
