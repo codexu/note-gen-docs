@@ -90,14 +90,11 @@ jobs:
             tar -xzf /tmp/release.tar.gz -C "$RELEASE_DIR"
             rm /tmp/release.tar.gz
 
-            # Atomically promote the fully built release, then reload PM2.
-            echo "🔄 Reloading application..."
+            # Atomically promote the fully built release, then restart PM2 from the new symlink target.
+            echo "🔄 Restarting application..."
             ln -sfn "$RELEASE_DIR" "$CURRENT_LINK"
-            if pm2 describe note-gen-docs > /dev/null 2>&1; then
-                pm2 reload "$CURRENT_LINK/ecosystem.config.js" --update-env
-            else
-                pm2 start "$CURRENT_LINK/ecosystem.config.js"
-            fi
+            pm2 delete note-gen-docs > /dev/null 2>&1 || true
+            pm2 start "$CURRENT_LINK/ecosystem.config.js"
             pm2 save
             ls -dt "$RELEASES_DIR"/* | tail -n +6 | xargs -r rm -rf
 
@@ -114,7 +111,7 @@ jobs:
           script: |
             echo "🏥 Running health check..."
             for i in {1..30}; do
-                if curl -fsS http://127.0.0.1:8080/ > /dev/null && pm2 describe note-gen-docs | grep -q "online"; then
+                if curl -fsS http://127.0.0.1:8080/cn/download | grep -q "备用下载：GitHub Releases" && pm2 describe note-gen-docs | grep -q "online"; then
                     echo "✅ Application is running"
                     exit 0
                 fi
