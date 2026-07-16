@@ -1,54 +1,44 @@
 ---
-title: Model Configuration
-description: NoteGen integrates mainstream AI model services and supports custom configuration to meet different needs.
+title: Model configuration
+description: Add OpenAI-compatible providers and manage multiple models under each provider.
 icon: Brain
 ---
 
+## Configuration structure
 
+A provider stores its base URL, API key, proxy, and headers, and can contain multiple models. Start from a ChatGPT, Gemini, Ollama, or LM Studio template, or create a custom provider.
 
-### Create Model Configuration
+## Provider fields
 
-Click the `Create New Configuration` button to open custom and mainstream model provider templates for selection:
+| Field | Description |
+| --- | --- |
+| Name | Identifies the provider; unique names are recommended |
+| Base URL | OpenAI-compatible URL through the version segment, such as `https://api.openai.com/v1` |
+| API Key | Provider credential; use any non-empty value when a local service does not validate it |
+| Proxy | Inherit the global proxy, connect directly, or use a provider-specific proxy |
+| Custom headers | Extra HTTP headers required by the provider |
 
-Note that each configuration corresponds to only one model. Under the same provider, you can click the copy button to quickly create a new configuration.
+Do not append `/chat/completions` or `/embeddings`; NoteGen selects the endpoint for each model type.
 
-### Configuration
+## Model list
 
-#### Custom Name
+Add one or more models to a provider. Supported types are:
 
-Used to distinguish different model configurations. Can be filled in arbitrarily and can be duplicated.
+- `chat` for conversation, Agent, writing, and vision-capable chat;
+- `image` and `video` for corresponding generation APIs;
+- `tts` for text to speech;
+- `stt` for speech to text;
+- `embedding` for vectorization;
+- `rerank` for knowledge-base result reranking.
 
-#### BaseURL
+Fetch model names from the provider when supported, or enter one manually. The type must match the API capability.
 
-Note that you only need to configure up to the **version number**, e.g., https://api.openai.com/v1. The suffix will be added automatically. The same applies to other providers. Please do not fill in `chat/completions`, `/embeddings`, etc.
+## Advanced parameters
 
-#### API Key
+- **Temperature / Top P:** normally adjust one, not both.
+- **Streaming:** display output as it arrives when supported.
+- **Maximum output tokens:** leave empty for the provider default.
+- **Token limit parameter:** use `max_completion_tokens` by default or `max_tokens` for older compatible APIs.
+- **Voice:** TTS models can specify a provider voice such as `alloy`.
 
-Fill in your corresponding key here. If using Ollama, LM Studio, etc., you can fill in anything.
-
-#### Model
-
-Generally, after BaseURL and API Key are configured correctly, Model will be automatically obtained and presented as a dropdown list. If not obtained, you can fill it in manually.
-
-#### Model Type
-
-Select the model type to distinguish different models. Selecting the wrong model type may result in inability to use normally.
-
-Currently supported: Chat, Voice, Embedding, Rerank.
-
-- Chat: The most common model type, used for dialogue, writing, and other scenarios.
-- Voice: Used for speech recognition (STT) and text-to-speech (TTS) functions, configurable in audio settings.
-- Embedding and Rerank models: Suitable for scenarios using knowledge base.
-- Other model types will be gradually supported in future versions.
-
-#### Advanced Configuration
-
-If you don't understand these configurations, you can ignore them and use default values.
-
-##### Temperature
-
-What sampling temperature to use, between 0 and 2. Higher values (e.g., 0.8) will make the output more random, while lower values (e.g., 0.2) will make the output more focused and deterministic. We generally recommend modifying this or top_p but not both.
-
-##### Top P
-
-An alternative to temperature sampling, called nucleus sampling, where the model considers the results of tokens with top_p probability mass. So 0.1 means only considering tokens comprising the top 10% probability mass. We generally recommend modifying this or temperature but not both.
+Run Check Connection after saving. A successful provider check does not guarantee every model type works, so test Chat, embeddings, and speech in their actual features.

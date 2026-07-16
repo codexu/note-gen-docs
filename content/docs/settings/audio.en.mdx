@@ -1,53 +1,24 @@
 ---
-title: Audio Settings
-description: Audio function configuration guide, including Speech-to-Text (STT) and Text-to-Speech (TTS) features.
+title: Recording and speech to text
+description: Configure the STT model and transcription behavior used by voice records.
 icon: Mic
 ---
 
+This page controls transcription of live recordings and imported audio. For text playback, see [Read Aloud](/en/docs/settings/read-aloud).
 
-### Speech-to-Text (STT)
+## STT model
 
-The Speech-to-Text feature converts your voice into text, supporting voice-based recording and input.
+Add an `stt` model under Model Configuration, then select it in Audio settings. The built-in free model supports basic transcription, or you can use a custom OpenAI-compatible audio service.
 
-#### Configuration
+## Usage
 
-- **STT Model**: Select the AI model for speech recognition. You need to pre-configure a voice-type model in the model configuration
-- **Language**: Select the language type for recognition, supporting Chinese, English, and other languages
+- Select the microphone in the record toolbar to start or stop a live recording.
+- On desktop, use the related action to select and transcribe an existing audio file.
+- After transcription, NoteGen creates a voice record containing the audio reference and recognized text.
 
-#### Use Cases
+## Recommendations
 
-- Quickly record ideas via voice on the recording page
-- Replace keyboard input to improve recording efficiency
-- Suitable for mobile use
-
-### Text-to-Speech (TTS)
-
-The Text-to-Speech feature converts text into spoken audio, with adjustable speech speed.
-
-#### Configuration
-
-- **TTS Model**: Select the AI model for speech synthesis. You need to pre-configure a voice-type model in the model configuration
-- **Speech Rate**: Adjust the speech speed, ranging from 0.5x (slow) to 2.0x (fast)
-  - 0.5x - Suitable for learning and comprehension
-  - 1.0x - Normal speed (default)
-  - 1.5x - Fast browsing
-  - 2.0x - Speed reading
-
-#### Use Cases
-
-- Read aloud note content for review
-- Audio playback for long documents
-- Free your eyes and receive information through listening
-- Suitable for commuting, exercise, and other scenarios
-
-### Notes
-
-1. **Model Configuration**: Before using audio features, ensure you have added voice-type models in the model configuration
-2. **Network Requirements**: Speech recognition and synthesis require a network connection. Please ensure stable network access
-3. **Quality Optimization**: Selecting an appropriate model can achieve better recognition accuracy and speech naturalness
-4. **Speed Recommendation**: For first-time use, start with normal speed and adjust as needed
-
-### Quick Actions
-
-- After selecting text on the writing page, you can use the text-to-speech feature
-- On the recording page, click the voice button to start voice input directly
+- Grant microphone permission and record in a quiet environment.
+- Long recordings take longer to upload and process; network interruptions may fail.
+- Language support depends on the provider. Mixed languages and specialist terms may need manual correction.
+- Online STT sends the audio to the configured provider.

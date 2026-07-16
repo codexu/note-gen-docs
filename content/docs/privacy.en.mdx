@@ -1,0 +1,42 @@
+---
+title: Privacy and data
+description: Learn what NoteGen stores locally and which features connect to external services.
+icon: ShieldCheck
+---
+
+NoteGen works without an account. Notes, records, chats, memories, vector indexes, and settings are stored locally by default. Network transfers depend on the features you enable.
+
+## Local data
+
+- Markdown files live in the current workspace.
+- Images and other local assets use the configured workspace asset directory.
+- Records, tags, chats, memories, and activity events are stored in local SQLite databases.
+- Model, sync, MCP, and interface settings are stored in local configuration files.
+
+Switching workspaces does not move files from the previous workspace. Create a local ZIP backup before a full migration.
+
+## Features that may use the network
+
+| Feature | Data that may be sent | Destination |
+| --- | --- | --- |
+| Built-in free or custom online models | Prompts, selected context, images, audio, or text being processed | The configured model provider |
+| Knowledge-base answers | Query text and retrieved note excerpts | Configured chat, embedding, or rerank providers |
+| Cloud sync | Markdown, assets, records, chats, and permitted settings | Selected Git, S3, or WebDAV service |
+| Image hosting | Uploaded images and authentication requests | Selected image host |
+| MCP | Tool arguments and context required by the tool | Selected MCP server |
+| Update checks | Version and platform request metadata | NoteGen download service or GitHub |
+| Anonymous startup analytics | Ephemeral session ID, OS, locale, and app version | NoteGen's Aptabase endpoint |
+
+Startup analytics does not contain note content, file names, file paths, AI chats, or a hardware machine ID.
+
+## Sensitive settings and sync
+
+Exclude Sensitive Settings is enabled by default. Tokens, passwords, secrets, the selected sync provider, image-host settings, MCP settings, workspace paths, and other private or device-specific values are excluded. NoteGen asks for confirmation before disabling this protection.
+
+## Recommendations
+
+- For sensitive material, prefer local models, local read-aloud, and local OCR.
+- Grant sync and image-host tokens the minimum required permissions.
+- Connect only trusted MCP servers; command-based MCP servers can launch local programs.
+- Inspect backups and logs before sharing them.
+- Revoke a third-party token when you stop using that service.

@@ -1,38 +1,38 @@
 ---
-title: Knowledge Base
-description: Knowledge base configuration guide, intelligent retrieval functionality based on RAG principles, requiring configuration of embedding models and rerank models.
+title: Knowledge base
+description: Build vector indexes for workspace Markdown and retrieve relevant excerpts in conversations.
 icon: Database
 ---
 
+The knowledge base uses RAG: split Markdown into chunks, create vectors with an embedding model, retrieve similar chunks for a query, optionally rerank them, and add them to Chat or Agent context.
 
+## Models
 
-### Configure Models
+- **Embedding (required):** add an `embedding` model under [Model Configuration](/en/docs/settings/model-config) and select it here.
+- **Rerank (optional):** use a `rerank` model to improve candidate ordering.
 
-To use the knowledge base, you need to configure embedding models (required) and rerank models (optional). For related configuration, please refer to [Model Configuration](/en/settings/model-config).
+Online providers receive text being indexed or candidates being reranked. After changing the embedding model, clear and rebuild vectors.
 
-After configuration, you can enable the knowledge base feature in the chat box on the record page:
+## Build the index
 
+- Calculate vectors manually from file or folder menus.
+- With automatic calculation enabled, saving Markdown updates its index.
+- Exclude a file or disable automatic calculation for it.
+- Folder statistics show index coverage. The Skills directory is not indexed as ordinary content.
 
-> During the enabling process, the model availability status will be detected.
+## Parameters
 
-### Knowledge Base Vector Calculation
+| Parameter | Range | Effect |
+| --- | --- | --- |
+| Chunk size | 100–5000 | Larger chunks contain more context but cost more and may reduce precision |
+| Overlap | 0–500 | Preserves boundaries but repeats more content |
+| Result count | 1–10 | More results add context and possible noise |
+| Similarity threshold | 0–1 | Higher is stricter and may return nothing |
 
-The knowledge base feature is implemented based on RAG principles, storing and searching by converting Markdown files to vectors. The entire process is completed through embedding models.
+Use defaults when unsure. Rebuild affected vectors after changing chunk parameters.
 
-When using for the first time, if Markdown files already exist in the writing page, you can first perform a full calculation (optional):
+## Use in Chat or Agent
 
+Enable Knowledge Base in the conversation toolbar. Source details help verify matched files and excerpts. If nothing is retrieved, confirm indexing, use query terms related to the notes, lower the threshold, or increase result count.
 
-Subsequent writing does not require full calculation each time. It will automatically calculate when auto-saving during writing.
-
-> This process consumes embedding model resources; use judiciously or use free models.
-
-### Parameter Settings
-
-If you are unfamiliar with knowledge base-related knowledge, you can ignore this and use default values.
-
-When using the knowledge base, you may not always find the information you need completely. By adjusting parameters, you can more precisely control the retrieval effect of the knowledge base:
-
-- Chunk Size: Maximum character count for text chunks. Larger chunks may contain more context but increase vector calculation complexity.
-- Overlap Size: Overlap character count between text chunks. Larger overlap maintains context coherence.
-- Retrieval Count: Number of relevant documents returned during retrieval. More documents may provide richer information but may introduce noise.
-- Similarity Threshold: Minimum similarity threshold between document and query. Only documents exceeding this threshold will be returned. Value range 0.0-1.0, higher means stricter requirements.
+Clear Knowledge Base removes local vectors only; it does not delete Markdown files.

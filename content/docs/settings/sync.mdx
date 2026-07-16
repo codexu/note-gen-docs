@@ -1,61 +1,63 @@
 ---
 title: 同步配置
-description: 数据同步配置指南，帮助您设置跨设备的笔记同步功能。
+description: 使用 Git、S3 或 WebDAV 同步 Markdown、记录、聊天和设置。
 icon: RefreshCw
 ---
 
+NoteGen 支持 GitHub、Gitee、GitLab、Gitea、S3 和 WebDAV。选择的平台会成为当前主要同步方式。
 
+## 同步对象
 
-### 主要同步方式
+| 对象 | 行为 |
+| --- | --- |
+| Markdown 与资源 | 文件级上传、拉取、删除和编辑停止后的自动同步 |
+| 记录、标签、聊天与设置 | 以数据包方式手动或自动上传、下载，并检测跨设备冲突 |
 
-主要同步方式目前支持 GitHub、Gitee、GitLab、Gitea，原因是历史回滚功能需要 Git（本地无需安装 Git） 的支持。
+工作区路径、界面缩放等设备特定设置默认排除。开启“不同步敏感配置”时还会排除 Token、密码、图床、MCP 等私密配置。
 
-#### 配置
+## 平台配置
 
-- 在所选平台创建访问令牌并填入 NoteGen。
-- 如果仓库已存在，填写仓库名后点击“检查仓库”。
-- 如果仓库不存在，可由 NoteGen 创建私有仓库，但令牌需要额外的仓库创建权限。
-- GitLab 和 Gitea 支持自建实例，需要同时配置服务器地址。
-- 开启自动同步后，停止输入达到设定时间时会执行快速备份。
+### GitHub / Gitee / GitLab / Gitea
 
-<a id="token-permissions-guide" />
+填写 Token 和仓库名。GitLab、Gitea 支持自建实例。仓库不存在时，部分平台可由 NoteGen 创建私有仓库。
 
-### 访问令牌权限
-
-请只授予 NoteGen 所需的最小权限，并尽可能将令牌限制到同步仓库。NoteGen 默认同步仓库名为 `note-gen-sync`。
-
-| 平台 | 使用已有仓库 | 由 NoteGen 创建仓库 |
+| 平台 | 已有仓库的最小权限 | 创建仓库时的附加权限 |
 | --- | --- | --- |
-| GitHub | Fine-grained PAT；Repository access 只选择同步仓库；Repository permissions 设置 `Contents: Read and write`。`Metadata: Read` 会自动包含。 | Fine-grained PAT；Repository access 选择 `All repositories`；设置 `Contents: Read and write` 和 `Administration: Read and write`。创建完成后，建议换成只授权该仓库的新令牌。 |
-| Gitee | 选择 `user_info` 和 `projects`。Gitee 的 `projects` 同时包含仓库读写能力。 | 同样选择 `user_info` 和 `projects`。 |
-| GitLab | Personal access token 选择 `api`。当前 NoteGen 通过 REST API 读取用户、项目和仓库文件，`write_repository` 仅适用于 Git over HTTP，不能替代 `api`。 | 同样选择 `api`。 |
-| Gitea | 支持细粒度权限的版本选择 `read:user` 和 `write:repository`。 | 选择 `write:user` 和 `write:repository`。旧版 Gitea 如果没有细粒度权限，只能使用 `all`。 |
+| GitHub | Fine-grained PAT，Contents 读写 | Administration 读写，并在创建后换成仅授权目标仓库的 Token |
+| Gitee | `user_info`、`projects` | 相同 |
+| GitLab | `api` | 相同 |
+| Gitea | `read:user`、`write:repository` | `write:user`、`write:repository`；旧版可能只能选择 `all` |
 
-#### 创建令牌入口
+- [创建 GitHub Token](https://github.com/settings/personal-access-tokens/new?name=NoteGen&description=NoteGen+sync&expires_in=none&contents=write&administration=write)
+- [创建 Gitee Token](https://gitee.com/profile/personal_access_tokens/new)
+- [创建 GitLab Token](https://gitlab.com/-/user_settings/personal_access_tokens?name=NoteGen&description=NoteGen+sync&scopes=api)
 
-- [创建 GitHub Fine-grained personal access token](https://github.com/settings/personal-access-tokens/new?name=NoteGen&description=NoteGen+sync&expires_in=none&contents=write&administration=write)：预填长期有效期，以及 NoteGen 完整流程需要的 Contents 和 Administration 权限。GitHub 仍会要求你确认资源所有者和仓库范围。
-- [Gitee 私人令牌](https://gitee.com/profile/personal_access_tokens/new)
-- [GitLab Personal access token（预填 api scope）](https://gitlab.com/-/user_settings/personal_access_tokens?name=NoteGen&description=NoteGen+sync&scopes=api)
-- Gitea：打开实例的“设置 → 应用 → 管理 Access Token”。自建 GitLab 和 Gitea 请使用自己实例中的令牌页面。
+### S3
 
-GitHub 和 GitLab 官方支持通过链接预填权限。Gitee 和 Gitea 没有公开的 URL 预填协议，需要在创建页面手动选择上方列出的权限。
+配置 Access Key ID、Secret Access Key、Region、Bucket、Endpoint 和可选路径前缀。兼容 AWS S3 及提供 S3 API 的对象存储。先保存并测试连接，再启用自动同步。
 
-GitHub 的 fine-grained token 会要求你自行选择资源所有者和仓库。若令牌需要经过组织管理员审批，在审批完成前无法同步该组织仓库。
+### WebDAV
 
-权限依据可参考 [GitHub Fine-grained token 权限](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens)、[GitLab Token scopes](https://docs.gitlab.com/security/tokens/access_token_scopes/) 和 [Gitea API scopes](https://docs.gitea.com/development/api-usage)。
+配置服务器 URL、用户名、密码和可选路径前缀。适用于群晖、QNAP、Nextcloud 及其他兼容服务。建议使用 HTTPS。
 
-- 注意要选择 GitHub、Gitee、GitLab 或 Gitea 作为主要备份方式才可生效，按钮位于页面最下方。
+## 笔记自动同步
 
-### 自动同步间隔
+可选择关闭或在停止编辑 2 秒至 2 分钟后自动同步。还可启用“打开文件时自动拉取”和“切换文件时自动拉取”。自动拉取可能用远程版本覆盖本地，请只在同步流程稳定后开启。
 
-设置数据自动同步的频率，写作时停止输入后达到设定时间将自动进行备份。
+## 记录与配置自动同步
 
-### 主要备份方式
+启用后，记录或设置变更会进入顺序队列并上传。首次启用时请选择：
 
-选择 GitHub、Gitee、GitLab 或 Gitea 作为主要备份方式，设置后才可生效。
+- 上传本机数据；
+- 拉取远程数据；
+- 稍后处理。
 
-### 注意事项
+新设备通常应拉取远程；已有未同步内容的设备应先备份再决定。
 
-- 删除云端同步文件会同时删除远程仓库中的文件
-- 请确保访问令牌配置正确，并只授予上方列出的必要权限
-- 建议使用私有仓库保护数据安全
+## 冲突处理
+
+- **合并两边内容**：保留双方新增记录，同一记录优先保留更新时间较新的版本，并按隐私规则合并设置。
+- **拉取远程覆盖本机**：丢弃本机未上传修改。
+- **上传本机覆盖远程**：可能丢弃其他设备的新修改。
+
+处理高风险冲突前，建议先从标题栏同步菜单导出本地 ZIP 备份。

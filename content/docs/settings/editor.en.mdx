@@ -1,30 +1,24 @@
 ---
-title: Editor
-description: Editor settings, including typewriter mode, outline display, and position configuration.
-icon: SquareM
+title: Editor settings
+description: Configure AI completion, content width, outline, and undo/redo controls.
+icon: FileCog
 ---
 
+## AI completion model
 
+Select the chat model used for inline editor suggestions. When a suggestion appears, use the configured accept shortcut to insert it or the cancel shortcut to dismiss it. Fast models with stable output usually feel best.
 
-### Typewriter Mode
+## Centered content
 
-In typewriter mode, the editor simulates a typewriter effect to help you better immerse yourself in writing.
+When enabled, the document remains centered with margins on both sides. Disabling it uses more of the available editor width. This changes layout only, not Markdown content.
 
-### Default Enable Outline
+## Outline
 
-When enabled, the editor will display the outline by default.
+- **Enable outline by default** shows the heading outline when a file opens.
+- **Outline position** places it on the left or right.
 
-### Outline Position
+The outline is generated from document headings. Select a heading to jump to it.
 
-Set the outline position, available on the left or right side.
+## Undo and redo buttons
 
-### Line Number Display
-
-When enabled, the editor will display line numbers on the left side, facilitating positioning and referencing code blocks or long documents.
-
-### Page View
-
-Set the editor's page view mode, options include:
-- **Edit Mode**: A clean view focused on writing
-- **Preview Mode**: Real-time preview of rendered effects
-- **Split Mode**: Split-screen display showing both editing and preview
+Choose whether undo and redo appear in the editor tab bar. Keyboard shortcuts continue to work when the buttons are hidden.

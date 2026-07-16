@@ -1,52 +1,31 @@
 ---
-title: Image Recognition
-description: Image recognition configuration guide, supporting both OCR and VLM recognition methods.
+title: Image recognition
+description: Choose between local OCR and online vision models and understand platform differences.
 icon: ScanText
 ---
 
-### Enable Image Recognition
+When image recognition is enabled, scan and image records can extract text or generate a description automatically.
 
-When enabled, text recognition will be performed automatically when images are uploaded.
+## OCR
 
-### Primary Recognition Method
+OCR works best for clean printed text. It is fast, can run offline, and does not consume model credits.
 
-Select OCR or VLM as the primary recognition method.
+- Desktop environments may use Tesseract with downloadable language packages.
+- macOS, iOS, and Android builds can use native recognition; results depend on the OS version.
+- Separate multiple Tesseract languages with commas, for example `chi_sim,eng`.
+- Adding a language for the first time may download its data file.
 
-### OCR (Optical Character Recognition)
+## VLM
 
-Uses traditional OCR algorithms to recognize text in images.
+A vision language model works better for complex layouts, tables, handwriting, and semantic image descriptions. Select a vision-capable chat model. The image is sent to that provider.
 
-#### Language Packs
+## Choose a method
 
-Select the language packs needed for recognition, supporting multiple languages. Use commas to separate multiple languages, e.g., `chi_sim,eng`.
+| Scenario | Recommendation |
+| --- | --- |
+| Clean screenshots, scans, bulk text extraction | OCR |
+| Tables, posters, handwriting, complex layouts | VLM |
+| Sensitive or offline images | Local OCR |
+| Describe the scene rather than only extract text | VLM |
 
-When adding new language packs, corresponding data files will be downloaded automatically.
-
-#### Using Tesseract
-
-Currently uses [Tesseract](https://github.com/tesseract-ocr/tesseract) as the OCR engine, supporting multiple language packs.
-
-### VLM (Vision Language Model)
-
-Uses AI large models for image understanding and text recognition.
-
-#### Model Selection
-
-Select the AI model for image recognition. Needs to be pre-configured in model configuration.
-
-### Method Comparison
-
-| Feature | OCR | VLM |
-|---------|-----|-----|
-| Speed | Fast | Slower |
-| Accuracy | Higher for standard text | Better for complex scenes |
-| Network Requirement | Local execution | Network required |
-| Cost | Free | May incur costs |
-| Understanding | Text only | Can understand image content |
-
-### Usage Recommendations
-
-- **Pure text extraction**: Use OCR for speed and free usage
-- **Complex scenarios**: Use VLM for better recognition of tables, handwriting, complex layouts
-- **Batch processing**: Use OCR to save costs and time
-- **High accuracy**: Use VLM for more accurate recognition results
+Recognition results are stored in the record. Verify names, numbers, and specialist terms before organizing them into a note.

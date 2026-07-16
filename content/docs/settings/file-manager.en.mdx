@@ -1,52 +1,26 @@
 ---
-title: File Manager
-description: File management settings, including workspace path and resource path configuration.
+title: File manager settings
+description: Select a workspace and configure the directory name for local writing assets.
 icon: FolderOpen
 ---
 
-### Current Workspace
+## Workspace
 
-Select the default workspace for writing. You can choose any folder for writing.
+The workspace is the root directory where NoteGen reads and writes Markdown, folders, and local assets. Select any directory with read/write permission or restore the default.
 
-#### Default Workspace Path
+The default workspace is inside the OS application-data location assigned to NoteGen. Exact paths vary by OS, installation, and runtime, so use the Current Workspace value shown in settings.
 
-When no custom workspace is set, the application uses the following default paths:
+## Switch and history
 
-**macOS:**
-```
-/Users/{username}/Library/Application Support/com.codexu.NoteGen/article
-```
+- Select a new directory with Choose Workspace.
+- Switch through history, remove one entry, or clear all history.
+- Reset to return to the application workspace.
+- Restart so the file tree, Skills, indexes, and editor fully load the new path.
 
-**Windows:**
-```
-C:\Users\{username}\AppData\Local\com.codexu.NoteGen\article
-```
+Switching does not move files or merge two workspaces.
 
-**Linux:**
-```
-/home/{username}/.local/share/com.codexu.NoteGen/article
-```
+## Writing asset path
 
-#### Switching Workspace
+This value is the workspace directory name used for local editor images and related assets, such as `assets` or `images`. Use a simple relative directory name so the workspace remains portable and easy to back up.
 
-- Click the workspace input field to open the selection menu
-- Select "Select Workspace Directory" to browse and choose a new folder
-- Quickly switch to previously used workspaces from history
-- Select "Reset to Default Workspace" to restore the application's default path
-
-#### History
-
-The application saves recently used workspace history for quick switching.
-
-- Mouse hover to delete a single history record
-- Select "Clear History" to delete all history records
-
-### Resource Path
-
-Set the save path for writing resources, such as images, videos, files, etc.
-
-- Resource files will be saved in the same directory as the currently edited Markdown file
-- Can use relative paths or absolute paths
-- Leave empty to use the default path `{filename}.assets`
-
-> Tip: Recommend using relative paths for easier project folder movement and sharing.
+Changing it affects new assets only. Existing files are not moved and links in older Markdown are not rewritten.

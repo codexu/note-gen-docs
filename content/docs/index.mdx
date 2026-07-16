@@ -1,84 +1,58 @@
 ---
 title: 欢迎使用 NoteGen
-description: 在这里你可以找到 NoteGen 的使用指南和功能介绍。
+description: NoteGen 的功能概览、平台支持和快速开始指南。
+icon: House
 ---
 
-## 关于 NoteGen
+NoteGen 是一款开源、跨平台的 Markdown AI 笔记应用，使用 AI 连接碎片记录与长文写作。笔记、记录、聊天和设置保存在本机；当你使用在线模型、同步、图床或 MCP 时，相关数据会发送到你选择的服务。详见[隐私与数据](/docs/privacy)。
 
-NoteGen 是一款跨平台的 Markdown AI Agent 笔记软件，致力于使用 AI 建立记录和写作的桥梁。
+## 支持平台
 
-它完全开源免费，支持 Windows、macOS、Linux、Android、iOS 等主流平台，安装包仅 20MB 左右。所有数据存储在本地，无需登录即可使用，隐私安全有保障。
+| 平台 | 获取方式 | 说明 |
+| --- | --- | --- |
+| Windows | 安装程序 | x64 桌面端 |
+| macOS | DMG | Apple Silicon 与 Intel |
+| Linux | AppImage、Deb、RPM | x86_64 桌面端 |
+| Android | APK | 当前提供 ARM64 安装包 |
+| iOS | TestFlight | 可用性以下载页为准 |
 
-## 核心特性
+访问[下载页面](/download)获取当前版本。不同平台的可用功能可能不同，例如本地命令型 MCP 仅支持桌面端。
 
-### 记录工具
+## 核心工作流
 
-随时随地碎片化记录，捕捉每个灵感瞬间：
+### 1. 记录
 
-- **文本记录** - 快速记录文字内容
-- **截图记录** - 使用 VLM 或 OCR 技术，快速捕捉屏幕内容
-- **插图记录** - 保存图片并图像识别，整理笔记时插入到适合的位置
-- **链接记录** - 保存网页链接，自动抓取页面信息
-- **文件记录** - 支持纯文本、PDF 等文本识别
-- **语音记录** - 语音转文字功能，将口述内容自动转换为文本
+用文本、截图、图片、链接、文件、录音和待办快速收集素材。可以使用标签、搜索、时间和类型筛选管理记录，再通过整理模板生成 Markdown 笔记。
 
-### AI 整理
+### 2. 写作
 
-将碎片记录转化为完整笔记：
+在基于 Tiptap 的 Markdown 编辑器中写作，支持表格、任务列表、代码块、数学公式、Mermaid、图片、搜索替换、文档大纲和多格式导出。AI 可以补全、润色、精简、扩写和翻译内容。
 
-- **一键生成** - 整合所有相关记录，生成结构完整的笔记文档
-- **拖拽插入** - 可随意拖拽记录到已存在的笔记中
-- **标签管理** - 通过标签组织和管理记录，方便查找和归类
-- **整理模板** - 支持时间范围选择、自定义提示词等灵活配置
+### 3. 对话与 Agent
 
-### AI Agent
-
-让 AI 成为你的写作助手，智能辅助内容创作与文档管理：
-
-- **智能笔记编辑** - Agent 可以精准读取文档内容，理解写作上下文后进行智能修改
-- **MCP** - 通过模型上下文协议，Agent 可以访问外部工具、数据库和服务
-- **Skills** - 内置丰富的技能系统，支持自定义工作流和任务链
-- **RAG** - 基于你的笔记构建本地知识库，使用向量和重排序模型进行智能检索
-
-### 其他特性
-
-- **Markdown** - 支持标准 Markdown 语法，同时支持扩展语法，如数学公式、脑图、图表、流程图等
-- **所见即所得** - 使用 Vditor 编辑器，支持所见即所得模式，类似 Typora 的即时渲染体验
-- **主题** - 内置 12 种精心设计的预设主题，支持自定义主题颜色，提供深色模式
+Chat 用于问答和内容生成；Agent 可以在授权后读取和修改笔记、文件夹、标签、记录与记忆。MCP、Skills、知识库和长期记忆可以进一步扩展 Agent 的上下文与工具。
 
 ## 快速开始
 
-1. **下载安装** - 访问 [下载页面](/download) 获取对应平台的安装包
-2. **开始记录** - 内置免费 AI 模型，无需配置即可使用
-3. **AI 整理** - 让 AI 帮你将碎片记录整理成完整笔记
-4. **（可选）配置模型** - 在设置中配置你喜欢的其他 AI 模型
+1. 从[下载页面](/download)安装 NoteGen。
+2. 打开“记录”，创建第一条文本或录音记录。
+3. 打开“写作”，新建 Markdown 文件，或使用“整理”生成笔记。
+4. 直接使用内置免费模型体验基础能力，或在“设置 → 模型配置”添加自己的 OpenAI 兼容服务。
+5. 如需跨设备使用，在“设置 → 同步配置”选择 GitHub、Gitee、GitLab、Gitea、S3 或 WebDAV。
 
-## 视频教程
+## 开始阅读
 
-更喜欢视频教程？扫描下方二维码观看：
+- [记录与整理](/docs/preview/record)
+- [Markdown 编辑器](/docs/preview/writing)
+- [AI 对话与 Agent](/docs/preview/chat)
+- [同步配置](/docs/settings/sync)
+- [常见问题与排错](/docs/troubleshooting)
 
-### 抖音
+## 社区
 
-<img src="https://s2.loli.net/2026/01/24/JqDZiFuTdG5lsVr.jpg" width="240px" />
+- 微信群：[加入方式](https://github.com/codexu/note-gen/discussions/110)
+- QQ 群：976652724
+- Discord：[加入](https://discord.com/invite/SXyVZGpbpk)
+- Telegram：[加入](https://t.me/notegen)
 
-### 哔哩哔哩
-
-<img src="https://s2.loli.net/2026/01/24/amWZF7gXqnL8oi2.jpg" width="240px" />
-
-## 交流群
-
-### 社区守则
-
-- 本社区是为了讨论 NoteGen 项目和 Tauri 框架为目的建立的。
-- 功能需求或 Bug 提交建议在群里讨论后提交 Issue 避免被遗忘。
-- 提问前尽量先查看官网指南、搜索 Issues 或 Discussions 无结果后再向群内或开发者提问。
-- 这里没有客服，任何问题都不一定可以获得开发者的答复。
-- 禁止讨论、发布与代码、笔记、AI、程序员无关的内容，禁止发广告。
-- 友善发言，请勿阴阳怪气。
-
-### 加入社区
-
-- 微信群：[扫码加入](https://github.com/codexu/note-gen/discussions/110)或加我微信进去（xu461229187）。
-- QQ群： 976652724
-- Discord：[点击加入](https://discord.com/invite/SXyVZGpbpk)
-- Telegram：[点击加入](https://t.me/notegen)
+提问前建议先搜索本指南、[Issues](https://github.com/codexu/note-gen/issues) 和 [Discussions](https://github.com/codexu/note-gen/discussions)。

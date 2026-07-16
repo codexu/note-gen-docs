@@ -1,23 +1,26 @@
 ---
-title: Default Model
-description: Configure default AI models for different functional scenarios.
+title: Scenario models
+description: Understand the primary model and models selected for individual features.
 icon: Settings
 ---
 
-### Configuration
+NoteGen separates provider configuration from scenario models. First add providers and models under [Model Configuration](/en/docs/settings/model-config), then select models for individual features.
 
-| Model | Description |
-|-------|-------------|
-| Primary Model | Used for AI chat, will be used when other models are not configured |
-| Quick Complete | Used for text intelligent completion feature |
-| Record Description | Used to generate record descriptions, such as records after OCR recognition |
-| Commit | Used to automatically generate Git commit messages |
+## Fallback behavior
 
-### Usage Recommendations
+The primary chat model is the default fallback for conversational features. A scenario normally uses it when no model is selected. Choosing No Model disables the corresponding AI capability.
 
-Some scenarios don't require powerful models; you can use low-cost models for faster response and reduced costs.
+## Where to configure models
 
-- **Primary Model**: Recommend using a model with strong comprehensive capabilities
-- **Quick Complete**: Recommend using a model with fast response speed
-- **Record Description**: Can use lightweight models
-- **Commit**: Can use specialized code generation models or general-purpose models
+| Scenario | Settings page | Recommendation |
+| --- | --- | --- |
+| Chat / Agent | Chat | Strong chat and tool-calling model |
+| Conversation condensation | Chat | Low-cost model that summarizes well |
+| Editor completion | Editor | Low-latency chat model |
+| Record descriptions | Record or Default Model | Small chat model |
+| Knowledge-base embedding/rerank | Knowledge Base | Match the embedding/rerank type |
+| Image understanding | Image Recognition | Vision-capable model |
+| Speech to text | Audio | STT model |
+| Read aloud | Read Aloud | TTS model or system voice |
+
+After changing the embedding model, rebuild knowledge-base vectors so vectors from different models are not mixed.

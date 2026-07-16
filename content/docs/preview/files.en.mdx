@@ -1,142 +1,58 @@
 ---
-title: File Manager
-description: The file manager is a core module of the note-taking application, providing complete file and folder management capabilities, supporting local storage, cloud sync, vector retrieval, and other advanced features.
+title: File manager
+description: Manage workspace files, folders, knowledge-base indexes, and remote sync.
 icon: FolderOpen
 ---
 
-## Interface Layout
+The file manager shows the current workspace tree. The footer switches workspaces, sorting, and expansion; the top controls create and import content.
 
-- **Top Toolbar**: Vector database sync, remote repository access
-- **Action Toolbar**: New file, new folder, batch import
-- **File Tree Area**: Displays files and folder structure of the current workspace
-- **Bottom Status Bar**: Workspace switching, sorting method, expand/collapse controls
+## Basic operations
 
-## Basic Operations
+- New files and folders receive a non-conflicting name.
+- Select a file to open it in a tab; select a folder to expand or collapse it.
+- Context menus rename, copy, cut, paste, delete, reveal in the system file manager, and run remote sync operations.
+- Drag files and folders into a destination, or drag supported content into the editor.
+- Platform keyboard shortcuts work for copy, cut, paste, delete, and rename.
 
-### Creating Files/Folders
+## Multiple selection
 
-**Method 1: Toolbar Button**
-1. Click the "New File" or "New Folder" button in the top action bar
-2. Enter a file name and press Enter to confirm
+Use the platform's multi-select controls, then copy, cut, or delete the selection. Batch deletion asks for confirmation and may also delete remote copies when sync is active.
 
-**Method 2: Context Menu**
-1. Right-click in an empty area of the file tree
-2. Select "New File" or "New Folder"
-3. Enter a file name and press Enter to confirm
+## Import Markdown
 
-**Method 3: Create Inside Folder**
-1. Right-click the target folder
-2. Select "New Subfile" or "New Subfolder"
+Select a directory to recursively copy Markdown and related images into the workspace. Check for name collisions first. NoteGen reports the number imported when finished.
 
-> Tip: The system automatically generates unique file names to avoid naming conflicts
+## Workspaces
 
-### Opening Files
+- The default workspace is inside NoteGen's application-data directory.
+- A custom workspace can be any local directory with read/write permission.
+- History keeps recently used paths for quick switching and can be cleared.
+- Restart after changing a workspace. Switching does not move files from the previous workspace.
 
-- **Single-click** a file: Opens the file in the editor area
-- **Double-click** a folder: Expands or collapses the folder
+## Sort and expand
 
-### Renaming
+Sort by name, creation time, or modification time in ascending or descending order. Expand or collapse all folders at once.
 
-**Method 1: Double-click to Rename**
-1. Double-click the file name to enter edit mode
-2. Modify the name and press Enter to confirm, or press Escape to cancel
+## Knowledge base
 
-**Method 2: Context Menu**
-1. Right-click the file and select "Rename"
-2. Modify the name and press Enter to confirm
+File and folder menus can:
 
-> Tip: Spaces in file names are automatically replaced with underscores
+- calculate or delete vectors manually;
+- toggle automatic vectors for one file;
+- exclude a file from the knowledge base;
+- batch-calculate or remove folder vectors;
+- display folder index statistics.
 
-### Deleting Files
+The Skills directory is loaded as workspace Skills rather than ordinary knowledge-base content.
 
-1. Right-click the file and select "Delete"
-2. Click confirm in the confirmation dialog
+## Sync
 
-> Note: Deleting cloud-synced files will also delete the file from the remote repository
+The primary provider can be GitHub, Gitee, GitLab, Gitea, S3, or WebDAV. Items show relevant status, and upload, pull, and delete use the selected provider. Git providers can open the remote repository; S3 and WebDAV organize files under object/path prefixes.
 
-### Moving Files
+## Export and unsupported files
 
-**Method 1: Clipboard Operations**
-1. Right-click the file and select "Cut"
-2. Right-click the target folder and select "Paste"
+Export Markdown, HTML, plain text, JSON, or PDF from the editor or file actions. Files that NoteGen cannot edit can still be opened in a system application.
 
-**Method 2: Drag and Drop**
-1. Hold and drag the file item
-2. Release over the target folder
+## Mobile
 
----
-
-## Advanced Features
-
-### Batch Import
-
-1. Click the "Import" button in the action bar
-2. Select a folder in the file dialog
-3. The system will automatically recursively import all Markdown files and images
-
-After import completes, the number of successfully imported files will be displayed.
-
-### Workspace Management
-
-**Switching Workspaces**
-1. Click the workspace name in the bottom status bar
-2. Select from history or create a new workspace
-
-**Workspace Types**
-- **Default Workspace**: Built-in default storage location
-- **Custom Workspace**: Any user-specified folder
-
-The system saves the last 10 used workspaces in history.
-
-### Sorting Methods
-
-Click the sort button in the bottom status bar to select:
-
-| Sort Method | Description |
-|------------|-------------|
-| By Name | File names sorted A-Z |
-| By Creation Time | Sorted by file creation time |
-| By Modification Time | Sorted by last modification time |
-
-Supports ascending/descending toggle.
-
-### Expand/Collapse Controls
-
-- **Single folder**: Click folder icon to expand/collapse
-- **Expand All**: Click the "Expand All" button at the bottom
-- **Collapse All**: Click the "Collapse All" button at the bottom
-
-## Special Features
-
-### Vector Computation
-
-The file manager integrates vector database functionality for semantic retrieval:
-
-- **Computation Status**: Shows vector computation progress on file items
-- **Index Statistics**: Folders display count of indexed files
-- **Manual Trigger**: Can manually trigger vector computation
-
-### Cloud Sync
-
-Supported sync platforms:
-- GitHub
-- Gitee
-- GitLab
-- Gitea
-
-Cloud files display a cloud icon on the file item.
-
-### Skills Folder
-
-Skills is a special folder for managing application skill files:
-- Marked with a special icon
-- Does not participate in vector computation
-- Supports creating and managing skill files
-
-## Mobile Usage
-
-Mobile provides an optimized interaction experience:
-
-- **Action Menu**: Tap the "..." button after selecting a file to open the action menu
-- **Touch Optimized**: Larger tap areas and gesture support
-- **Simplified Interface**: Only shows common operations for improved usability
+Mobile uses touch menus instead of right-click and simplifies some batch and filesystem operations. Workspaces and Markdown remain compatible with desktop, subject to mobile OS directory permissions.

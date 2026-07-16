@@ -1,61 +1,57 @@
 ---
-title: Sync Configuration
-description: Data synchronization configuration guide to help you set up cross-device note synchronization functionality.
+title: Sync
+description: Sync Markdown, records, chats, and settings through Git, S3, or WebDAV.
 icon: RefreshCw
 ---
 
+NoteGen supports GitHub, Gitee, GitLab, Gitea, S3, and WebDAV. The selected provider becomes the primary sync method.
 
+## What is synced
 
-### Primary Sync Method
+| Data | Behavior |
+| --- | --- |
+| Markdown and assets | File-level upload, pull, delete, and delayed auto-sync after editing |
+| Records, tags, chats, and settings | Manual or automatic package upload/download with cross-device conflict detection |
 
-The primary sync method currently supports GitHub, Gitee, GitLab, and Gitea. The reason is that the historical rollback functionality requires Git support (Git does not need to be installed locally).
+Device-specific values such as workspace paths and UI scale are excluded. Exclude Sensitive Settings also removes tokens, passwords, image-host settings, MCP settings, and other private values.
 
-#### Configuration
+## Provider setup
 
-- Create an access token on the selected platform and enter it in NoteGen.
-- If the repository already exists, enter its name and select **Check Repository**.
-- If it does not exist, NoteGen can create a private repository, but the token needs the additional repository creation permission listed below.
-- Self-hosted GitLab and Gitea instances also require their server URL.
-- When Auto Sync is enabled, NoteGen performs a quick backup after input has stopped for the configured interval.
+### GitHub / Gitee / GitLab / Gitea
 
-<a id="token-permissions-guide" />
+Enter a token and repository name. GitLab and Gitea support self-hosted instances. NoteGen can create a private repository on supported platforms when it does not exist.
 
-### Access Token Permissions
-
-Grant only the minimum permissions NoteGen needs and, whenever possible, limit the token to the sync repository. The default repository name is `note-gen-sync`.
-
-| Platform | Use an existing repository | Let NoteGen create the repository |
+| Provider | Minimum permission for an existing repository | Additional permission to create one |
 | --- | --- | --- |
-| GitHub | Use a fine-grained PAT. Under Repository access, select only the sync repository. Set `Contents: Read and write`; `Metadata: Read` is included automatically. | Use a fine-grained PAT with Repository access set to `All repositories`. Set `Contents: Read and write` and `Administration: Read and write`. After creation, consider replacing it with a new token limited to that repository. |
-| Gitee | Select `user_info` and `projects`. Gitee's `projects` scope includes repository read and write access. | Select the same `user_info` and `projects` scopes. |
-| GitLab | Select `api` on a personal access token. NoteGen currently uses the REST API for the user, projects, and repository files. `write_repository` only grants Git-over-HTTP access and cannot replace `api`. | Select the same `api` scope. |
-| Gitea | On versions with granular scopes, select `read:user` and `write:repository`. | Select `write:user` and `write:repository`. Older Gitea versions without granular scopes may require `all`. |
+| GitHub | Fine-grained PAT with Contents read/write | Administration read/write; replace it with a repository-scoped token afterward |
+| Gitee | `user_info`, `projects` | Same |
+| GitLab | `api` | Same |
+| Gitea | `read:user`, `write:repository` | `write:user`, `write:repository`; older versions may expose only `all` |
 
-#### Token creation pages
+- [Create a GitHub token](https://github.com/settings/personal-access-tokens/new?name=NoteGen&description=NoteGen+sync&expires_in=none&contents=write&administration=write)
+- [Create a Gitee token](https://gitee.com/profile/personal_access_tokens/new)
+- [Create a GitLab token](https://gitlab.com/-/user_settings/personal_access_tokens?name=NoteGen&description=NoteGen+sync&scopes=api)
 
-- [Create a GitHub fine-grained personal access token](https://github.com/settings/personal-access-tokens/new?name=NoteGen&description=NoteGen+sync&expires_in=none&contents=write&administration=write): prefills no expiration and the Contents and Administration permissions needed for the complete NoteGen workflow. GitHub still asks you to confirm the resource owner and repository access.
-- [Gitee personal access token](https://gitee.com/profile/personal_access_tokens/new)
-- [GitLab personal access token (prefills the api scope)](https://gitlab.com/-/user_settings/personal_access_tokens?name=NoteGen&description=NoteGen+sync&scopes=api)
-- Gitea: open **Settings → Applications → Manage Access Tokens** on your instance. For self-hosted GitLab and Gitea, use the token page on your own instance.
+### S3
 
-GitHub and GitLab officially support permission prefill links. Gitee and Gitea do not publish a URL prefill protocol, so select the permissions listed above on their token creation pages.
+Enter the access key ID, secret access key, region, bucket, endpoint, and optional path prefix. Compatible S3 object stores are supported. Save and test the connection before enabling automatic sync.
 
-GitHub asks you to choose the resource owner and repositories for a fine-grained token. If an organization requires administrator approval, NoteGen cannot access that organization's repository until the token is approved.
+### WebDAV
 
-For platform details, see [GitHub fine-grained token permissions](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens), [GitLab token scopes](https://docs.gitlab.com/security/tokens/access_token_scopes/), and [Gitea API scopes](https://docs.gitea.com/development/api-usage).
+Enter the server URL, username, password, and optional path prefix. Synology, QNAP, Nextcloud, and other compatible servers can be used. HTTPS is recommended.
 
-- Note that you must select GitHub, Gitee, GitLab, or Gitea as the primary backup method for it to take effect. The button is located at the bottom of the page.
+## Note auto-sync
 
-### Auto Sync Interval
+Disable it or choose a delay from 2 seconds to 2 minutes after editing stops. NoteGen can also pull when a file opens or when switching files. Auto-pull can overwrite the local version, so enable it only after validating your workflow.
 
-Set the frequency of automatic data synchronization. When writing, automatic backup will be performed after the set time is reached following input stop.
+## Records and settings auto-sync
 
-### Primary Backup Method
+Changes enter an ordered upload queue. The first time it is enabled, choose Upload Local, Pull Remote, or Later. A new device normally pulls remote data; back up a device with unsynced local data before choosing.
 
-Select GitHub, Gitee, GitLab, or Gitea as the primary backup method. Settings take effect only after configuration.
+## Resolve conflicts
 
-### Notes
+- **Merge both sides** keeps new items from both sides, prefers the newer version of the same record, and merges settings under the current privacy rules.
+- **Pull remote over local** discards unsynced local changes.
+- **Upload local over remote** may discard changes from other devices.
 
-- Deleting cloud sync files will also delete files in the remote repository
-- Make sure each access token is valid and grants only the permissions listed above
-- Recommend using private repositories to protect data security
+Export a local ZIP from the title-bar sync menu before a high-risk overwrite.

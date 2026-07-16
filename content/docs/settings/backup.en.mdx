@@ -1,58 +1,29 @@
 ---
-title: Backup
-description: Data backup configuration guide, supporting local backup and WebDAV cloud backup.
+title: Local backup and restore
+description: Export and restore a ZIP containing application data and workspace files.
 icon: Shield
 ---
 
-### Local Backup
+Local backup and cloud sync serve different purposes. Sync keeps devices updated; a local ZIP protects migrations, risky operations, and offline archives.
 
-Manually export application data as a ZIP file, or restore data from a backup file.
+## Export
 
-#### Export Backup
+1. Open the sync-status menu in the title bar.
+2. Choose Export under Local Backup (All).
+3. Select a destination.
 
-Click the "Export Backup" button, select a save location, and the application will package all data into a ZIP file. The filename format is `note-gen-backup-YYYY-MM-DD_HH-mm-ss.zip`.
+The archive includes application databases, configuration, and relevant files from the default workspace. If you use a custom workspace, also copy the full workspace directory so external assets are covered.
 
-#### Import Backup
+## Import
 
-Click the "Import Backup" button, select the previously exported ZIP file, and the application will restore all data. You need to restart the application for the import to take effect.
+1. Choose Import from the same menu.
+2. Select a ZIP exported by NoteGen.
+3. Confirm the restore and allow NoteGen to restart.
 
-### WebDAV Backup
+Import overwrites current application data. Export the current state first, do not alter the ZIP structure, and do not import untrusted archives.
 
-Backup data to cloud servers via WebDAV protocol, enabling cross-device data synchronization.
+## Recommended strategy
 
-#### Configuration Items
-
-| Item | Description |
-|------|-------------|
-| Server URL | WebDAV server address, e.g., https://webdav.example.com |
-| Username | WebDAV login username |
-| Password | WebDAV login password |
-| Backup Path | Cloud backup path, e.g., /note-gen/backup |
-
-#### Connection Status
-
-The system automatically detects WebDAV connection status, displayed as:
-- **Success**: Connection is normal, backup and sync available
-- **Checking**: Verifying connection
-- **Failed**: Connection failed, please check configuration
-
-#### Backup Operations
-
-| Operation | Description |
-|-----------|-------------|
-| Backup to WebDAV | Upload local data to WebDAV server |
-| Sync from WebDAV | Download data from WebDAV server to local |
-| Create Directory | Create new directory if backup path doesn't exist |
-
-#### Use Cases
-
-WebDAV backup is suitable for:
-- Using self-hosted cloud storage services (e.g., Nextcloud, ownCloud)
-- Enterprise internal file servers
-- Cloud storage services supporting WebDAV
-
-#### Notes
-
-- WebDAV backup does not support historical rollback functionality
-- Please ensure server address and credentials are configured correctly
-- Recommend using HTTPS protocol to ensure data security
+- Back up before major upgrades, workspace migrations, and sync-conflict overwrites.
+- Cloud sync is not an offline backup; remote deletion may propagate to other devices.
+- Periodically verify that archives can be opened and keep at least one copy on a separate device.

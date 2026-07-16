@@ -1,0 +1,21 @@
+---
+title: Read aloud
+description: Configure system and model speech for text playback.
+icon: Volume2
+---
+
+Read aloud works with Chat responses and selected editor text. It is configured separately from voice transcription.
+
+## Mode
+
+| Mode | Behavior |
+| --- | --- |
+| Auto (recommended) | Prefer a system voice and fall back to the configured model |
+| Local only | Use operating-system voices; text is not sent to a model provider |
+| Model only | Use the configured TTS model; network access and credentials are required |
+
+## Model and speed
+
+For model speech, add a `tts` model under Model Configuration and select it as the read-aloud model. Speed ranges from 0.5x to 2.0x; the default is 1.0x.
+
+If the local voice does not support a language, install that voice in the operating system or use a compatible TTS model.

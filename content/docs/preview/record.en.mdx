@@ -1,270 +1,63 @@
 ---
-title: Record & Organize
-description: Recording is the core feature of NoteGen, supporting multiple recording methods and AI organization to transform fragmented records into complete notes.
+title: Record and organize
+description: Capture seven record types, then turn selected material into Markdown with filters, tags, and AI templates.
 icon: Highlighter
 ---
 
-## Record & Organize User Guide
+Record captures material before it becomes a document. Organize turns selected records into structured Markdown. On desktop, open Record from the sidebar; mobile has a dedicated Record screen.
 
-NoteGen's "Record" and "Organize" features are designed to help you easily collect fragmented information and use AI to organize it into a structured knowledge system.
+## Seven record types
 
-- **Record Feature**: Quickly collect various types of information (text, images, links, voice recordings, etc.) without worrying about organization and classification
-- **Organize Feature**: AI automatically organizes scattered records into logically clear, structurally complete documents
+| Type | Content and usage |
+| --- | --- |
+| Text | Type, paste, or capture clipboard text |
+| Voice | Record live or import audio and transcribe it with STT |
+| Scan | Capture a screen area and extract content with OCR or VLM |
+| Image | Store an image with recognized text or a description |
+| Link | Save a URL, title, and description and reopen the source |
+| File | Store an attachment path and description |
+| Todo | Create, edit, and complete a task |
 
----
+Change record-control order and visibility under Settings → Record. Voice, OCR, VLM, and descriptions require the corresponding models or system capability.
 
-### I. Record Feature
+## Tags and destination
 
-#### 1.1 Accessing Record Feature
+- Every record belongs to a tag; select the destination while creating it.
+- Create, rename, reorder, and delete tags.
+- Deleting a tag moves its records to Trash rather than removing them permanently.
 
-**Desktop**: Click the "Record" tab in the left sidebar
+## Browse, search, and filter
 
-**Mobile**: Navigate to the dedicated "Record" page
+- Switch among list, compact, and card views.
+- Search record text, descriptions, and links.
+- Filter by all time, today, the last 7 days, or the last 30 days.
+- Select one or more record types.
+- Combine tag, search, time, and type filters.
 
-#### 1.2 Supported Record Types
+## Record actions
 
-NoteGen supports the following 7 record types:
+Open details to edit content, move a tag, open the source, delete, or restore. Multi-select exposes the batch operations currently available in the interface. Deleted records enter Trash, where they can be restored, permanently deleted, or cleared together.
 
-##### Text Record
+## AI organization
 
-Quickly record text content with automatic clipboard reading support.
+1. Open Organize and select a template.
+2. Choose a tag, time range, and individual records, or use quick mode.
+3. Choose one or multiple output files and a destination directory.
+4. Optionally remove model thinking and review the selected records.
+5. AI processes text, scans, images, links, files, voice records, and todos into Markdown.
 
-**Creation Methods**:
-- Click the text button in the toolbar
-- Automatically recognize and create after copying text
-- Use keyboard shortcuts for quick recording
+Organization does not automatically delete the source records. Continue editing the generated files in Writing.
 
-**Use Cases**: Sudden ideas, temporary notes, excerpted paragraphs
+## Templates
 
-##### Scan Record (OCR)
+A template includes its name, enabled state, default range, and prompt. Create separate templates for meeting minutes, study summaries, research, or daily reports. Specify output structure, source links, image placement, and todo formatting in the prompt.
 
-Automatically recognize text content in images through screenshots.
+## Chat and Agent
 
-**Creation Methods**:
-- Click the scan button in the toolbar to take a screenshot
-- System automatically performs OCR text recognition
-- Supports saving both screenshots and recognition results
+- Link a tag from the chat toolbar to include its records in context.
+- Agent can query, create, update, and organize records through tools; write and delete operations follow approval rules.
+- Drag a record into the editor to insert it into an existing note.
 
-**Use Cases**: Recognizing text in images, scanning paper documents, extracting screen information
+## Sync and privacy
 
-##### Image Record
-
-Save images and add descriptions.
-
-**Creation Methods**:
-- Click the image button in the toolbar to select files
-- Supports common image formats
-- Can add descriptive text to images
-
-**Use Cases**: Saving design references, collecting materials, recording visual information; images will be inserted at appropriate positions in notes during organization
-
-##### Link Record
-
-Automatically recognize and save links from clipboard.
-
-**Creation Methods**:
-- Copy link address to automatically create record
-- Automatically fetch webpage title
-- Click to directly jump to original link
-
-**Use Cases**: Bookmarking webpages, saving resource links, reading list
-
-##### File Record
-
-Save files and their descriptive information.
-
-**Creation Methods**:
-- Click the file button in the toolbar
-- Select any type of file
-- Add file descriptions or notes
-
-**Use Cases**: Saving document attachments, archiving resource files
-
-##### Voice Record
-
-Support real-time recording or uploading audio files with automatic transcription.
-
-**Creation Methods**:
-- **Single-click** microphone icon: Start real-time recording
-- **Double-click** microphone icon: Select audio file to upload
-- System automatically performs speech-to-text
-
-**Use Cases**: Meeting notes, voice memos, lecture notes, verbal ideas
-
-##### Todo Record
-
-Create todo items with checkbox completion support.
-
-**Creation Methods**:
-- Click the todo button in the toolbar
-- Enter todo content
-- Click checkbox to mark as complete
-
-**Use Cases**: Task lists, reminders, action plans
-
-#### 1.3 Tag Management
-
-Categorize and organize records through tags:
-
-- **Create Tags**: Click tag management button to create and name new tags
-- **Drag to Sort**: Hold and drag tags to adjust order
-- **Collapse/Expand**: Click tags to collapse or expand record lists
-- **View Count**: Tags display the number of records in that category
-
-#### 1.4 Record Operations
-
-**Single Record Operations** (right-click menu):
-- View details
-- Edit content
-- Delete record
-- Drag into editor to reference
-
-**Batch Operations**:
-- Click multi-select button to enter batch selection mode
-- Batch delete
-- Batch transfer tags
-- Batch export
-
----
-
-### II. Organize Feature
-
-#### 2.1 Organize Feature Entry
-
-- Use the organize feature in the toolbar to use organize templates
-- Use AI Agent mode to notify AI which records to use for organization
-
-### 2.2 Organization Process
-
-#### Step 1: Select Organization Range
-
-Choose records within the following time ranges for organization:
-
-| Range | Description |
-|-------|-------------|
-| Today | Organize records created today |
-| This Week | Organize records created this week |
-| This Month | Organize records created this month |
-| Last 3 Months | Organize records from the last 3 months |
-| This Year | Organize records created this year |
-| All | Organize all records |
-
-#### Step 2: Select Organization Template
-
-Multiple organization templates are supported, each containing different organization strategies and prompts. Templates can be customized in settings:
-- Template title
-- Organization time range
-- AI prompt content
-
-#### Step 3: AI Intelligent Organization
-
-AI automatically analyzes records within the selected range, organizing them by logical relationships and chronological order to generate structured Markdown documents.
-
-**Organization Features**:
-- Automatically recognize different types of records
-- Insert image records at appropriate positions
-- Organize link records into reference sections
-- Use OCR text content for scan records
-- Maintain content coherence and readability
-
-#### Step 4: Save Document
-
-After organization is complete, the system automatically creates and saves a new Markdown file. The document title is automatically generated based on template settings.
-
-### 2.3 Custom Organization Templates
-
-In Settings > Toolbar Settings > Record Organization Templates, you can create and manage custom templates:
-
-1. **Template Title**: Name the template
-2. **Time Range**: Set the default time range for organization
-3. **Prompt Content**: Customize AI organization instructions and requirements
-
-Through custom templates, you can have AI organize records according to your preferences and needs.
-
----
-
-### III. Advanced Tips
-
-#### 3.1 Keyboard Shortcuts
-
-Use global shortcuts Command or Alt + corresponding tool number (1~N) to quickly invoke record features without switching windows.
-
-#### 3.2 Drag to Reference
-
-Drag records directly into the editor to quickly reference them in articles.
-
-#### 3.3 Search & Filter
-
-- Filter records by tag
-- Filter by record type
-- Filter by time range
-
-#### 3.4 Data Sync
-
-Support syncing record data to the following platforms:
-- GitHub
-- Gitee
-- GitLab
-- Gitea
-
-Ensuring cross-device data consistency and security.
-
-#### 3.5 Trash
-
-Deleted records go to the trash and can be restored or permanently deleted within a certain time period.
-
----
-
-## IV. Usage Scenarios
-
-#### Scenario 1: Learning Note Organization
-
-1. Use text records to excerpt key points during reading and learning
-2. Use scan records to save useful charts and diagrams
-3. Collect related resource links
-4. Regularly (e.g., daily/weekly) use the organize feature to generate learning summaries
-
-#### Scenario 2: Meeting Records
-
-1. Use voice recording for full meeting recording
-2. Create todo records for important items
-3. Use scan records to save key information during screen sharing
-4. After the meeting, organize and generate meeting minutes
-
-#### Scenario 3: Project Research
-
-1. Collect competitor resource links
-2. Save product screenshots and design references
-3. Record ideas and inspiration
-4. Organize into research reports
-
-#### Scenario 4: Personal Knowledge Base
-
-1. Quick daily recording of inspiration
-2. Bookmark valuable articles and resources
-3. Regularly organize to systematize fragmented information
-4. Build a personal knowledge system
-
----
-
-### V. FAQ
-
-**Q: Are records exportable?**
-
-A: Yes, batch export is supported. Select the export function in multi-select mode.
-
-**Q: Can organized documents be edited?**
-
-A: Yes, the organized result is a standard Markdown file that can be freely edited and modified.
-
-**Q: What languages are supported for voice recording?**
-
-A: Multiple languages are supported for speech-to-text, depending on the configured AI model.
-
-**Q: How do I delete unneeded tags?**
-
-A: You can delete tags in tag management. Before deletion, you can choose whether to keep records under that tag.
-
-**Q: Where is record data stored?**
-
-A: Record data is stored in a local database and can be synced to remote repositories via Git for backup.
+Records are stored in a local database. Records and Settings sync uploads records, tags, chats, and permitted settings to the selected provider. Online transcription, VLM, and description models receive the relevant audio, image, or text.

@@ -1,154 +1,83 @@
 ---
 title: 贡献指南
-description: NoteGen 是一个开源且免费的社区项目，我们将持续为爱发电，并接受任何形式的贡献。
+description: 搭建 NoteGen 开发环境、理解目录并提交可维护的 Pull Request。
 icon: Code
 ---
 
-Hi! 非常感谢你参与 NoteGen 的贡献！在此之前，请花一些时间阅读以下内容：
+NoteGen 是开源社区项目。修复问题或开发功能前，请先搜索 [Issues](https://github.com/codexu/note-gen/issues) 和 [Discussions](https://github.com/codexu/note-gen/discussions)。较大的行为变化建议先创建 Issue 讨论范围。
 
-### 如何贡献
+## 技术栈
 
-不论是贡献代码还是提交问题，都应该先创建 Issue。
+- Tauri 2：Windows、macOS、Linux、Android、iOS 容器与原生能力；
+- Next.js 15、React 19、TypeScript；
+- Tiptap 3 Markdown 编辑器；
+- Zustand、SQLite、Tauri Store；
+- Tailwind CSS 4、shadcn/ui；
+- OpenAI 兼容模型、RAG、MCP、Skills 与本地 OCR。
 
-#### Issues
+## 准备环境
 
-请始终使用 [Issues](https://github.com/codexu/note-gen/issues) 创建新问题，尽量详细描述问题，包括重现步骤、预期行为和实际行为。
-
-#### Discussions
-
-如果你想发起讨论，可以使用 [Discussions](https://github.com/codexu/note-gen/discussions)，或加入 [交流群](https://github.com/codexu/note-gen/discussions/110)。
-
-#### Pull Request
-
-- 在修复 bug 前，请先检查 [Issues](https://github.com/codexu/note-gen/issues) 是否具有相同的问题。
-- 如果你要开发一个功能，请先提交 [Issue](https://github.com/codexu/note-gen/issues)，与项目维护者讨论该功能是否被需要，这有助于节省维护者和贡献者的时间。
-
-### 技术栈
-
-NoteGen 主要用到以下几个技术栈：
-
-- [Tauri 2](https://v2.tauri.app/)
-- [Next.js 15](https://nextjs.org/)
-- [shadcn-ui](https://ui.shadcn.com/)
-- [tailwindcss](https://tailwindcss.com/)
-  
-- 查看 [package.json](https://github.com/codexu/note-gen/blob/dev/package.json) 中前端依赖包。
-- 查看 [src-tauri/Cargo.toml](https://github.com/codexu/note-gen/blob/dev/src-tauri/Cargo.toml) 中 Rust 依赖包。
-
-如果你本次贡献需要更新或添加依赖，请在 issue 中添加 `package.json` 或 `src-tauri/Cargo.toml` 的更新说明。
-
-### 开发环境
-
-请先阅读 [Tauri 2 前置要求](https://v2.tauri.app/zh-cn/start/prerequisites/) 文档，按照文档要求配置开发环境。
-
-环境装好后，**fork** 仓库到你的 GitHub 账号下，然后克隆到本地：
+先完成 [Tauri 2 前置要求](https://v2.tauri.app/start/prerequisites/)，并安装 Node.js 与 pnpm。
 
 ```bash
-## 1. fork 到你的 GitHub 账号下
-
-## 2. 克隆到本地
 git clone https://github.com/your-username/note-gen.git
-```
-
-然后进入项目目录，安装依赖：
-
-```bash
-## 3. 进入项目目录 & 安装依赖
 cd note-gen
+git switch dev
 pnpm install
-
-## 4. 启动本地开发，如果遇到白屏情况，尝试右键 reload。
 pnpm tauri dev
 ```
 
-### 目录说明
+前端开发服务器使用 `http://localhost:3456`。如果窗口白屏，先查看启动终端和开发者工具中的错误，再尝试重新加载。
 
-- `src`：前端应用目录。
-  - `apps`：前端应用目录。
-    - `core`：主应用核心功能目录。
-      - `article`：写作。
-      - `image`：图床管理。
-      - `record`： 记录。
-      - `search`：搜索。
-      - `setting`：设置。
-    - `screenshot`：截图窗口。
-  - `components`：组件目录，shadcn 和通用组件。
-  - `lib`：常用工具库，例如 ai、github 请求等。
-  - `db`：SQLite 数据库。
-  - `store`：状态管理目录，采用 zustand。
-- `src-tauri`：Rust 代码目录。
-- `messages`：多语言配置目录。
+## 目录结构
 
-### Pull Request 指南
-
-NoteGen 未使用 master 或 main 分支，一切发开都在 dev 分支下进行，通过合并到 release 分之后触发 Github Action 进行版本发布和构建。
-
-Fork 仓库后，请使用 dev 分支创建一个新的分支，命名为本次贡献的名称，例如 `fix/123` 或 `feat/121`。
-
-你可以多次提交代码，直到完成所有修改，在提交 Pull Request 时，我们会通过 `Squash and Merge`  合并成一个提交。
-
-请在 PR 标题中添加 `fix(#xxx): ***` 或 `feat(#xxx): ***`，#xxx 是 issue 编号，例如 [NoteGen 更新计划 #46](https://github.com/codexu/note-gen/issues/46)。
-
-在提交 PR 前，确保本地运行 `pnpm tauri build` 可以正常构建及运行。
-
-### 开发指南
-
-本章节将介绍如何快速上手 NoteGen 的开发。
-
-#### DeepWiki
-
-你可以通过 AI 生成的文档 [DeepWiki](https://deepwiki.com/codexu/note-gen) 来快速学习 NoteGen 的开发文档。
-
-#### 项目环境搭建
-
-请先阅读 [Tauri 2 前置要求](https://v2.tauri.app/start/prerequisites/) 文档，按照文档要求配置开发环境。
-
-通过 `pnpm tauri dev` 可以启动本地开发，如果遇到白屏情况，尝试右键 reload。
-
-#### 项目构建
-
-##### 桌面端
-
-通过 `pnpm tauri build` 可以构建桌面端应用，注意此时会根据你的系统构建相应的安装包。
-
-默认情况下是通过 Github Action 自动构建的，通过发布 release 分支时触发，通常会修改 `src-tauri/tauri.conf.json` 中的版本号。
-
-##### Android
-
-要构建 Android 应用，首先运行 `pnpm tauri android init`。
-
-然后阅读 [Tauri 2 Android 签名](https://v2.tauri.app/distribute/sign/android/) 文档，按照文档要求创建签名 key。
-
-在 `src-tauri/gen/android` 目录下创建 `keystore.properties` 文件，内容如下：
-
-```properties
-storePassword=**
-keyPassword=**
-keyAlias=**
-storeFile=/**/Downloads/upload-keystore.jks
+```text
+src/
+├── app/core/             桌面端主界面、编辑器、记录、对话与设置
+├── app/mobile/           移动端记录、写作、对话与设置
+├── components/           通用组件和 shadcn/ui
+├── config/               快捷键、同步排除项等配置
+├── db/                   SQLite 数据访问
+├── hooks/                React Hooks
+├── i18n/                 国际化运行配置
+├── lib/                  AI、Agent、MCP、Skills、同步、OCR 等核心逻辑
+├── stores/               Zustand 状态模块
+└── types/                公共类型
+src-tauri/                Rust 命令、平台能力、权限与打包配置
+messages/                 各语言界面文案
+.github/workflows/        发布流程
 ```
 
-在 `src-tauri/gen/android/app/build.gradle.kts` 中添加一下代码：
+## 常用命令
 
-```kotlin
-import java.io.FileInputStream
-
-android {
-    signingConfigs {
-        create("release") {
-            val keystorePropertiesFile = rootProject.file("keystore.properties")
-            val keystoreProperties = Properties()
-            if (keystorePropertiesFile.exists()) {
-                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-            }
-
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
-        }
-    }  
-}
+```bash
+pnpm dev                  # 仅启动 Next.js
+pnpm tauri dev            # 启动桌面应用
+pnpm build                # 静态导出前端
+pnpm tauri build          # 构建当前桌面平台安装包
+pnpm tauri android dev    # Android 开发
+pnpm tauri android build  # Android 构建
+pnpm tauri ios dev        # iOS 开发（需要 macOS/Xcode）
+pnpm tauri ios build      # iOS 构建
+pnpm sync-version         # 将 Tauri 版本同步到 iOS 工程
 ```
 
-最后可以通过 `pnpm tauri android build --apk --split-per-abi` 构建不同 Android 架构的 APK。
+仓库中的部分模块使用 Node 内置测试或同目录规格文件。修改相关逻辑时，先查找附近的 `*.test.*`、`*.spec.*` 和项目脚本，并运行对应测试。
+
+## 开发约定
+
+- 从 `dev` 创建 `fix/...` 或 `feat/...` 分支，不直接在 `dev` 上开发。
+- 客户端组件需要 `'use client'`；TypeScript 保持严格类型。
+- 添加界面文案时同步更新 `messages/` 下所有语言文件的键。
+- 修改模型、同步、隐私或用户操作路径时，同时更新官网文档。
+- 不提交 API Key、Token、签名文件、个人路径或真实用户数据。
+
+## Pull Request
+
+PR 标题采用 `fix(#issue): 描述` 或 `feat(#issue): 描述`。正文应说明问题、方案、影响平台、验证方式和界面截图。提交前至少确认相关构建、类型检查或测试通过。
+
+项目从 `dev` 开发，推送 `release` 分支会触发 GitHub Actions 构建和发布桌面及 Android 产物。不要在普通功能 PR 中修改发布版本或签名配置，除非 Issue 明确要求。
+
+## 移动端
+
+Android 和 iOS 需要各自的 Tauri、SDK、签名与设备环境。签名密钥和 `keystore.properties` 等本地文件不得提交。移动端不支持所有桌面能力，例如 stdio MCP 和系统托盘，新增功能时需要同时检查桌面与移动路由。

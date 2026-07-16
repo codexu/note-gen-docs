@@ -1,0 +1,25 @@
+---
+title: Memory management
+description: Manage long-term preferences and facts used in AI conversations.
+icon: Brain
+---
+
+Long-term memory lets AI reuse your writing preferences, background, and experience across conversations. Memories are stored in a local database and matched with embeddings.
+
+## Memory types
+
+| Type | How it is used | Example |
+| --- | --- | --- |
+| Preference | Loaded for every conversation | “Reply in Chinese” or “Keep answers concise” |
+| Memory | Matched against the current conversation | “I maintain NoteGen” or “I know React” |
+
+## Add and manage
+
+- Add an item manually and choose its type.
+- In Agent, phrases such as “remember this” can invoke the memory tool.
+- A highly similar new item may replace an older one to reduce duplication.
+- Filter all items, preferences, or memories; inspect access counts; edit or delete entries.
+
+## Models and privacy
+
+Creating and matching regular memories requires an embedding model. An online embedding provider receives the memory text being embedded. Do not store passwords, tokens, or information you do not want included in AI context.

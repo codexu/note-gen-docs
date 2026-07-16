@@ -1,165 +1,64 @@
 ---
-title: Markdown Editor
-description: Built with Vditor, this editor provides powerful Markdown editing capabilities, supporting multiple editing modes and rich extended syntax.
+title: Markdown editor
+description: Write and export Markdown in NoteGen's Tiptap-based rich editor.
 icon: PenTool
 ---
 
-## Editing Modes
+NoteGen uses Tiptap 3 for a single rich Markdown editing experience. Markdown structure is rendered directly; there are no separate source, preview, or split-screen modes.
 
-The editor supports three editing modes, switchable via the toolbar:
+## Open and manage files
 
-| Mode | Icon | Description |
-|------|------|-------------|
-| **Instant Rendering** | Default | Similar to Typora, auto-renders as you type, integrated editing and preview |
-| **WYSIWYG** | Toggle selection | Edit like Microsoft Word, friendly for users unfamiliar with Markdown |
-| **Split View** | Toggle selection | Traditional mode with editor on left, preview on right |
+- Create or open Markdown files from the file manager.
+- Multiple files open as tabs; record details can also open in tabs.
+- Content is saved to the current workspace automatically. Remote auto-sync depends on Sync settings.
+- Common text/code files can open in the editor; unsupported formats display a non-editable view.
 
-> Tip: Mobile devices use instant rendering mode by default
+## Editing
 
-## Toolbar Features
+The editor supports headings, paragraphs, bold, italic, strike, underline, highlight, block quotes, links, unordered/ordered/task lists, inline code, code blocks, tables, images, and horizontal rules.
 
-### Basic Formatting
+- Markdown input markers trigger formatting.
+- Type `/` for slash commands.
+- Drag a block handle to reorder content.
+- Table controls add, delete, and align rows and columns.
+- Paste, drop, or select images, then resize them or adjust their path.
 
-| Button | Shortcut | Function | Syntax Example |
-|--------|----------|----------|----------------|
-| **Undo/Redo** | `Ctrl+Z` / `Ctrl+Y` | Undo/redo operations | - |
-| **Heading** | - | Insert heading | `## Heading` |
-| **Bold** | `Ctrl+B` | Bold text | `**text**` |
-| **Italic** | `Ctrl+I` | Italic text | `*text*` |
-| **Strikethrough** | - | Strikethrough | `~~text~~` |
-| **Horizontal Rule** | - | Insert horizontal line | `---` |
-| **Quote** | `Ctrl+Shift+9` | Quote block | `> quote` |
+## Math and diagrams
 
-### Lists & Code
+- Use `$...$` for inline math and `$$...$$` for block math, rendered with KaTeX.
+- Mermaid blocks render flowcharts, sequences, classes, states, ER diagrams, Gantt charts, pies, and journeys.
+- Select math or Mermaid content to open its dedicated editor.
 
-| Button | Function | Syntax Example |
-|--------|----------|----------------|
-| **Bullet List** | Bulleted list | `- item` |
-| **Ordered List** | Numbered list | `1. item` |
-| **Task List** | Todo items | `- [ ] task` |
-| **Code Block** | Code area | ` ```js\ncode\n``` ` |
-| **Inline Code** | Inline code | `` `code` `` |
+## AI writing
 
-### Insert Content
+### Inline completion
 
-| Button | Function | Usage |
-|--------|----------|-------|
-| **Upload** | Upload images/files | Supports drag & drop, paste upload |
-| **Link** | Insert link | `[text](url)` |
-| **Table** | Insert table | Supports Markdown table syntax |
+Enable AI completion in the footer. Suggestions use text around the cursor. Accept or dismiss them with the shortcuts configured under Settings → Shortcuts.
 
-### View Switching
+### Selection tools
 
-| Button | Function |
-|--------|----------|
-| **Edit Mode** | Switch editing mode |
-| **Preview** | Preview-only mode |
+Select text to polish, shorten, expand, or translate it. Generated text streams into a preview that can be accepted or discarded.
 
-## Floating Toolbar
+### Agent changes
 
-Automatically displays when text is selected, providing AI-assisted features:
+Agent can read the current file and propose edits. Changes appear as a diff and are applied only after approval. Multi-file work can be reviewed in the changes panel.
 
-| Feature | Description |
-|---------|-------------|
-| **Quote** | Add quote formatting to selected content |
-| **Polish** | AI polish selected text |
-| **Erase** | AI remove redundant content |
-| **Expand** | AI expand selected content |
-| **Read** | Read selected text aloud |
+## Records and file references
 
-## Bottom Toolbar
+- Drag records into the editor to insert text, images, or file references.
+- Drag supported files from the file manager to link or insert them according to type.
+- Quote selected text into Chat or Agent to focus work on that passage.
 
-### Left Side
+## Search, outline, and shortcuts
 
-| Feature | Description |
-|---------|-------------|
-| **Word Count** | Display current document word count |
-| **AI Completion Toggle** | Enable/disable AI auto-completion |
-| **Copy** | Copy Markdown content |
-| **Export** | Export document |
+- Find/replace supports previous/next navigation and case matching.
+- The heading outline can appear on the left or right.
+- View and customize all editor shortcuts under Settings → Shortcuts; conflicts with global shortcuts are detected.
 
-### Right Side
+## Export
 
-| Feature | Description |
-|---------|-------------|
-| **Vector Calculate** | Vector calculation feature |
-| **Sync** | Sync to remote |
-| **History** | View edit history |
-| **Pull** | Pull remote updates |
+Export Markdown, HTML, plain text, JSON, or PDF from the editor. The file-manager context menu also exposes Markdown export operations. PDF is rendered from the current view; inspect complex pagination, remote images, and wide tables afterward.
 
-## Keyboard Shortcuts
+## Mobile
 
-| Shortcut | Function |
-|----------|----------|
-| `Ctrl+Z` | Undo |
-| `Ctrl+Y` / `Ctrl+Shift+Z` | Redo |
-| `Ctrl+B` | Bold |
-| `Ctrl+I` | Italic |
-| `Ctrl+Shift+9` | Quote |
-| `Ctrl+Enter` | Submit/Publish |
-| `Ctrl+F` | Open search |
-| `Tab` | Accept AI completion |
-| `Esc` | Cancel AI completion |
-
-## Markdown Syntax
-
-The editor supports standard Markdown syntax and various extended syntax:
-
-- **Basic Formatting**: Headings, bold, italic, strikethrough, inline code
-- **Lists**: Unordered lists, ordered lists, task lists
-- **Quotes & Links**: Quote blocks, hyperlinks, images
-- **Code Blocks**: Syntax highlighting for `js`, `ts`, `python`, `go`, `java`, `html`, `css`, `bash`, `json`, `sql`, and more
-- **Tables**: Standard Markdown tables
-- **Math Formulas**: Inline formulas `$...$` and multi-line formulas `$$...$$`
-- **Diagrams**: Mermaid flowcharts, sequence diagrams, Gantt charts, and Mindmap mind maps
-- **Footnotes**: `[^1]` syntax
-- **Emojis**: Type `:` to trigger emoji completion
-
----
-
-## Image Upload
-
-### Supported Upload Methods
-
-1. **Drag & Drop**: Drag images directly into the editor
-2. **Paste Upload**: Copy images and paste into the editor
-3. **Click Upload**: Click the upload button in the toolbar
-
-### Image Hosting Support
-
-- GitHub
-- SM.MS
-- PicGo
-- AWS S3
-
-Image hosting services can be configured in settings.
-
-## Outline Feature
-
-The left outline panel automatically displays document structure:
-- Click outline to jump to corresponding section
-- Supports collapsing/expanding
-- Follows current editing position
-
-## Themes
-
-The editor supports light/dark theme switching, automatically following system settings.
-
-## Search Function
-
-Press `Ctrl+F` to open the search panel, supporting:
-- Text search
-- Replace content
-- Case sensitivity
-- Previous/next navigation
-
-## Auto Save
-
-The editor automatically saves content locally to prevent accidental loss.
-
-## Hint Features
-
-| Input | Trigger |
-|-------|---------|
-| `...` | Continue writing (AI) |
-| `???` | Ask question (AI) |
+Mobile uses the same Markdown data with a touch-friendly selection bar, writing toolbar, and More sheet. Some desktop floating controls appear in a bottom drawer instead.

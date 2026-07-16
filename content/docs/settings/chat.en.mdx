@@ -1,0 +1,27 @@
+---
+title: Chat settings
+description: Configure chat models, toolbar controls, and long-conversation condensation.
+icon: MessageSquare
+---
+
+## Default model
+
+Select the primary chat model for Chat and Agent. Conversation features without an explicit model fall back to it.
+
+## Chat toolbar
+
+Open Settings to change the order and visibility of desktop and mobile controls: model, prompt, response language, linked tag, linked files, MCP, knowledge base, clipboard monitor, new chat, clear context, and clear chat.
+
+Clear Context keeps visible history but excludes earlier messages from future requests. Clear Chat deletes the current conversation history.
+
+## Conversation condensation
+
+Long conversations can be summarized to reduce token usage. Configure:
+
+- whether automatic condensation is enabled;
+- a condensation model, or fall back to the primary model;
+- message-count and minimum-token thresholds;
+- how many recent messages remain uncompressed;
+- maximum summary length and a custom prompt using `{content}`.
+
+Condensation removes some detail from future context. Disable it or start a new conversation when exact historical wording matters.

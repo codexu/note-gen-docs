@@ -1,0 +1,56 @@
+---
+title: Troubleshooting
+description: Fix common model, sync, MCP, OCR, audio, workspace, and mobile issues.
+icon: LifeBuoy
+---
+
+## Model connection fails
+
+1. Enter the base URL through its version segment, such as `https://api.openai.com/v1`; do not append `/chat/completions`.
+2. Verify the API key, model name, and model type.
+3. Run the connection check in Model Configuration.
+4. Ollama or LM Studio must be running and reachable from the device running NoteGen.
+5. Check whether the provider uses inherited, direct, or custom proxy mode.
+6. For older compatible APIs, change the token-limit parameter from `max_completion_tokens` to `max_tokens`.
+
+## Sync fails or conflicts
+
+- Confirm that the provider is connected and verify token permissions, repository/bucket, and path prefix.
+- Existing GitHub repositories usually need Contents read/write; repository creation also needs Administration read/write.
+- GitLab's REST API requires the `api` scope. Self-hosted Gitea requires the correct instance URL.
+- A conflict can be merged, replaced with remote data, or overwritten with local data. The overwrite choices can discard unsynced changes.
+- On a new device, choose the initial Records and Settings sync direction carefully.
+- Device-specific values such as workspace paths are excluded by default.
+
+## MCP server does not start
+
+- Mobile supports HTTP MCP only; stdio commands are desktop-only.
+- Use the runtime check for Node.js, Python, uv, npx, and related launchers.
+- Keep commands and arguments separate. Environment variables and headers must be valid JSON.
+- Test the connection, then select the server from the chat toolbar.
+- Do not import command-based configurations from untrusted sources.
+
+## OCR or image recognition fails
+
+- OCR requires the selected language packages and may download them on first use.
+- Use valid language codes, for example `chi_sim,eng`.
+- macOS and mobile builds may use native OCR; other environments may use Tesseract.
+- VLM recognition needs a compatible online model. Prefer OCR for clean text and VLM for complex layouts.
+
+## Recording or read-aloud has no audio
+
+- Check microphone permissions and the selected input device.
+- Transcription requires an STT model.
+- Use Auto for read-aloud; configure a TTS model when the system voice is unavailable.
+- For imported audio, verify the format and file integrity.
+
+## Workspace files are missing
+
+- Restart after changing the workspace so all components reload the path.
+- Confirm that NoteGen has read/write permission for the directory.
+- Unsupported files may appear as non-editable.
+- Switching workspaces does not move files. Switch back through history or migrate them in the system file manager.
+
+## Still stuck?
+
+When opening an [Issue](https://github.com/codexu/note-gen/issues), include the NoteGen version, OS version, reproduction steps, expected result, and actual result. Remove API keys, tokens, private paths, and note content from logs and screenshots.

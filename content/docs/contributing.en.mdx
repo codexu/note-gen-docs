@@ -1,158 +1,83 @@
 ---
 title: Contributing
-description: NoteGen is an open-source and free community project. We continue building it with passion and welcome contributions in any form.
+description: Set up NoteGen, understand the repository, and submit a maintainable pull request.
 icon: Code
 ---
 
-Hi! Thank you so much for contributing to NoteGen! Before you begin, please take a moment to read the following:
+NoteGen is an open-source community project. Before fixing or building a feature, search [Issues](https://github.com/codexu/note-gen/issues) and [Discussions](https://github.com/codexu/note-gen/discussions). Open an Issue first for larger behavior changes.
 
-### How to Contribute
+## Stack
 
-Whether you are contributing code or reporting issues, please start by creating an Issue.
+- Tauri 2 for Windows, macOS, Linux, Android, iOS, and native capabilities;
+- Next.js 15, React 19, and TypeScript;
+- Tiptap 3 Markdown editor;
+- Zustand, SQLite, and Tauri Store;
+- Tailwind CSS 4 and shadcn/ui;
+- OpenAI-compatible models, RAG, MCP, Skills, and local OCR.
 
-#### Issues
+## Set up
 
-Always create new issues via [Issues](https://github.com/codexu/note-gen/issues). Please describe the problem in as much detail as possible, including reproduction steps, expected behavior, and actual behavior.
-
-#### Discussions
-
-If you’d like to start a discussion, you can use [Discussions](https://github.com/codexu/note-gen/discussions), or join the [community group](https://github.com/codexu/note-gen/discussions/110).
-
-#### Pull Request
-
-- Before fixing a bug, please check [Issues](https://github.com/codexu/note-gen/issues) to see if the same issue already exists.
-- If you plan to develop a new feature, please first submit an [Issue](https://github.com/codexu/note-gen/issues) to discuss with maintainers whether the feature is needed. This helps save time for both maintainers and contributors.
-
-### Tech Stack
-
-NoteGen mainly uses the following technologies:
-
-- [Tauri 2](https://v2.tauri.app/)
-- [Next.js 15](https://nextjs.org/)
-- [shadcn-ui](https://ui.shadcn.com/)
-- [tailwindcss](https://tailwindcss.com/)
-
-- See frontend dependencies in [package.json](https://github.com/codexu/note-gen/blob/dev/package.json).
-- See Rust dependencies in [src-tauri/Cargo.toml](https://github.com/codexu/note-gen/blob/dev/src-tauri/Cargo.toml).
-
-If your contribution needs to update or add dependencies, please mention the changes to `package.json` or `src-tauri/Cargo.toml` in the issue.
-
-### Development Environment
-
-Please read the [Tauri 2 prerequisites](https://v2.tauri.app/zh-cn/start/prerequisites/) and configure your environment accordingly.
-
-Once your environment is ready, **fork** the repository to your GitHub account, then clone it locally:
+Complete the [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/) and install Node.js and pnpm.
 
 ```bash
-## 1. Fork to your GitHub account
-
-## 2. Clone locally
 git clone https://github.com/your-username/note-gen.git
-```
-
-Then enter the project directory and install dependencies:
-
-```bash
-## 3. Enter project directory & install dependencies
 cd note-gen
+git switch dev
 pnpm install
-
-## 4. Start local development; if you see a blank screen, try right-clicking to reload.
 pnpm tauri dev
 ```
 
-### Project Structure
+The frontend runs at `http://localhost:3456`. For a blank window, inspect terminal and developer-tool errors before reloading.
 
-- `src`: Frontend application directory.
-  - `apps`: Frontend application modules.
-    - `core`: Core features of the main app.
-      - `article`: Writing.
-      - `image`: Image hosting management.
-      - `record`: Recording.
-      - `search`: Search.
-      - `setting`: Settings.
-    - `screenshot`: Screenshot window.
-  - `components`: Component library, including shadcn and common components.
-  - `lib`: Utility libraries (e.g., AI, GitHub requests).
-  - `db`: SQLite database.
-  - `store`: State management (zustand).
-- `src-tauri`: Rust code.
-- `messages`: i18n configuration.
+## Repository structure
 
-### Pull Request Guidelines
-
-NoteGen does not use the master or main branches. All development happens on the `dev` branch. Releasing is triggered by merging into the `release` branch, which runs GitHub Actions to build and publish versions.
-
-After forking the repository, create a new branch from `dev` and name it according to your contribution, such as `fix/123` or `feat/121`.
-
-You can push multiple commits until all changes are complete. When submitting a Pull Request, we will use `Squash and Merge` to squash them into a single commit.
-
-Please use `fix(#xxx): ***` or `feat(#xxx): ***` in the PR title, where `#xxx` is the issue number, e.g., [NoteGen Roadmap #46](https://github.com/codexu/note-gen/issues/46).
-
-Before submitting the PR, ensure `pnpm tauri build` can build and run successfully on your local machine.
-
-### Development Guide
-
-This section will guide you through the development of NoteGen.
-
-#### DeepWiki
-
-You can quickly learn about NoteGen's development through AI-generated documentation at [DeepWiki](https://deepwiki.com/codexu/note-gen).
-
-#### Project Environment Setup
-
-Please read the [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/) documentation and configure your development environment accordingly.
-
-Start local development with `pnpm tauri dev`. If you encounter a blank screen, try right-clicking and selecting reload.
-
-#### Project Building
-
-##### Desktop
-
-Build the desktop application with `pnpm tauri build`. Note that this will create an installation package for your current system.
-
-By default, builds are automated via GitHub Actions, triggered when merging to the `release` branch. This typically involves updating the version number in `src-tauri/tauri.conf.json`.
-
-##### Android
-
-To build the Android application, first run `pnpm tauri android init`.
-
-Then, follow the [Tauri 2 Android Signing](https://v2.tauri.app/distribute/sign/android/) documentation to create a signing key.
-
-Create a `keystore.properties` file in the `src-tauri/gen/android` directory with the following content:
-
-```properties
-storePassword=**
-keyPassword=**
-keyAlias=**
-storeFile=/**/Downloads/upload-keystore.jks
+```text
+src/
+├── app/core/             Desktop UI, editor, records, chat, and settings
+├── app/mobile/           Mobile record, writing, chat, and settings
+├── components/           Shared and shadcn/ui components
+├── config/               Shortcuts, sync exclusions, and configuration
+├── db/                   SQLite access
+├── hooks/                React hooks
+├── i18n/                 Internationalization runtime
+├── lib/                  AI, Agent, MCP, Skills, sync, OCR, and core logic
+├── stores/               Zustand stores
+└── types/                Shared types
+src-tauri/                Rust commands, platform features, capabilities, packaging
+messages/                 Interface translations
+.github/workflows/        Release automation
 ```
 
-Add the following code to `src-tauri/gen/android/app/build.gradle.kts`:
-
-```kotlin
-import java.io.FileInputStream
-
-android {
-    signingConfigs {
-        create("release") {
-            val keystorePropertiesFile = rootProject.file("keystore.properties")
-            val keystoreProperties = Properties()
-            if (keystorePropertiesFile.exists()) {
-                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-            }
-
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
-        }
-    }  
-}
-```
-
-Finally, you can build APKs for different Android architectures using:
+## Common commands
 
 ```bash
-pnpm tauri android build --apk --split-per-abi
+pnpm dev                  # Next.js only
+pnpm tauri dev            # Desktop application
+pnpm build                # Static frontend export
+pnpm tauri build          # Current desktop platform package
+pnpm tauri android dev    # Android development
+pnpm tauri android build  # Android build
+pnpm tauri ios dev        # iOS development (macOS/Xcode required)
+pnpm tauri ios build      # iOS build
+pnpm sync-version         # Sync Tauri version into the iOS project
 ```
+
+Some modules use Node's built-in test runner or colocated specifications. Search for nearby `*.test.*`, `*.spec.*`, and scripts, then run the relevant checks.
+
+## Development conventions
+
+- Branch from `dev` using `fix/...` or `feat/...`; do not develop directly on `dev`.
+- Client components need `'use client'`; keep TypeScript strict.
+- When adding interface copy, add the same keys to every language file under `messages/`.
+- Update the website docs when changing models, sync, privacy, or user workflows.
+- Never commit API keys, tokens, signing files, personal paths, or real user data.
+
+## Pull requests
+
+Use `fix(#issue): description` or `feat(#issue): description`. Explain the problem, solution, affected platforms, validation, and UI screenshots. Run the relevant build, type checks, or tests first.
+
+Development happens on `dev`. Pushing `release` triggers GitHub Actions to build and publish desktop and Android artifacts. Do not change release versions or signing configuration in an ordinary feature PR unless explicitly required.
+
+## Mobile
+
+Android and iOS require their own Tauri, SDK, signing, and device setup. Never commit local signing keys or `keystore.properties`. Mobile does not support every desktop feature, including stdio MCP and the system tray, so check both desktop and mobile routes for new features.

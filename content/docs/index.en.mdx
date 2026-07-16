@@ -1,84 +1,58 @@
 ---
 title: Welcome to NoteGen
-description: Find user guides and feature introductions for NoteGen here.
+description: An overview of NoteGen, supported platforms, and the quickest way to get started.
+icon: House
 ---
 
-## About NoteGen
+NoteGen is an open-source, cross-platform Markdown AI notes app that connects quick capture with long-form writing. Notes, records, chats, and settings are stored on your device. When you use an online model, sync provider, image host, or MCP server, the relevant data is sent to that service. See [Privacy and data](/en/docs/privacy).
 
-NoteGen is a cross-platform Markdown AI Agent note-taking software, dedicated to bridging the gap between recording and writing with LLM.
+## Supported platforms
 
-It's completely open source and free, supporting Windows, macOS, Linux, Android, iOS and other mainstream platforms, with an installation package of only about 20MB. All data is stored locally, no login required, ensuring privacy and security.
+| Platform | Distribution | Notes |
+| --- | --- | --- |
+| Windows | Installer | x64 desktop app |
+| macOS | DMG | Apple Silicon and Intel |
+| Linux | AppImage, Deb, RPM | x86_64 desktop app |
+| Android | APK | ARM64 package currently provided |
+| iOS | TestFlight | Availability may change; check the download page |
 
-## Core Features
+Visit the [download page](/en/download) for the current release. Some capabilities differ by platform; for example, command-based MCP servers are desktop-only.
 
-### Recording Tools
+## Core workflow
 
-Capture fragmented thoughts anytime, never miss an idea:
+### 1. Capture
 
-- **Text Recording** - Quickly record text content
-- **Screenshot Recording** - Use VLM or OCR technology to quickly capture screen content
-- **Image Recording** - Save images with image recognition, insert to appropriate position when organizing notes
-- **Link Recording** - Save web links and automatically extract page information
-- **File Recording** - Support text recognition for plain text, PDF, etc.
-- **Voice Recording** - Voice-to-text functionality automatically converts spoken content to text
+Collect text, screenshots, images, links, files, recordings, and todos. Organize records with tags, search, time/type filters, and AI organization templates.
 
-### AI Organization
+### 2. Write
 
-Transform fragments into complete notes:
+Use the Tiptap-based Markdown editor with tables, task lists, code blocks, math, Mermaid, images, search and replace, outlines, and multi-format export. AI tools can complete, polish, shorten, expand, and translate text.
 
-- **One-Click Generation** - Integrate all related records into complete notes
-- **Drag to Insert** - Drag records into existing notes with ease
-- **Tag Management** - Organize and manage records with tags for easy access
-- **Organization Templates** - Flexible configuration with time range and custom prompts
+### 3. Chat and Agent
 
-### AI Agent
+Chat handles questions and content generation. Agent can read or modify notes, folders, tags, records, and memories after you approve the relevant tools. MCP, Skills, the knowledge base, and long-term memory extend its context and capabilities.
 
-Make AI your writing assistant, intelligently assisting with content creation and document management:
+## Quick start
 
-- **Intelligent Note Editing** - Agent can accurately read document contents, understand writing context, and make intelligent edits
-- **MCP** - Through Model Context Protocol, Agent can access external tools, databases and services
-- **Skills** - Built-in rich skill system, supports customizable workflows and task chains
-- **RAG** - Build local knowledge base from your notes, using vector and re-ranking models for intelligent retrieval
+1. Install NoteGen from the [download page](/en/download).
+2. Open Record and create your first text or voice record.
+3. Open Writing and create a Markdown file, or organize records into a note.
+4. Try the built-in free models, or add your own OpenAI-compatible provider under Settings → Model Configuration.
+5. For multiple devices, configure GitHub, Gitee, GitLab, Gitea, S3, or WebDAV under Settings → Sync.
 
-### Other Features
+## Start reading
 
-- **Markdown** - Supports standard Markdown and extends syntax, such as math formula, mind map, chart, flow chart, etc.
-- **WYSIWYG** - Powered by Vditor editor, supports WYSIWYG mode with instant rendering experience like Typora
-- **Themes** - Supports 12 preset themes with customizable theme colors, includes dark mode
+- [Record and organize](/en/docs/preview/record)
+- [Markdown editor](/en/docs/preview/writing)
+- [AI Chat and Agent](/en/docs/preview/chat)
+- [Sync](/en/docs/settings/sync)
+- [Troubleshooting](/en/docs/troubleshooting)
 
-## Quick Start
+## Community
 
-1. **Download & Install** - Visit [Download Page](/download) to get the installation package for your platform
-2. **Start Recording** - Built-in free AI models, no configuration required
-3. **AI Organization** - Let AI help you organize fragmented records into complete notes
-4. **(Optional) Configure Model** - Set up your preferred AI model in settings
+- WeChat: [joining instructions](https://github.com/codexu/note-gen/discussions/110)
+- QQ group: 976652724
+- [Discord](https://discord.com/invite/SXyVZGpbpk)
+- [Telegram](https://t.me/notegen)
 
-## Video tutorials
-
-Prefer video tutorials? Scan the QR codes below to watch:
-
-### Douyin
-
-<img src="https://s2.loli.net/2026/01/24/JqDZiFuTdG5lsVr.jpg" width="240px" />
-
-### Bilibili
-
-<img src="https://s2.loli.net/2026/01/24/amWZF7gXqnL8oi2.jpg" width="240px" />
-
-## Join Community
-
-### Community Guidelines
-
-- This community is established for discussing the NoteGen project and Tauri framework.
-- For feature requests or bug reports, please discuss in the group first, then submit an Issue to avoid being forgotten.
-- Before asking questions, please check the official guides, search Issues or Discussions first. If no results are found, then ask in the group or contact the developer.
-- There is no customer service here; responses from developers are not guaranteed for any questions.
-- Discussions or posts unrelated to coding, note-taking, AI, or programming are prohibited. Advertising is prohibited.
-- Be friendly and respectful.
-
-### Join the Community
-
-- **WeChat**: [Scan to join](https://github.com/codexu/note-gen/discussions/110) or add my WeChat (xu461229187)
-- **QQ Group**: 976652724
-- **Discord**: [Click to join](https://discord.com/invite/SXyVZGpbpk)
-- **Telegram**: [Click to join](https://t.me/notegen)
+Before asking, search this guide, [Issues](https://github.com/codexu/note-gen/issues), and [Discussions](https://github.com/codexu/note-gen/discussions).
