@@ -12,13 +12,37 @@ The primary sync method currently supports GitHub, Gitee, GitLab, and Gitea. The
 
 #### Configuration
 
-##### GitHub/Gitee
-- GitHub Access Token, needs to be obtained from [GitHub](https://github.com/settings/tokens/new) or [Gitee](https://gitee.com/profile/personal_access_tokens). Note that repository access permissions are required.
-- Auto Sync, when enabled, will perform automatic quick backup after * seconds of stopping input during writing. The commit content is a fixed template and can be collapsed.
+- Create an access token on the selected platform and enter it in NoteGen.
+- If the repository already exists, enter its name and select **Check Repository**.
+- If it does not exist, NoteGen can create a private repository, but the token needs the additional repository creation permission listed below.
+- Self-hosted GitLab and Gitea instances also require their server URL.
+- When Auto Sync is enabled, NoteGen performs a quick backup after input has stopped for the configured interval.
 
-##### GitLab/Gitea
-- Supports GitLab and Gitea self-hosted instances. Requires configuring server address and access token.
-- Also supports historical rollback functionality. All Markdown files will be stored in a private repository.
+<a id="token-permissions-guide" />
+
+### Access Token Permissions
+
+Grant only the minimum permissions NoteGen needs and, whenever possible, limit the token to the sync repository. The default repository name is `note-gen-sync`.
+
+| Platform | Use an existing repository | Let NoteGen create the repository |
+| --- | --- | --- |
+| GitHub | Use a fine-grained PAT. Under Repository access, select only the sync repository. Set `Contents: Read and write`; `Metadata: Read` is included automatically. | Use a fine-grained PAT with Repository access set to `All repositories`. Set `Contents: Read and write` and `Administration: Read and write`. After creation, consider replacing it with a new token limited to that repository. |
+| Gitee | Select `user_info` and `projects`. Gitee's `projects` scope includes repository read and write access. | Select the same `user_info` and `projects` scopes. |
+| GitLab | Select `api` on a personal access token. NoteGen currently uses the REST API for the user, projects, and repository files. `write_repository` only grants Git-over-HTTP access and cannot replace `api`. | Select the same `api` scope. |
+| Gitea | On versions with granular scopes, select `read:user` and `write:repository`. | Select `write:user` and `write:repository`. Older Gitea versions without granular scopes may require `all`. |
+
+#### Token creation pages
+
+- [Create a GitHub fine-grained personal access token](https://github.com/settings/personal-access-tokens/new?name=NoteGen&description=NoteGen+sync&expires_in=none&contents=write&administration=write): prefills no expiration and the Contents and Administration permissions needed for the complete NoteGen workflow. GitHub still asks you to confirm the resource owner and repository access.
+- [Gitee personal access token](https://gitee.com/profile/personal_access_tokens/new)
+- [GitLab personal access token (prefills the api scope)](https://gitlab.com/-/user_settings/personal_access_tokens?name=NoteGen&description=NoteGen+sync&scopes=api)
+- Gitea: open **Settings → Applications → Manage Access Tokens** on your instance. For self-hosted GitLab and Gitea, use the token page on your own instance.
+
+GitHub and GitLab officially support permission prefill links. Gitee and Gitea do not publish a URL prefill protocol, so select the permissions listed above on their token creation pages.
+
+GitHub asks you to choose the resource owner and repositories for a fine-grained token. If an organization requires administrator approval, NoteGen cannot access that organization's repository until the token is approved.
+
+For platform details, see [GitHub fine-grained token permissions](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens), [GitLab token scopes](https://docs.gitlab.com/security/tokens/access_token_scopes/), and [Gitea API scopes](https://docs.gitea.com/development/api-usage).
 
 - Note that you must select GitHub, Gitee, GitLab, or Gitea as the primary backup method for it to take effect. The button is located at the bottom of the page.
 
@@ -33,5 +57,5 @@ Select GitHub, Gitee, GitLab, or Gitea as the primary backup method. Settings ta
 ### Notes
 
 - Deleting cloud sync files will also delete files in the remote repository
-- Please ensure access tokens are configured correctly and have repository access permissions
+- Make sure each access token is valid and grants only the permissions listed above
 - Recommend using private repositories to protect data security

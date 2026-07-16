@@ -30,6 +30,20 @@ icon: Image
 
 > 注意：GitHub 图床需要创建公开仓库，否则图片将无法正常访问。
 
+<a id="token-permissions-guide" />
+
+#### Access Token 权限
+
+推荐使用 GitHub Fine-grained personal access token：
+
+- 图床仓库已存在：Repository access 只选择图床仓库，并设置 `Contents: Read and write`。
+- 由 NoteGen 创建图床仓库：Repository access 选择 `All repositories`，并设置 `Contents: Read and write` 和 `Administration: Read and write`。创建完成后，建议换成只授权图床仓库的新令牌。
+- `Metadata: Read` 会由 GitHub 自动包含，无需额外设置。
+
+- [创建 GitHub Fine-grained personal access token](https://github.com/settings/personal-access-tokens/new?name=NoteGen&description=NoteGen+image+hosting&expires_in=none&contents=write&administration=write)：预填长期有效期，以及 Contents 和 Administration 权限。
+
+GitHub 仍会要求你确认资源所有者和仓库范围。
+
 ### SM.MS 图床
 
 使用 SM.MS 图床服务存储图片。

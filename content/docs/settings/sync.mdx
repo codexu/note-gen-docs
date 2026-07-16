@@ -12,13 +12,37 @@ icon: RefreshCw
 
 #### 配置
 
-##### GitHub/Gitee
-- GitHub Access Token，需要去 [GitHub](https://github.com/settings/tokens/new) 或 [Gitee](https://gitee.com/profile/personal_access_tokens) 获取令牌，注意需要访问仓库的权限。
-- 自动同步，开启后，在写作时，停止输入后的 * 秒后进行自动快速备份，提交内容为固定模板，可折叠。
+- 在所选平台创建访问令牌并填入 NoteGen。
+- 如果仓库已存在，填写仓库名后点击“检查仓库”。
+- 如果仓库不存在，可由 NoteGen 创建私有仓库，但令牌需要额外的仓库创建权限。
+- GitLab 和 Gitea 支持自建实例，需要同时配置服务器地址。
+- 开启自动同步后，停止输入达到设定时间时会执行快速备份。
 
-##### GitLab/Gitea
-- 支持 GitLab 和 Gitea 自建实例，需要配置服务器地址和访问令牌。
-- 同样支持历史回滚功能，所有 Markdown 都会存储于私有仓库。
+<a id="token-permissions-guide" />
+
+### 访问令牌权限
+
+请只授予 NoteGen 所需的最小权限，并尽可能将令牌限制到同步仓库。NoteGen 默认同步仓库名为 `note-gen-sync`。
+
+| 平台 | 使用已有仓库 | 由 NoteGen 创建仓库 |
+| --- | --- | --- |
+| GitHub | Fine-grained PAT；Repository access 只选择同步仓库；Repository permissions 设置 `Contents: Read and write`。`Metadata: Read` 会自动包含。 | Fine-grained PAT；Repository access 选择 `All repositories`；设置 `Contents: Read and write` 和 `Administration: Read and write`。创建完成后，建议换成只授权该仓库的新令牌。 |
+| Gitee | 选择 `user_info` 和 `projects`。Gitee 的 `projects` 同时包含仓库读写能力。 | 同样选择 `user_info` 和 `projects`。 |
+| GitLab | Personal access token 选择 `api`。当前 NoteGen 通过 REST API 读取用户、项目和仓库文件，`write_repository` 仅适用于 Git over HTTP，不能替代 `api`。 | 同样选择 `api`。 |
+| Gitea | 支持细粒度权限的版本选择 `read:user` 和 `write:repository`。 | 选择 `write:user` 和 `write:repository`。旧版 Gitea 如果没有细粒度权限，只能使用 `all`。 |
+
+#### 创建令牌入口
+
+- [创建 GitHub Fine-grained personal access token](https://github.com/settings/personal-access-tokens/new?name=NoteGen&description=NoteGen+sync&expires_in=none&contents=write&administration=write)：预填长期有效期，以及 NoteGen 完整流程需要的 Contents 和 Administration 权限。GitHub 仍会要求你确认资源所有者和仓库范围。
+- [Gitee 私人令牌](https://gitee.com/profile/personal_access_tokens/new)
+- [GitLab Personal access token（预填 api scope）](https://gitlab.com/-/user_settings/personal_access_tokens?name=NoteGen&description=NoteGen+sync&scopes=api)
+- Gitea：打开实例的“设置 → 应用 → 管理 Access Token”。自建 GitLab 和 Gitea 请使用自己实例中的令牌页面。
+
+GitHub 和 GitLab 官方支持通过链接预填权限。Gitee 和 Gitea 没有公开的 URL 预填协议，需要在创建页面手动选择上方列出的权限。
+
+GitHub 的 fine-grained token 会要求你自行选择资源所有者和仓库。若令牌需要经过组织管理员审批，在审批完成前无法同步该组织仓库。
+
+权限依据可参考 [GitHub Fine-grained token 权限](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens)、[GitLab Token scopes](https://docs.gitlab.com/security/tokens/access_token_scopes/) 和 [Gitea API scopes](https://docs.gitea.com/development/api-usage)。
 
 - 注意要选择 GitHub、Gitee、GitLab 或 Gitea 作为主要备份方式才可生效，按钮位于页面最下方。
 
@@ -33,5 +57,5 @@ icon: RefreshCw
 ### 注意事项
 
 - 删除云端同步文件会同时删除远程仓库中的文件
-- 请确保访问令牌配置正确且有仓库访问权限
+- 请确保访问令牌配置正确，并只授予上方列出的必要权限
 - 建议使用私有仓库保护数据安全

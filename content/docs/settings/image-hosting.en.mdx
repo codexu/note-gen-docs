@@ -30,6 +30,20 @@ When enabled, image links will use jsDelivr CDN acceleration to improve domestic
 
 > Note: GitHub image hosting requires creating a public repository, otherwise images will not be accessible.
 
+<a id="token-permissions-guide" />
+
+#### Access Token Permissions
+
+We recommend a GitHub fine-grained personal access token:
+
+- Existing image repository: under Repository access, select only the image repository and set `Contents: Read and write`.
+- Let NoteGen create it: set Repository access to `All repositories`, then set `Contents: Read and write` and `Administration: Read and write`. After creation, consider replacing it with a new token limited to the image repository.
+- GitHub includes `Metadata: Read` automatically; no additional setting is required.
+
+- [Create a GitHub fine-grained personal access token](https://github.com/settings/personal-access-tokens/new?name=NoteGen&description=NoteGen+image+hosting&expires_in=none&contents=write&administration=write): prefills no expiration, Contents, and Administration.
+
+GitHub still asks you to confirm the resource owner and repository access.
+
 ### SM.MS Image Hosting
 
 Use SM.MS image hosting service to store images.
