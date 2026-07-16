@@ -6,7 +6,12 @@ const config = {
   reactStrictMode: true,
   output: 'standalone',
   images: {
-    domains: ["s2.loli.net", "avatars.githubusercontent.com", "www.netlify.com"],
+    remotePatterns: [
+      { protocol: 'https', hostname: 's2.loli.net' },
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
+      { protocol: 'https', hostname: 'www.netlify.com' },
+      { protocol: 'https', hostname: 'files.seeusercontent.com' },
+    ],
   },
 };
 
