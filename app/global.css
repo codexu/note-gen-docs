@@ -149,6 +149,12 @@
   --background: oklch(1 0 0);
 
   --foreground: oklch(0.145 0 0);
+
+  --component-inactive-color: var(--muted-foreground);
+
+  --component-active-bg: var(--secondary);
+
+  --component-active-color: var(--accent-foreground);
 }
 
 .dark {
@@ -246,6 +252,77 @@
     rgba(255, 255, 255, 0.05) 10px,
     rgba(255, 255, 255, 0.05) 11px
   );
+}
+
+.mobile-dock-surface {
+  border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  background: color-mix(in oklab, var(--background) 70%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.notegen-mobile-replica {
+  --notegen-demo-safe-area-bottom: 0.875rem;
+  --notegen-demo-footbar-height: 3.5rem;
+  --notegen-demo-footbar-reserved-space: calc(
+    var(--notegen-demo-footbar-height) + var(--notegen-demo-safe-area-bottom)
+  );
+  --notegen-demo-footbar-fade-height: calc(
+    var(--notegen-demo-footbar-reserved-space) + 2rem
+  );
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei",
+    "Noto Sans CJK SC", Arial, sans-serif;
+}
+
+.notegen-mobile-replica * {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.notegen-mobile-replica *::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.notegen-demo-footbar-fade {
+  bottom: 0;
+  height: var(--notegen-demo-footbar-fade-height);
+}
+
+.notegen-demo-footbar {
+  bottom: var(--notegen-demo-safe-area-bottom);
+  height: var(--notegen-demo-footbar-height);
+}
+
+.notegen-demo-chat-input {
+  bottom: calc(var(--notegen-demo-footbar-reserved-space) + 1.125rem);
+}
+
+.notegen-demo-chat-scroll {
+  padding-bottom: calc(var(--notegen-demo-footbar-reserved-space) + 7rem);
+  scroll-padding-bottom: calc(var(--notegen-demo-footbar-reserved-space) + 7rem);
+}
+
+.notegen-demo-under-dock {
+  padding-bottom: var(--notegen-demo-footbar-reserved-space);
+  scroll-padding-bottom: var(--notegen-demo-footbar-reserved-space);
+}
+
+.notegen-demo-writing-toolbar {
+  bottom: var(--notegen-demo-footbar-reserved-space);
+}
+
+.notegen-demo-writing-scroll {
+  padding-bottom: calc(var(--notegen-demo-footbar-reserved-space) + 4.5rem);
+  scroll-padding-bottom: calc(var(--notegen-demo-footbar-reserved-space) + 4.5rem);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .mobile-dock-surface {
+    background: color-mix(in oklab, var(--background) 60%, transparent);
+  }
 }
 
 .record-svg-illustration,
