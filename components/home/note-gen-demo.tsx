@@ -108,9 +108,9 @@ const mobileRecordsCn = [
 ]
 
 const mobileRecordsEn = [
-  { type: "recording", label: "Audio", preview: "A slow walk by West Lake: Quyuan Garden, Beishan Road, and Solitary Hill", time: "10:42" },
-  { type: "link", label: "Link", preview: "Faxi Temple reservations and opening hours", time: "10:16" },
-  { type: "text", label: "Text", preview: "Book a table for Hangzhou cuisine tonight", time: "09:40" },
+  { type: "recording", label: "Audio", preview: "A slow walk along the Seine: Île Saint-Louis, the Louvre, and the Tuileries", time: "10:42" },
+  { type: "link", label: "Link", preview: "Musée d’Orsay reservations and opening hours", time: "10:16" },
+  { type: "text", label: "Text", preview: "Book a table at a Paris bistro tonight", time: "09:40" },
 ]
 
 const mobileRecordTone = {
@@ -220,7 +220,7 @@ function DesktopScenes() {
         title={text("把材料放到无限画布上。", "Place your material on an infinite canvas.")}
         description={text("笔记、图片、网页和 AI 生成结果可以成为独立节点。用连接关系梳理研究、流程和仍未成形的想法。", "Notes, images, web pages, and AI output become independent nodes. Connect them to map research, workflows, and emerging ideas.")}
         details={[
-          [text("节点类型", "Nodes"), text("笔记、记录、图片、链接与图形", "Notes, records, images, links, and shapes")],
+          [text("节点类型", "Nodes"), text("笔记、记录、图片、链接、图形与图表", "Notes, records, images, links, shapes, and charts")],
           [text("组织方式", "Structure"), text("自由连接、分组与自动布局", "Free connections, grouping, and auto layout")],
           [text("AI 能力", "AI"), text("生成图表、流程图与 Mermaid", "Generate charts, flowcharts, and Mermaid")],
         ]}
@@ -510,11 +510,18 @@ function ConversationContextStrip({
   compact?: boolean
   count?: number
 }) {
-  const contexts = [
+  const { lang, text } = useDemoLanguage()
+  const contextsCn = [
     { icon: HighlighterIcon, label: "西湖边想走慢一点" },
     { icon: PaletteIcon, label: "杭州周末路线" },
     { icon: FileTextIcon, label: "餐厅收藏.md" },
-  ].slice(0, count)
+  ]
+  const contextsEn = [
+    { icon: HighlighterIcon, label: "A slow walk along the Seine" },
+    { icon: PaletteIcon, label: "Weekend Paris Route" },
+    { icon: FileTextIcon, label: "Saved Restaurants.md" },
+  ]
+  const contexts = (lang === "en" ? contextsEn : contextsCn).slice(0, count)
 
   return (
     <div className={cn("flex w-full max-w-full flex-wrap gap-1", !compact && "px-1 pt-1")}>
@@ -533,7 +540,13 @@ function ConversationContextStrip({
           </span>
           <span className="truncate leading-none">{label}</span>
           {!compact ? (
-            <Button type="button" variant="ghost" size="icon-xs" className="shrink-0" aria-label={`移除 ${label}`}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-6 shrink-0"
+              aria-label={text(`移除 ${label}`, `Remove ${label}`)}
+            >
               <XIcon />
             </Button>
           ) : null}
@@ -550,7 +563,8 @@ function ComposerResourceMenu({
 }: {
   kind: AssociationKind
 }) {
-  const resources = {
+  const { lang, text } = useDemoLanguage()
+  const resourcesCn = {
     record: {
       group: "记录",
       items: [
@@ -572,7 +586,31 @@ function ComposerResourceMenu({
         { icon: FileTextIcon, label: "杭州想去的地方.md", description: "杭州旅行 / 地点.md" },
       ],
     },
-  } satisfies Record<AssociationKind, {
+  }
+  const resourcesEn = {
+    record: {
+      group: "Records",
+      items: [
+        { icon: HighlighterIcon, label: "A slow walk along the Seine", description: "Île Saint-Louis, the Louvre, and the Tuileries" },
+        { icon: LinkIcon, label: "Musée d’Orsay reservation guide", description: "Opening hours and booking details" },
+      ],
+    },
+    canvas: {
+      group: "Canvas",
+      items: [
+        { icon: PaletteIcon, label: "Weekend Paris Route", description: "3 nodes · 2 connections" },
+        { icon: PaletteIcon, label: "Rainy-day Alternative", description: "2 nodes · 1 connection" },
+      ],
+    },
+    file: {
+      group: "Files",
+      items: [
+        { icon: FileTextIcon, label: "Saved Restaurants.md", description: "Paris Trip / Saved Restaurants.md" },
+        { icon: FileTextIcon, label: "Places to Visit in Paris.md", description: "Paris Trip / Places.md" },
+      ],
+    },
+  }
+  const resources = (lang === "en" ? resourcesEn : resourcesCn) satisfies Record<AssociationKind, {
     group: string
     items: Array<{
       icon: typeof FileTextIcon
@@ -586,7 +624,7 @@ function ComposerResourceMenu({
     <div
       className="absolute inset-x-1 bottom-[calc(100%+0.375rem)] z-[70] overflow-hidden rounded-xl border bg-popover p-1.5 text-popover-foreground shadow-lg"
       role="listbox"
-      aria-label="关联内容"
+      aria-label={text("关联内容", "Related content")}
     >
       <div className="px-2 py-1 text-[11px] font-medium text-muted-foreground">
         {resource.group}
@@ -920,7 +958,7 @@ function MobileRecordPage() {
             <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-muted">
               <ImageIcon className="size-4 text-muted-foreground" />
             </div>
-            <p className="line-clamp-2 text-sm text-muted-foreground">{text("天目里建筑与店铺地图", "Tianmuli architecture and shops map")}</p>
+            <p className="line-clamp-2 text-sm text-muted-foreground">{text("天目里建筑与店铺地图", "Le Marais galleries and shops map")}</p>
           </div>
         </div>
       </main>
@@ -935,10 +973,10 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
   const [skillsOpen, setSkillsOpen] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const chatScrollRef = useRef<HTMLDivElement>(null)
-  const prompt = text("结合这些内容，整理周末杭州行程并保存。", "Use this material to organize and save a weekend Hangzhou itinerary.")
+  const prompt = text("结合这些内容，整理周末杭州行程并保存。", "Use this material to organize and save a weekend Paris itinerary.")
   const associationSteps = [
-    { kind: "record", query: text("西湖", "West Lake"), start: 250, selectAt: 1150 },
-    { kind: "canvas", query: text("杭州", "Hangzhou"), start: 1300, selectAt: 2200 },
+    { kind: "record", query: text("西湖", "Seine"), start: 250, selectAt: 1150 },
+    { kind: "canvas", query: text("杭州", "Paris"), start: 1300, selectAt: 2200 },
     { kind: "file", query: text("餐厅", "Restaurants"), start: 2350, selectAt: 3250 },
   ] as const
   const typingStart = 3450
@@ -968,10 +1006,10 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
   const messageSentAt = 5300
   const processStart = 5450
   const agentEvents = [
-    { label: text("记录 · 读取 3 条杭州收藏", "Records · Read 3 Hangzhou items"), start: 5600, duration: 680 },
-    { label: text("画布 · 读取杭州周末路线", "Canvas · Read weekend Hangzhou route"), start: 6380, duration: 540 },
-    { label: text("笔记 · 检索杭州旅行历史", "Notes · Search Hangzhou travel history"), start: 7020, duration: 980 },
-    { label: text("笔记 · 写入周末杭州行程.md", "Notes · Write Weekend Hangzhou Itinerary.md"), start: 8100, duration: 840 },
+    { label: text("记录 · 读取 3 条杭州收藏", "Records · Read 3 Paris items"), start: 5600, duration: 680 },
+    { label: text("画布 · 读取杭州周末路线", "Canvas · Read weekend Paris route"), start: 6380, duration: 540 },
+    { label: text("笔记 · 检索杭州旅行历史", "Notes · Search Paris travel history"), start: 7020, duration: 980 },
+    { label: text("笔记 · 写入周末杭州行程.md", "Notes · Write Weekend Paris Itinerary.md"), start: 8100, duration: 840 },
   ] as const
   const responseStart = 9100
   const responseSegments = [
@@ -1104,7 +1142,7 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
                 </Marker> : null}
                 {elapsed >= 5550 && ragOpen ? (
                   <div className="flex flex-col gap-1 pl-6">
-                    {(lang === "en" ? ["Places to Visit in Hangzhou.md", "Saved Restaurants.md"] : ["杭州想去的地方.md", "餐厅收藏.md"]).map((source) => (
+                    {(lang === "en" ? ["Places to Visit in Paris.md", "Saved Restaurants.md"] : ["杭州想去的地方.md", "餐厅收藏.md"]).map((source) => (
                       <Marker key={source} className="py-1 text-xs">
                         <MarkerIcon><FileTextIcon /></MarkerIcon>
                         <MarkerContent className="flex-1 truncate">{source}</MarkerContent>
@@ -1273,7 +1311,7 @@ function MobileWritingPage() {
           "min-h-0 flex-1 cursor-text overflow-y-auto px-5 pt-6 text-sm leading-7 outline-none",
           isEditing ? "notegen-demo-writing-scroll" : "notegen-demo-under-dock"
         )}
-        aria-label={text("编辑周末杭州行程", "Edit weekend Hangzhou itinerary")}
+        aria-label={text("编辑周末杭州行程", "Edit weekend Paris itinerary")}
         tabIndex={0}
         onClick={() => setIsEditing(true)}
         onFocus={() => setIsEditing(true)}
@@ -1428,9 +1466,9 @@ function WritingCursor({ active }: { active: boolean }) {
 function MobileWritingEnglishDocument() {
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Weekend in Hangzhou</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Weekend in Paris</h1>
       <p className="mt-4 text-muted-foreground">
-        Focus the two days on <strong className="font-semibold text-foreground">West Lake, Xiangshan, and the west side</strong>,
+        Focus the two days on <strong className="font-semibold text-foreground">the Seine, Le Marais, and Montmartre</strong>,
         leaving more time for walks, meals, and spontaneous stops. Full addresses are saved in the{" "}
         <a className="font-medium text-foreground underline underline-offset-4" href="#route">route notes</a>.
       </p>
@@ -1439,8 +1477,8 @@ function MobileWritingEnglishDocument() {
       </blockquote>
       <h2 className="mt-7 text-base font-semibold">Itinerary overview</h2>
       <ul className="mt-2 list-disc pl-5 text-muted-foreground">
-        <li>Saturday: West Lake, Xiangshan campus, and Hangzhou cuisine</li>
-        <li>Sunday: Faxi Temple, Tianmuli, and gifts before departure</li>
+        <li>Saturday: the Seine, the Louvre courtyard, Le Marais, and a Paris bistro</li>
+        <li>Sunday: Montmartre, Musée d’Orsay, and gifts before departure</li>
       </ul>
       <div className="mt-5 overflow-hidden rounded-lg border">
         <div className="overflow-x-auto">
@@ -1455,30 +1493,30 @@ function MobileWritingEnglishDocument() {
             <tbody className="text-muted-foreground">
               <tr>
                 <td className="border-b px-3 py-2">Sat</td>
-                <td className="border-b px-3 py-2">Beishan Rd → Xiangshan</td>
-                <td className="border-b px-3 py-2">About 9 km</td>
+                <td className="border-b px-3 py-2">Île Saint-Louis → Le Marais</td>
+                <td className="border-b px-3 py-2">About 8 km</td>
               </tr>
               <tr>
                 <td className="px-3 py-2">Sun</td>
-                <td className="px-3 py-2">Faxi Temple → Tianmuli</td>
-                <td className="px-3 py-2">About 6 km</td>
+                <td className="px-3 py-2">Montmartre → Musée d’Orsay</td>
+                <td className="px-3 py-2">About 7 km</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-      <h2 className="mt-7 text-base font-semibold">Saturday · West Lake and Xiangshan</h2>
-      <h3 className="mt-3 font-medium">09:00—12:00　West Lake walk</h3>
-      <p className="mt-1 text-muted-foreground">Start at Quyuan Garden, follow Beishan Road to Solitary Hill, and leave time for unplanned stops.</p>
+      <h2 className="mt-7 text-base font-semibold">Saturday · The Seine and Le Marais</h2>
+      <h3 className="mt-3 font-medium">09:00—12:00　Seine walk</h3>
+      <p className="mt-1 text-muted-foreground">Start on Île Saint-Louis, walk past the Louvre courtyard to the Tuileries, and leave time for unplanned stops.</p>
       <h3 className="mt-4 font-medium">12:15—13:30　Lunch</h3>
-      <p className="mt-1 text-muted-foreground">Have a simple lunch near Solitary Hill and save the full Hangzhou meal for dinner.</p>
-      <h3 className="mt-4 font-medium">15:00—17:30　Xiangshan campus</h3>
-      <p className="mt-1 text-muted-foreground">Explore the architecture and public spaces, with time for coffee before leaving.</p>
+      <p className="mt-1 text-muted-foreground">Have a simple lunch near the Palais Royal and save the classic Paris bistro for dinner.</p>
+      <h3 className="mt-4 font-medium">15:00—17:30　Le Marais</h3>
+      <p className="mt-1 text-muted-foreground">Explore the galleries and courtyards, with time for coffee before leaving.</p>
       <h2 className="mt-7 text-base font-semibold">Before departure</h2>
       <div className="mt-3 flex flex-col gap-2 text-muted-foreground">
         {([
           ["Book Saturday dinner", true],
-          ["Confirm Faxi Temple hours", true],
+          ["Confirm Musée d’Orsay hours", true],
           ["Download the offline route", false],
           ["Pack rain gear and walking shoes", false],
         ] as const).map(([item, checked]) => (
@@ -1496,11 +1534,11 @@ function MobileWritingEnglishDocument() {
 
 function MobileWritingStream({ elapsed }: { elapsed: number }) {
   const { text } = useDemoLanguage()
-  const title = text("周末杭州行程", "Weekend in Hangzhou")
-  const intro = text("两天以西湖、象山和城西为主，减少跨区往返，把时间留给散步、吃饭和临时停留。完整地址都放在路线备忘里。", "Focus the two days on West Lake, Xiangshan, and the west side of the city, leaving more time for walks, meals, and spontaneous stops.")
+  const title = text("周末杭州行程", "Weekend in Paris")
+  const intro = text("两天以西湖、象山和城西为主，减少跨区往返，把时间留给散步、吃饭和临时停留。完整地址都放在路线备忘里。", "Focus the two days on the Seine, Le Marais, and Montmartre, leaving more time for walks, meals, and spontaneous stops.")
   const quote = text("不赶景点，只确定每天的一条主线；如果遇到喜欢的地方，就多停一会儿。", "Choose one main route each day. If a place feels right, stay a little longer.")
-  const firstDay = text("周六：西湖慢走、中国美院象山校区、杭帮菜", "Saturday: West Lake, Xiangshan campus, and Hangzhou cuisine")
-  const secondDay = text("周日：法喜寺、天目里、返程前购买伴手礼", "Sunday: Faxi Temple, Tianmuli, and gifts before departure")
+  const firstDay = text("周六：西湖慢走、中国美院象山校区、杭帮菜", "Saturday: the Seine, Le Marais, and a Paris bistro")
+  const secondDay = text("周日：法喜寺、天目里、返程前购买伴手礼", "Sunday: Montmartre, Musée d’Orsay, and gifts before departure")
   const titleEnd = 220 + title.length * 54
   const introStart = titleEnd + 180
   const introEnd = introStart + intro.length * 17
@@ -1574,10 +1612,10 @@ function MobileWritingStream({ elapsed }: { elapsed: number }) {
                     {revealWritingText(text("周六", "Sat"), elapsed, tableStart, 70)}
                   </td>
                   <td className="border-b px-3 py-2">
-                    {revealWritingText(text("北山街 → 象山", "Beishan Rd → Xiangshan"), elapsed, tableStart + 140, 32)}
+                    {revealWritingText(text("北山街 → 象山", "Île Saint-Louis → Le Marais"), elapsed, tableStart + 140, 32)}
                   </td>
                   <td className="border-b px-3 py-2">
-                    {revealWritingText(text("约 9 km", "About 9 km"), elapsed, tableStart + 420, 40)}
+                    {revealWritingText(text("约 9 km", "About 8 km"), elapsed, tableStart + 420, 40)}
                   </td>
                 </tr>
                 {elapsed >= tableStart + 720 ? (
@@ -1586,10 +1624,10 @@ function MobileWritingStream({ elapsed }: { elapsed: number }) {
                       {revealWritingText(text("周日", "Sun"), elapsed, tableStart + 720, 70)}
                     </td>
                     <td className="px-3 py-2">
-                      {revealWritingText(text("法喜寺 → 天目里", "Faxi Temple → Tianmuli"), elapsed, tableStart + 860, 28)}
+                      {revealWritingText(text("法喜寺 → 天目里", "Montmartre → Musée d’Orsay"), elapsed, tableStart + 860, 28)}
                     </td>
                     <td className="px-3 py-2">
-                      {revealWritingText(text("约 6 km", "About 6 km"), elapsed, tableStart + 1160, 40)}
+                      {revealWritingText(text("约 6 km", "About 7 km"), elapsed, tableStart + 1160, 40)}
                       <WritingCursor active={elapsed < 5800} />
                     </td>
                   </tr>
@@ -1779,7 +1817,7 @@ function MobileWritingToolbarDemo() {
 function MobileCanvasPage() {
   const { lang, text } = useDemoLanguage()
   const canvases = lang === "en"
-    ? ["Weekend Hangzhou Route", "West Lake Walk", "Restaurants and Coffee", "Rainy-day Alternative"]
+    ? ["Weekend Paris Route", "Seine Walk", "Restaurants and Coffee", "Rainy-day Alternative"]
     : ["杭州周末路线", "西湖散步", "餐厅与咖啡", "雨天备选"]
 
   return (

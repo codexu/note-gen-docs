@@ -96,29 +96,29 @@ const records = [
 const recordsEn = [
   {
     type: "Audio",
-    title: "Take it slow by West Lake",
-    content: "A slow walk through Quyuan Garden, Beishan Road, and Solitary Hill",
+    title: "Take it slow along the Seine",
+    content: "A slow walk from Île Saint-Louis past the Louvre to the Tuileries",
     time: "Just now",
     icon: Mic,
   },
   {
     type: "Link",
-    title: "Faxi Temple reservations and hours",
+    title: "Musée d’Orsay reservations and hours",
     content: "Reservation, opening hours, and travel information",
     time: "12 min ago",
     icon: Link,
   },
   {
     type: "Text",
-    title: "Hangzhou cuisine for dinner",
+    title: "A Paris bistro for dinner",
     content: "Remember to book a table in advance",
     time: "09:40",
     icon: Type,
   },
   {
     type: "Image",
-    title: "Tianmuli architecture and shops map",
-    content: "Tianmuli architecture and shops map",
+    title: "Le Marais galleries and shops map",
+    content: "Le Marais galleries and shops map",
     time: "Yesterday",
     icon: ImageIcon,
   },
@@ -411,7 +411,7 @@ function RecordsSidebarContent({ lang }: { lang: "cn" | "en" }) {
           <div className="flex min-w-0 items-center gap-2">
             <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
             <Tags className="size-3.5 shrink-0 text-muted-foreground" />
-            <span className="truncate">{lang === "en" ? "Hangzhou trip" : "杭州旅行"}</span>
+            <span className="truncate">{lang === "en" ? "Paris trip" : "杭州旅行"}</span>
           </div>
           <span className="text-[10px] font-normal text-muted-foreground">4</span>
         </div>
@@ -447,7 +447,7 @@ function WritingSidebarContent({ lang }: { lang: "cn" | "en" }) {
     { label: "00 Inbox", depth: 0, folder: true, open: true },
     { label: "Places to Visit.md", depth: 1, folder: false },
     { label: "01 Projects", depth: 0, folder: true, open: true },
-    { label: "Hangzhou Trip", depth: 1, folder: true, open: true },
+    { label: "Paris Trip", depth: 1, folder: true, open: true },
     { label: "Weekend Itinerary.md", depth: 2, folder: false, active: true },
     { label: "Saved Restaurants.md", depth: 2, folder: false },
     { label: "02 Areas", depth: 0, folder: true },
@@ -501,8 +501,8 @@ function WritingSidebarContent({ lang }: { lang: "cn" | "en" }) {
 
 function CanvasSidebarContent({ lang }: { lang: "cn" | "en" }) {
   const canvases = lang === "en" ? [
-    ["Weekend Hangzhou Route", "3 nodes · Just now"],
-    ["West Lake Walk", "4 nodes · Today"],
+    ["Weekend Paris Route", "3 nodes · Just now"],
+    ["Seine Walk", "4 nodes · Today"],
     ["Restaurants and Coffee", "5 nodes · Yesterday"],
     ["Rainy-day Alternative", "4 nodes · Yesterday"],
   ] : [
@@ -577,7 +577,7 @@ function RecordItem({
         <span
           className={cn(
             "inline-flex h-4 items-center gap-1 rounded border px-1.5 text-[9px] font-medium",
-            recordBadgeTone[record.type]
+            recordBadgeTone[record.type as keyof typeof recordBadgeTone]
           )}
         >
           <Icon className="size-2.5" />
@@ -609,13 +609,13 @@ function SharedEditorTabs({
     {
       id: "records",
       kind: "record" as const,
-      label: isEnglish ? "West Lake walk" : "西湖边想走慢一点",
+      label: isEnglish ? "Seine walk" : "西湖边想走慢一点",
       active: workspace === "records",
     },
     {
       id: "canvas",
       kind: "canvas" as const,
-      label: isEnglish ? "Hangzhou Route" : "杭州周末路线",
+      label: isEnglish ? "Paris Route" : "杭州周末路线",
       active: workspace === "canvas",
     },
   ]
@@ -686,7 +686,7 @@ function RecordDetailReplica({ lang }: { lang: "cn" | "en" }) {
               </div>
             </div>
             <p className="truncate text-[10px] text-muted-foreground">
-              {isEnglish ? "Take it slow by West Lake" : "西湖边想走慢一点"}
+              {isEnglish ? "Take it slow along the Seine" : "西湖边想走慢一点"}
             </p>
           </div>
         </div>
@@ -720,7 +720,7 @@ function RecordDetailReplica({ lang }: { lang: "cn" | "en" }) {
           <div className="mt-4 leading-6">
             <p>
               {isEnglish
-                ? "I want to take it slow by West Lake. Start at Quyuan Garden, walk along Beishan Road, and stop at Solitary Hill before lunch."
+                ? "I want to take it slow along the Seine. Start on Île Saint-Louis, walk past the Louvre, and reach the Tuileries before lunch."
                 : "西湖边想走慢一点。从曲院风荷出发，沿北山街走到孤山，中午之前结束这段路线。"}
             </p>
             <p className="mt-3 text-muted-foreground">
@@ -771,9 +771,9 @@ function CanvasEditorReplica({ lang }: { lang: "cn" | "en" }) {
             {isEnglish ? "Note" : "笔记"}
           </div>
           <div className="p-3">
-            <p className="font-medium">{isEnglish ? "West Lake walking route" : "西湖步行路线"}</p>
+            <p className="font-medium">{isEnglish ? "Seine walking route" : "西湖步行路线"}</p>
             <p className="mt-1.5 text-[9px] leading-4 text-muted-foreground">
-              {isEnglish ? "Quyuan Garden → Beishan Road → Solitary Hill" : "曲院风荷 → 北山街 → 孤山"}
+              {isEnglish ? "Île Saint-Louis → Louvre → Tuileries" : "曲院风荷 → 北山街 → 孤山"}
             </p>
           </div>
         </div>
@@ -783,7 +783,7 @@ function CanvasEditorReplica({ lang }: { lang: "cn" | "en" }) {
             {isEnglish ? "Record" : "记录"}
           </div>
           <div className="p-3">
-            <p className="font-medium">{isEnglish ? "Take it slow by West Lake" : "西湖边想走慢一点"}</p>
+            <p className="font-medium">{isEnglish ? "Take it slow along the Seine" : "西湖边想走慢一点"}</p>
             <p className="mt-1.5 line-clamp-2 text-[9px] leading-4 text-muted-foreground">
               {isEnglish ? "Keep Saturday morning open for walking and unplanned stops." : "周六上午留给散步和临时停留，不安排固定打卡时间。"}
             </p>
@@ -795,8 +795,10 @@ function CanvasEditorReplica({ lang }: { lang: "cn" | "en" }) {
             {isEnglish ? "Link" : "链接"}
           </div>
           <div className="p-3">
-            <p className="font-medium">{isEnglish ? "Faxi Temple reservation" : "法喜寺预约说明"}</p>
-            <p className="mt-1.5 truncate text-[9px] text-muted-foreground">example.com/hangzhou-faxi</p>
+            <p className="font-medium">{isEnglish ? "Musée d’Orsay reservation" : "法喜寺预约说明"}</p>
+            <p className="mt-1.5 truncate text-[9px] text-muted-foreground">
+              {isEnglish ? "example.com/paris-orsay" : "example.com/hangzhou-faxi"}
+            </p>
           </div>
         </div>
       </div>
@@ -823,9 +825,9 @@ function EnglishEditor() {
       <SharedEditorTabs lang="en" workspace="writing" />
       <article className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="mx-auto max-w-[590px] px-[8%] py-[7%]">
-          <h1 className="text-[clamp(20px,2.1vw,30px)] font-bold tracking-tight">Weekend in Hangzhou</h1>
+          <h1 className="text-[clamp(20px,2.1vw,30px)] font-bold tracking-tight">Weekend in Paris</h1>
           <p className="mt-4 leading-6 text-muted-foreground">
-            Focus the two days on <strong className="font-semibold text-foreground">West Lake, Xiangshan, and the west side</strong>,
+            Focus the two days on <strong className="font-semibold text-foreground">the Seine, Le Marais, and Montmartre</strong>,
             leaving more time for walks, meals, and spontaneous stops.
           </p>
           <blockquote className="my-5 border-l-2 pl-4 italic leading-5 text-muted-foreground">
@@ -833,8 +835,8 @@ function EnglishEditor() {
           </blockquote>
           <h2 className="mt-6 text-sm font-semibold">Itinerary overview</h2>
           <ul className="mt-2 list-disc pl-5 leading-6 text-muted-foreground">
-            <li>Saturday: West Lake, Xiangshan campus, and Hangzhou cuisine</li>
-            <li>Sunday: Faxi Temple, Tianmuli, and gifts before departure</li>
+            <li>Saturday: the Seine, the Louvre courtyard, Le Marais, and a Paris bistro</li>
+            <li>Sunday: Montmartre, Musée d’Orsay, and gifts before departure</li>
           </ul>
           <div className="mt-5 overflow-hidden rounded-lg border">
             <table className="w-full border-collapse text-left text-[10px]">
@@ -848,33 +850,33 @@ function EnglishEditor() {
               <tbody className="text-muted-foreground">
                 <tr>
                   <td className="border-b px-3 py-2">Sat</td>
-                  <td className="border-b px-3 py-2">Beishan Rd → Xiangshan</td>
-                  <td className="border-b px-3 py-2">About 9 km</td>
+                  <td className="border-b px-3 py-2">Île Saint-Louis → Le Marais</td>
+                  <td className="border-b px-3 py-2">About 8 km</td>
                 </tr>
                 <tr>
                   <td className="px-3 py-2">Sun</td>
-                  <td className="px-3 py-2">Faxi Temple → Tianmuli</td>
-                  <td className="px-3 py-2">About 6 km</td>
+                  <td className="px-3 py-2">Montmartre → Musée d’Orsay</td>
+                  <td className="px-3 py-2">About 7 km</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <h2 className="mt-6 text-sm font-semibold">Saturday · West Lake and Xiangshan</h2>
-          <h3 className="mt-3 font-medium">09:00—12:00　West Lake walk</h3>
+          <h2 className="mt-6 text-sm font-semibold">Saturday · The Seine and Le Marais</h2>
+          <h3 className="mt-3 font-medium">09:00—12:00　Seine walk</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
-            Start at Quyuan Garden and follow Beishan Road to Solitary Hill, leaving time for unplanned stops.
+            Start on Île Saint-Louis and walk past the Louvre courtyard to the Tuileries, leaving time for unplanned stops.
           </p>
           <h3 className="mt-4 font-medium">12:15—13:30　Lunch</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
-            Have a simple lunch near Solitary Hill and save the full Hangzhou meal for dinner.
+            Have a simple lunch near the Palais Royal and save the classic Paris bistro for dinner.
           </p>
-          <h3 className="mt-4 font-medium">15:00—17:30　Xiangshan campus</h3>
+          <h3 className="mt-4 font-medium">15:00—17:30　Le Marais</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             Explore the architecture and public spaces, with time for coffee before leaving.
           </p>
           <h2 className="mt-6 text-sm font-semibold">Before departure</h2>
           <div className="mt-3 flex flex-col gap-2 text-muted-foreground">
-            {(["Book Saturday dinner", "Confirm Faxi Temple hours", "Download the offline route", "Pack rain gear"] as const).map((item, index) => (
+            {(["Book Saturday dinner", "Confirm Musée d’Orsay hours", "Download the offline route", "Pack rain gear"] as const).map((item, index) => (
               <div key={item} className="flex items-center gap-2">
                 <span className={cn("flex size-4 shrink-0 items-center justify-center rounded border", index < 2 && "bg-primary text-primary-foreground")}>
                   {index < 2 ? <Check className="size-3" /> : null}
@@ -1044,9 +1046,9 @@ function Editor() {
 function AgentPanel({ lang }: { lang: "cn" | "en" }) {
   const [processOpen, setProcessOpen] = useState(true)
   const agentEvents = lang === "en" ? [
-    "Records · Read 3 Hangzhou items",
-    "Canvas · Read weekend Hangzhou route",
-    "Notes · Search Hangzhou travel history",
+    "Records · Read 3 Paris items",
+    "Canvas · Read weekend Paris route",
+    "Notes · Search Paris travel history",
     "Notes · Write Weekend Itinerary.md",
   ] : [
     "记录 · 读取 3 条杭州收藏",
@@ -1059,7 +1061,7 @@ function AgentPanel({ lang }: { lang: "cn" | "en" }) {
     <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
       <header className="flex h-12 shrink-0 items-center justify-between border-b px-3">
         <div className="flex min-w-0 items-center gap-1.5 font-medium">
-          <span className="truncate">{lang === "en" ? "Weekend in Hangzhou" : "杭州周末行程"}</span>
+          <span className="truncate">{lang === "en" ? "Weekend in Paris" : "杭州周末行程"}</span>
           <span className="text-[10px] font-normal text-muted-foreground">(3)</span>
           <ChevronDown className="size-3.5 text-muted-foreground" />
         </div>
@@ -1072,7 +1074,7 @@ function AgentPanel({ lang }: { lang: "cn" | "en" }) {
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex justify-end">
           <div className="max-w-[88%] rounded-lg border bg-muted/35 px-3 py-2 leading-5">
-            {lang === "en" ? "Use this material to organize and save a weekend Hangzhou itinerary." : "结合这些内容，整理周末杭州行程并保存。"}
+            {lang === "en" ? "Use this material to organize and save a weekend Paris itinerary." : "结合这些内容，整理周末杭州行程并保存。"}
           </div>
         </div>
 

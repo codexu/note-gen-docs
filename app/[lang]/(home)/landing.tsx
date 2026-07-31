@@ -1,10 +1,15 @@
 import {
   ArrowRightIcon,
   BrainCircuitIcon,
+  CalendarDaysIcon,
   CheckIcon,
   DownloadIcon,
   FileTextIcon,
+  HeartIcon,
   InboxIcon,
+  LightbulbIcon,
+  LinkIcon,
+  MicIcon,
   MonitorSmartphoneIcon,
   NetworkIcon,
   SearchIcon,
@@ -22,7 +27,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { NoteGenDemo } from "@/components/home/note-gen-demo"
 import { cn } from "@/lib/utils"
 
@@ -70,7 +74,7 @@ const capabilitiesCn = [
     icon: ShieldCheckIcon,
     title: "普通文件长期保存",
     description: "最终留下标准 Markdown 与本地附件，不把你的知识锁在专有格式里。",
-    items: ["本地优先，无需登录", "完整文件管理与源码模式", "模型与同步服务由你选择"],
+    items: ["本地优先，无需登录", "完整文件管理与源码模式", "模型自由选择，同步方案自主可控"],
   },
 ]
 
@@ -125,7 +129,7 @@ const capabilitiesEn = [
     icon: ShieldCheckIcon,
     title: "Plain files for the long term",
     description: "Keep standard Markdown and local attachments without locking your knowledge into a proprietary format.",
-    items: ["Local first, no login required", "File management and source mode", "Choose your own models and sync"],
+    items: ["Local first, no login required", "File management and source mode", "Choose your models and control your sync"],
   },
 ]
 
@@ -142,17 +146,18 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
   const workflows = isEnglish ? workflowsEn : workflowsCn
   const capabilities = isEnglish ? capabilitiesEn : capabilitiesCn
   const cases = isEnglish ? casesEn : casesCn
+  const caseIcons = [MicIcon, CalendarDaysIcon, LinkIcon, LightbulbIcon]
   const privacyItems = isEnglish
     ? [
         ["Stored locally by default", "Capture, browse, and keep writing even without a network connection."],
         ["Standard Markdown files", "Open them without NoteGen and keep them readable for the long term."],
-        ["You choose the services", "You decide which models, image hosting, and sync locations to use."],
-        ["Completely free and open source", "No subscription, account, or feature paywall. Third-party services may charge separately."],
+        ["You control where data goes", "Use your own models, image host, and Git, S3, or WebDAV sync."],
+        ["Completely free and open source", "No subscription, account, or paywall; external services may charge."],
       ]
     : [
         ["默认保存在本地", "没有网络，也可以记录、浏览和继续写作。"],
         ["标准 Markdown 文件", "不依赖 NoteGen 才能打开，适合真正长期保存。"],
-        ["服务由你选择", "模型、图床和同步位置，都由你决定。"],
+        ["数据去向由你掌控", "模型、图床与同步方案均由你配置，可使用自己的 Git、S3 或 WebDAV。"],
         ["完全免费且开源", "无需订阅、无需登录、没有功能付费墙；第三方服务可能单独收费。"],
       ]
 
@@ -162,7 +167,7 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
           <Badge variant="outline">
             <span className="size-1.5 rounded-full bg-foreground" />
-            {text("完全免费 · 开源 · 本地优先", "Completely free · Open source · Local first")}
+            {text("开源 · 跨平台 · AI 知识工作台", "Open source · Cross-platform · AI knowledge workspace")}
           </Badge>
           <div className="flex flex-col gap-5">
             <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-7xl">
@@ -170,8 +175,8 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
             </h1>
             <p className="mx-auto max-w-3xl text-balance text-lg leading-8 text-muted-foreground sm:text-xl">
               {text(
-                "随手留下文字、语音和资料，再让 AI 整理成可编辑的笔记、文章、图表与画布。",
-                "Capture text, voice, and source material, then let AI turn it into editable notes, articles, diagrams, and canvases."
+                "随手留下文字、语音和资料，再用 AI 整理、连接并创作成笔记、文章、图表与画布。",
+                "Capture text, voice, and source material, then use AI to organize, connect, and turn it into notes, articles, diagrams, and canvases."
               )}
             </p>
           </div>
@@ -180,20 +185,21 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
               href={`/${lang}/download`}
               className={cn(buttonVariants({ size: "lg" }), "min-w-36")}
             >
-              {text("免费下载", "Download free")}
+              {text("下载 NoteGen", "Download free")}
               <ArrowRightIcon data-icon="inline-end" />
             </a>
             <a
-              href="#workflow"
+              href={`/${lang}/donate`}
               className={cn(buttonVariants({ variant: "outline", size: "lg" }), "min-w-36")}
             >
-              {text("看看如何工作", "See how it works")}
+              <HeartIcon data-icon="inline-start" className="text-pink-500" />
+              {text("支持开源项目", "Support the project")}
             </a>
           </div>
           <p className="text-sm font-medium text-foreground">
             {text(
-              "NoteGen 无订阅、无需登录，所有核心功能免费使用。",
-              "No subscription or account. All core NoteGen features are free."
+              "无订阅、无需登录，所有核心功能免费使用。",
+              "No subscription or account. All core features are free."
             )}
           </p>
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -207,12 +213,12 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
         </div>
       </section>
 
-      <section id="workflow" className="border-y bg-muted/40">
+      <section id="workflow" className="scroll-mt-14 border-y bg-muted/40">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
           <SectionHeading
             badge={text("核心工作流", "Core workflow")}
             title={text("从一个念头，到一篇作品。", "From a thought to a finished piece.")}
-            description={text("不是把功能堆在一起，而是让每一步自然接上下一步。", "Each step flows naturally into the next.")}
+            description={text("从随手记录、选择素材，到 AI 整理和继续创作，整个过程保持连贯。", "Capture ideas, select the right material, organize it with AI, and keep creating in one continuous workflow.")}
           />
           <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {workflows.map((item) => (
@@ -231,7 +237,7 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
         </div>
       </section>
 
-      <section id="features" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
+      <section id="features" className="scroll-mt-14 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
         <SectionHeading
           badge={text("需要时足够强大", "Powerful when needed")}
           title={text("AI、画布和 Markdown，服务于同一条工作流。", "AI, canvas, and Markdown in one workflow.")}
@@ -304,21 +310,42 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
           title={text("让零散素材，走向清晰结果。", "Turn scattered material into clear results.")}
           description={text("先保存真实发生的内容，再决定它最终应该成为什么。", "Capture what happened first, then decide what it should become.")}
         />
-        <Card className="mt-12">
-          <CardContent className="flex flex-col">
-            {cases.map(([from, to, note], index) => (
-              <div key={from}>
-                {index > 0 && <Separator />}
-                <div className="grid gap-3 py-5 sm:grid-cols-[1fr_auto_1fr_1fr] sm:items-center">
-                  <span className="text-muted-foreground">{from}</span>
-                  <ArrowRightIcon className="hidden size-4 text-muted-foreground sm:block" />
-                  <strong>{to}</strong>
-                  <span className="text-sm text-muted-foreground">{note}</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="mt-12 grid gap-4 md:grid-cols-2">
+          {cases.map(([from, to, note], index) => {
+            const CaseIcon = caseIcons[index]
+
+            return (
+              <Card key={from} className="gap-0 overflow-hidden py-0 shadow-none">
+                <CardContent className="flex h-full flex-col p-5 sm:p-6">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-3">
+                    <div className="rounded-lg bg-muted/60 p-4">
+                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                        <CaseIcon className="size-3.5" />
+                        {text("原始素材", "Input")}
+                      </span>
+                      <p className="mt-3 font-medium">{from}</p>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="flex size-8 items-center justify-center rounded-full border bg-background text-muted-foreground">
+                        <ArrowRightIcon className="size-4" />
+                      </span>
+                    </div>
+                    <div className="rounded-lg bg-primary p-4 text-primary-foreground">
+                      <span className="text-[11px] font-medium text-primary-foreground/65">
+                        {text("整理结果", "Output")}
+                      </span>
+                      <p className="mt-3 font-semibold">{to}</p>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex items-start gap-2 border-t pt-4 text-sm text-muted-foreground">
+                    <SparklesIcon className="mt-0.5 size-4 shrink-0" />
+                    <span>{note}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
       </section>
 
       <section className="border-t">
@@ -332,8 +359,8 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
             </h2>
             <p className="text-muted-foreground">
               {text(
-                "完全免费、开源，无订阅、无需注册。支持桌面端与移动端。",
-                "Completely free and open source, with no subscription or account required. Available on desktop and mobile."
+                "灵感不会一直等你。",
+                "Ideas do not wait."
               )}
             </p>
           </div>
@@ -358,6 +385,12 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
             <a href="https://github.com/codexu/note-gen" className="hover:text-foreground">GitHub</a>
             <a href={`/${lang}/docs`} className="hover:text-foreground">
               {text("文档", "Docs")}
+            </a>
+            <a href={`/${lang}/community`} className="hover:text-foreground">
+              {text("交流群", "Community")}
+            </a>
+            <a href={`/${lang}/business`} className="hover:text-foreground">
+              {text("商务合作", "Business")}
             </a>
             <a href={`/${lang}/donate`} className="hover:text-foreground">
               {text("支持项目", "Support")}
