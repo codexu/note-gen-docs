@@ -1,61 +1,26 @@
 import {
   ArrowRightIcon,
   BrainCircuitIcon,
-  CalendarDaysIcon,
   CheckIcon,
   DownloadIcon,
-  FileTextIcon,
   HeartIcon,
-  InboxIcon,
-  LightbulbIcon,
-  LinkIcon,
-  MicIcon,
   MonitorSmartphoneIcon,
   NetworkIcon,
-  SearchIcon,
   ShieldCheckIcon,
-  SparklesIcon,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { NoteGenDemo } from "@/components/home/note-gen-demo"
 import { cn } from "@/lib/utils"
-
-const workflowsCn = [
-  {
-    icon: InboxIcon,
-    step: "01",
-    title: "随手记录",
-    description: "文字、语音、截图、图片、链接、文件和待办，先放进同一个记录箱。",
-  },
-  {
-    icon: SearchIcon,
-    step: "02",
-    title: "选择素材",
-    description: "按时间、标签和内容筛选，找到这一次真正需要整理的记录。",
-  },
-  {
-    icon: SparklesIcon,
-    step: "03",
-    title: "AI 整理",
-    description: "选择模板，将零散素材生成结构清晰、可继续编辑的 Markdown。",
-  },
-  {
-    icon: FileTextIcon,
-    step: "04",
-    title: "继续创作",
-    description: "编辑、检索、对话，或者把内容放到画布里继续思考。",
-  },
-]
 
 const capabilitiesCn = [
   {
@@ -83,33 +48,6 @@ const casesCn = [
   ["每日记录", "周报与总结", "按时间和标签整理"],
   ["链接与 PDF", "调研文章", "检索并引用已有材料"],
   ["零散灵感", "画布与关系图", "把抽象想法可视化"],
-]
-
-const workflowsEn = [
-  {
-    icon: InboxIcon,
-    step: "01",
-    title: "Capture freely",
-    description: "Keep text, voice, screenshots, images, links, files, and tasks in one inbox.",
-  },
-  {
-    icon: SearchIcon,
-    step: "02",
-    title: "Choose context",
-    description: "Filter by time, tags, and content to find what matters for the task at hand.",
-  },
-  {
-    icon: SparklesIcon,
-    step: "03",
-    title: "Organize with AI",
-    description: "Turn scattered material into structured, editable Markdown.",
-  },
-  {
-    icon: FileTextIcon,
-    step: "04",
-    title: "Keep creating",
-    description: "Edit, search, chat, or move the result onto a canvas to think further.",
-  },
 ]
 
 const capabilitiesEn = [
@@ -143,10 +81,8 @@ const casesEn = [
 export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
   const isEnglish = lang === "en"
   const text = (cnText: string, enText: string) => isEnglish ? enText : cnText
-  const workflows = isEnglish ? workflowsEn : workflowsCn
   const capabilities = isEnglish ? capabilitiesEn : capabilitiesCn
   const cases = isEnglish ? casesEn : casesCn
-  const caseIcons = [MicIcon, CalendarDaysIcon, LinkIcon, LightbulbIcon]
   const privacyItems = isEnglish
     ? [
         ["Stored locally by default", "Capture, browse, and keep writing even without a network connection."],
@@ -213,56 +149,34 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
         </div>
       </section>
 
-      <section id="workflow" className="scroll-mt-14 border-y bg-muted/40">
+      <section id="features" className="scroll-mt-14 border-t">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
           <SectionHeading
-            badge={text("核心工作流", "Core workflow")}
-            title={text("从一个念头，到一篇作品。", "From a thought to a finished piece.")}
-            description={text("从随手记录、选择素材，到 AI 整理和继续创作，整个过程保持连贯。", "Capture ideas, select the right material, organize it with AI, and keep creating in one continuous workflow.")}
+            badge={text("需要时足够强大", "Powerful when needed")}
+            title={text("AI、画布和 Markdown，服务于同一条工作流。", "AI, canvas, and Markdown in one workflow.")}
+            description={text("日常记录保持简单，复杂能力只在你需要时出现。", "Daily capture stays simple; advanced tools appear when you need them.")}
           />
-          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {workflows.map((item) => (
-              <Card key={item.step} className="min-h-64">
+          <div className="mt-12 grid gap-4 lg:grid-cols-3">
+            {capabilities.map((capability) => (
+              <Card key={capability.title}>
                 <CardHeader>
-                  <CardAction>
-                    <Badge variant="outline">{item.step}</Badge>
-                  </CardAction>
-                  <item.icon className="size-5 text-muted-foreground" />
-                  <CardTitle className="pt-6 text-xl">{item.title}</CardTitle>
-                  <CardDescription className="leading-6">{item.description}</CardDescription>
+                  <div className="mb-4 flex size-10 items-center justify-center rounded-lg bg-secondary">
+                    <capability.icon className="size-5" />
+                  </div>
+                  <CardTitle className="text-xl">{capability.title}</CardTitle>
+                  <CardDescription className="leading-6">{capability.description}</CardDescription>
                 </CardHeader>
+                <CardContent className="flex flex-col gap-3">
+                  {capability.items.map((item) => (
+                    <div key={item} className="flex items-center gap-2 text-sm">
+                      <CheckIcon className="size-4 text-muted-foreground" />
+                      {item}
+                    </div>
+                  ))}
+                </CardContent>
               </Card>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section id="features" className="scroll-mt-14 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
-        <SectionHeading
-          badge={text("需要时足够强大", "Powerful when needed")}
-          title={text("AI、画布和 Markdown，服务于同一条工作流。", "AI, canvas, and Markdown in one workflow.")}
-          description={text("日常记录保持简单，复杂能力只在你需要时出现。", "Daily capture stays simple; advanced tools appear when you need them.")}
-        />
-        <div className="mt-12 grid gap-4 lg:grid-cols-3">
-          {capabilities.map((capability) => (
-            <Card key={capability.title}>
-              <CardHeader>
-                <div className="mb-4 flex size-10 items-center justify-center rounded-lg bg-secondary">
-                  <capability.icon className="size-5" />
-                </div>
-                <CardTitle className="text-xl">{capability.title}</CardTitle>
-                <CardDescription className="leading-6">{capability.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {capability.items.map((item) => (
-                  <div key={item} className="flex items-center gap-2 text-sm">
-                    <CheckIcon className="size-4 text-muted-foreground" />
-                    {item}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
         </div>
       </section>
 
@@ -310,42 +224,21 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
           title={text("让零散素材，走向清晰结果。", "Turn scattered material into clear results.")}
           description={text("先保存真实发生的内容，再决定它最终应该成为什么。", "Capture what happened first, then decide what it should become.")}
         />
-        <div className="mt-12 grid gap-4 md:grid-cols-2">
-          {cases.map(([from, to, note], index) => {
-            const CaseIcon = caseIcons[index]
-
-            return (
-              <Card key={from} className="gap-0 overflow-hidden py-0 shadow-none">
-                <CardContent className="flex h-full flex-col p-5 sm:p-6">
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-3">
-                    <div className="rounded-lg bg-muted/60 p-4">
-                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                        <CaseIcon className="size-3.5" />
-                        {text("原始素材", "Input")}
-                      </span>
-                      <p className="mt-3 font-medium">{from}</p>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="flex size-8 items-center justify-center rounded-full border bg-background text-muted-foreground">
-                        <ArrowRightIcon className="size-4" />
-                      </span>
-                    </div>
-                    <div className="rounded-lg bg-primary p-4 text-primary-foreground">
-                      <span className="text-[11px] font-medium text-primary-foreground/65">
-                        {text("整理结果", "Output")}
-                      </span>
-                      <p className="mt-3 font-semibold">{to}</p>
-                    </div>
-                  </div>
-                  <div className="mt-5 flex items-start gap-2 border-t pt-4 text-sm text-muted-foreground">
-                    <SparklesIcon className="mt-0.5 size-4 shrink-0" />
-                    <span>{note}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+        <Card className="mt-12">
+          <CardContent className="flex flex-col">
+            {cases.map(([from, to, note], index) => (
+              <div key={from}>
+                {index > 0 && <Separator />}
+                <div className="grid gap-3 py-5 sm:grid-cols-[1fr_auto_1fr_1fr] sm:items-center">
+                  <span className="text-muted-foreground">{from}</span>
+                  <ArrowRightIcon className="hidden size-4 text-muted-foreground sm:block" />
+                  <strong>{to}</strong>
+                  <span className="text-sm text-muted-foreground">{note}</span>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </section>
 
       <section className="border-t">

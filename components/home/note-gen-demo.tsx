@@ -134,24 +134,51 @@ function useDemoLanguage() {
 }
 
 export function NoteGenDemo({ lang }: { lang: DemoLang }) {
+  const text = (cn: string, en: string) => lang === "en" ? en : cn
+
   return (
     <DemoLanguageContext.Provider value={lang}>
-      <section
-        aria-label={lang === "en" ? "NoteGen desktop and mobile preview" : "NoteGen 桌面端与移动端预览"}
-        className="relative mx-auto w-full"
-      >
-        <div className="hidden w-full pb-[3.5%] md:block">
-          <div className="w-[96%]">
-            <MacBookFrame>
-              <NoteGenDesktopReplica lang={lang} />
-            </MacBookFrame>
+      <div className="flex flex-col">
+        <section
+          aria-label={lang === "en" ? "NoteGen desktop and mobile preview" : "NoteGen 桌面端与移动端预览"}
+          className="relative mx-auto w-full"
+        >
+          <div className="hidden w-full pb-[3.5%] md:block">
+            <div className="w-[96%]">
+              <MacBookFrame>
+                <NoteGenDesktopReplica lang={lang} />
+              </MacBookFrame>
+            </div>
           </div>
-        </div>
 
-        <div className="relative mx-auto w-full max-w-[360px] px-2 md:absolute md:bottom-0 md:right-0 md:mx-0 md:w-[23%] md:min-w-[170px] md:max-w-[360px] md:px-0">
-          <MobileReplica />
+          <div className="relative mx-auto w-full max-w-[360px] px-2 md:absolute md:bottom-0 md:right-0 md:mx-0 md:w-[23%] md:min-w-[170px] md:max-w-[360px] md:px-0">
+            <MobileReplica />
+          </div>
+        </section>
+
+        <div id="workflow" className="mt-20 scroll-mt-14 pb-20 lg:pb-28">
+          <section className="mx-auto w-full max-w-5xl pb-12 pt-20 lg:pb-16 lg:pt-28">
+            <div className="flex max-w-4xl flex-col items-start gap-6">
+              <Badge variant="secondary">
+                {text("为什么是 NoteGen", "Why NoteGen")}
+              </Badge>
+              <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
+                {text("记录，不应该迫使你立刻整理。", "Capturing should not force you to organize immediately.")}
+              </h2>
+              <p className="max-w-3xl text-lg leading-8 text-muted-foreground">
+                {text(
+                  "想法出现的时候，你通常还不知道它属于哪个文件夹，也不知道它最终会成为周报、文章还是项目资料。NoteGen 先替你接住素材，等到真正需要时再整理。",
+                  "When an idea appears, you rarely know which folder it belongs in or whether it will become a report, article, or project note. NoteGen captures it first and organizes it when you actually need it."
+                )}
+              </p>
+            </div>
+          </section>
+
+          <section className="hidden md:block">
+            <DesktopScenes />
+          </section>
         </div>
-      </section>
+      </div>
     </DemoLanguageContext.Provider>
   )
 }
