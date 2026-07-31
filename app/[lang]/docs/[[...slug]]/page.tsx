@@ -8,6 +8,12 @@ import {
 import { notFound } from 'next/navigation';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { getMDXComponents } from '@/mdx-components';
+import type { Metadata } from 'next';
+import {
+  getPageAlternates,
+  normalizeLang,
+  siteConfig,
+} from '@/lib/seo';
 
 export default async function Page({
   params,
@@ -44,13 +50,34 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug?: string[]; lang: string }>;
-}) {
+}): Promise<Metadata> {
   const { slug, lang } = await params;
   const page = source.getPage(slug, lang);
   if (!page) notFound();
+  const language = normalizeLang(lang);
+  const pathname = page.url.replace(/^\/(?:cn|en)/, '');
 
   return {
     title: page.data.title,
     description: page.data.description,
+    alternates: getPageAlternates(language, pathname),
+    openGraph: {
+      title: page.data.title,
+      description: page.data.description,
+      url: page.url,
+      siteName: siteConfig.name,
+      type: 'article',
+      locale: language === 'cn' ? 'zh_CN' : 'en_US',
+      alternateLocale: language === 'cn' ? ['en_US'] : ['zh_CN'],
+    },
+    twitter: {
+      card: 'summary',
+      title: page.data.title,
+      description: page.data.description,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
   };
 }

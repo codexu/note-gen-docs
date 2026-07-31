@@ -2,7 +2,7 @@ export type SupportedLang = 'cn' | 'en';
 
 export const siteConfig = {
   name: 'NoteGen',
-  url: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://codexu.github.io'),
+  url: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://notegen.top'),
   githubUrl: 'https://github.com/codexu/note-gen',
   licenseUrl: 'https://github.com/codexu/note-gen/blob/dev/LICENSE',
 };
@@ -55,12 +55,16 @@ export function getHtmlLang(lang: SupportedLang) {
 }
 
 export function getHomeAlternates(lang: SupportedLang) {
+  return getPageAlternates(lang);
+}
+
+export function getPageAlternates(lang: SupportedLang, pathname = '') {
   return {
-    canonical: `/${lang}`,
+    canonical: `/${lang}${pathname}`,
     languages: {
-      'zh-CN': '/cn',
-      en: '/en',
-      'x-default': '/cn',
+      'zh-CN': `/cn${pathname}`,
+      en: `/en${pathname}`,
+      'x-default': `/cn${pathname}`,
     },
   };
 }
