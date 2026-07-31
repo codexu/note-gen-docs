@@ -49,7 +49,11 @@ const content = {
       ],
     },
     sectionTitle: '选择支持方式',
-    sectionDescription: '自愿选择任意一种方式即可。每一份支持都会用于帮助项目继续维护。',
+    sectionDescription: '可以通过爱发电按月支持，也可以直接使用支付宝或微信。每一份支持都会用于帮助项目继续维护。',
+    afdian: {
+      title: '爱发电',
+      action: '前往爱发电',
+    },
     alternativeSupport: {
       title: '不捐赠，也可以支持',
       description: '钱不是唯一的支持方式。下面这些行动同样能帮助 NoteGen 被看见、发现问题并持续改进。',
@@ -75,12 +79,10 @@ const content = {
     qrcodes: {
       alipay: {
         title: '支付宝',
-        description: '支付宝扫码支持。',
         alt: 'NoteGen 支付宝收款码',
       },
       wechatPay: {
         title: '微信支付',
-        description: '微信支付扫码支持。',
         alt: 'NoteGen 微信支付收款码',
       },
     },
@@ -119,7 +121,11 @@ const content = {
       ],
     },
     sectionTitle: 'Choose a way to support',
-    sectionDescription: 'Choose either option if you would like to contribute. Every contribution helps sustain the project.',
+    sectionDescription: 'Support monthly through Afdian, or contribute directly with Alipay or WeChat Pay. Every contribution helps sustain the project.',
+    afdian: {
+      title: 'Afdian',
+      action: 'Open Afdian',
+    },
     alternativeSupport: {
       title: 'Other ways to help',
       description: 'Money is not the only useful form of support. These actions help NoteGen reach people, find problems, and keep improving.',
@@ -145,12 +151,10 @@ const content = {
     qrcodes: {
       alipay: {
         title: 'Alipay',
-        description: 'Scan with Alipay.',
         alt: 'NoteGen Alipay donation QR code',
       },
       wechatPay: {
         title: 'WeChat Pay',
-        description: 'Scan with WeChat Pay.',
         alt: 'NoteGen WeChat Pay donation QR code',
       },
     },
@@ -220,7 +224,6 @@ export default async function DonatePage({
   const qrItems = [
     {
       title: t.qrcodes.alipay.title,
-      description: t.qrcodes.alipay.description,
       image: {
         src: alipayDonationQrUrl,
         alt: t.qrcodes.alipay.alt,
@@ -230,7 +233,6 @@ export default async function DonatePage({
     },
     {
       title: t.qrcodes.wechatPay.title,
-      description: t.qrcodes.wechatPay.description,
       image: {
         src: wechatPayDonationQrUrl,
         alt: t.qrcodes.wechatPay.alt,
@@ -257,7 +259,17 @@ export default async function DonatePage({
       }}
       sectionTitle={t.sectionTitle}
       sectionDescription={t.sectionDescription}
-      items={qrItems}
+      items={[
+        {
+          ...t.afdian,
+          href: 'https://afdian.com/a/notegen',
+          iconImage: {
+            src: 'https://static.afdiancdn.com/static/img/icons/apple-touch-icon-152x152.png',
+            alt: language === 'cn' ? '爱发电图标' : 'Afdian icon',
+          },
+        },
+        ...qrItems,
+      ]}
       alternativeSupport={{
         ...t.alternativeSupport,
         items: t.alternativeSupport.items.map((item, index) => ({

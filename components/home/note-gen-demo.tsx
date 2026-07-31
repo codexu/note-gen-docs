@@ -133,17 +133,7 @@ function useDemoLanguage() {
   }
 }
 
-export function NoteGenDemo({
-  lang,
-  initialDesktopWorkspace = "records",
-  desktopAutoCycle = true,
-  mobileAutoAdvance = true,
-}: {
-  lang: DemoLang
-  initialDesktopWorkspace?: "writing" | "records" | "canvas"
-  desktopAutoCycle?: boolean
-  mobileAutoAdvance?: boolean
-}) {
+export function NoteGenDemo({ lang }: { lang: DemoLang }) {
   return (
     <DemoLanguageContext.Provider value={lang}>
       <section
@@ -153,17 +143,13 @@ export function NoteGenDemo({
         <div className="hidden w-full pb-[3.5%] md:block">
           <div className="w-[96%]">
             <MacBookFrame>
-              <NoteGenDesktopReplica
-                lang={lang}
-                initialWorkspace={initialDesktopWorkspace}
-                autoCycle={desktopAutoCycle}
-              />
+              <NoteGenDesktopReplica lang={lang} />
             </MacBookFrame>
           </div>
         </div>
 
         <div className="relative mx-auto w-full max-w-[360px] px-2 md:absolute md:bottom-0 md:right-0 md:mx-0 md:w-[23%] md:min-w-[170px] md:max-w-[360px] md:px-0">
-          <MobileReplica autoAdvance={mobileAutoAdvance} />
+          <MobileReplica />
         </div>
       </section>
     </DemoLanguageContext.Provider>
@@ -751,7 +737,7 @@ function CanvasScene() {
   )
 }
 
-function MobileReplica({ autoAdvance = true }: { autoAdvance?: boolean }) {
+function MobileReplica() {
   const { lang, text } = useDemoLanguage()
   const [page, setPage] = useState<"chat" | "writing" | "record" | "canvas">("chat")
   const [quickOpen, setQuickOpen] = useState(false)
@@ -794,11 +780,7 @@ function MobileReplica({ autoAdvance = true }: { autoAdvance?: boolean }) {
               </div>
             </div>
             <div className="h-[calc(100%-36px)]">
-              {page === "chat" && (
-                <MobileChatPage onComplete={() => {
-                  if (autoAdvance) setPage("writing")
-                }} />
-              )}
+              {page === "chat" && <MobileChatPage onComplete={() => setPage("writing")} />}
               {page === "writing" && <MobileWritingPage />}
               {page === "record" && <MobileRecordPage />}
               {page === "canvas" && <MobileCanvasPage />}

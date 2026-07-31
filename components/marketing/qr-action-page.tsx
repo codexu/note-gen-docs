@@ -16,13 +16,19 @@ import { ShareButton } from "@/components/marketing/share-button"
 
 type QrActionItem = {
   title: string
-  description: string
-  image: {
+  description?: string
+  image?: {
     src: string
     alt: string
   }
-  icon: LucideIcon
+  icon?: LucideIcon
+  iconImage?: {
+    src: string
+    alt: string
+  }
   priority?: boolean
+  action?: string
+  href?: string
 }
 
 type QrActionDetails = {
@@ -155,7 +161,12 @@ export function QrActionPage({
             <h2 className="text-2xl font-semibold tracking-tight">{sectionTitle}</h2>
             <p className="text-sm leading-6 text-muted-foreground">{sectionDescription}</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div
+            className={cn(
+              "grid gap-4",
+              items.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2",
+            )}
+          >
             {items.map((item, index) => {
               const Icon = item.icon
 
@@ -163,23 +174,56 @@ export function QrActionPage({
                 <Card key={item.title} className="h-full overflow-hidden">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+                      {item.iconImage ? (
+                        <img
+                          src={item.iconImage.src}
+                          alt=""
+                          className="size-5 rounded"
+                        />
+                      ) : Icon ? (
+                        <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+                      ) : null}
                       {item.title}
                     </CardTitle>
-                    <CardDescription className="leading-6">{item.description}</CardDescription>
+                    {item.description ? (
+                      <CardDescription className="leading-6">
+                        {item.description}
+                      </CardDescription>
+                    ) : null}
                     <CardAction>
                       <Badge variant="outline">{String(index + 1).padStart(2, "0")}</Badge>
                     </CardAction>
                   </CardHeader>
                   <CardContent>
                     <div className="flex min-h-[300px] items-center justify-center rounded-lg border bg-muted/30 p-5">
-                      <img
-                        src={item.image.src}
-                        alt={item.image.alt}
-                        loading={item.priority ? "eager" : "lazy"}
-                        decoding="async"
-                        className="max-h-[280px] max-w-full rounded-md object-contain"
-                      />
+                      {item.image ? (
+                        <img
+                          src={item.image.src}
+                          alt={item.image.alt}
+                          loading={item.priority ? "eager" : "lazy"}
+                          decoding="async"
+                          className="max-h-[280px] max-w-full rounded-md object-contain"
+                        />
+                      ) : item.href && item.action ? (
+                        <div className="flex flex-col items-center gap-5 text-center">
+                          {item.iconImage ? (
+                            <img
+                              src={item.iconImage.src}
+                              alt={item.iconImage.alt}
+                              className="size-24 rounded-3xl"
+                            />
+                          ) : Icon ? (
+                            <div className="flex size-16 items-center justify-center rounded-2xl bg-pink-500/10">
+                              <Icon className="size-8 text-pink-500" aria-hidden="true" />
+                            </div>
+                          ) : null}
+                          <Button asChild>
+                            <a href={item.href} target="_blank" rel="noreferrer">
+                              {item.action}
+                            </a>
+                          </Button>
+                        </div>
+                      ) : null}
                     </div>
                   </CardContent>
                 </Card>
