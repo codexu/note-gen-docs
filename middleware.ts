@@ -1,6 +1,31 @@
-import { createI18nMiddleware } from 'fumadocs-core/i18n/middleware';
-import { i18n } from '@/lib/i18n';
-export default createI18nMiddleware(i18n);
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+export default function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (
+    pathname === '/cn' ||
+    pathname.startsWith('/cn/') ||
+    pathname === '/en' ||
+    pathname.startsWith('/en/')
+  ) {
+    return NextResponse.next();
+  }
+
+  const preferredLanguage = request.headers
+    .get('accept-language')
+    ?.split(',', 1)[0]
+    ?.trim()
+    .toLowerCase();
+  const language = preferredLanguage?.startsWith('zh') ? 'cn' : 'en';
+  const url = request.nextUrl.clone();
+
+  url.pathname = `/${language}${pathname === '/' ? '' : pathname}`;
+
+  return NextResponse.redirect(url);
+}
+
 export const config = {
   // Matcher ignoring `/_next/` and `/api/`
   // You may need to adjust it to ignore static assets in `/public` folder

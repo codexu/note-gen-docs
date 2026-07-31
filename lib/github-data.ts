@@ -110,15 +110,12 @@ export const getGitHubStats = unstable_cache(
     try {
       const token = process.env.GITHUB_TOKEN;
 
-      if (!token) {
-        console.warn('GITHUB_TOKEN not found in environment variables');
-        return { stargazers_count: 0, forks_count: 0, watchers_count: 0 };
-      }
-
       const headers = new Headers();
-      headers.set('Authorization', `Bearer ${token}`);
       headers.set('Accept', 'application/vnd.github.v3+json');
       headers.set('User-Agent', 'NoteGen-Website');
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
 
       const response = await fetch('https://api.github.com/repos/codexu/note-gen', {
         headers,
