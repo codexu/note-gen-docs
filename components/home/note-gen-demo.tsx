@@ -92,6 +92,7 @@ import {
   NoteGenMobileDock,
   type NoteGenDockItem,
 } from "@/components/notegen-mobile-dock"
+import { CanvasThumbnail } from "@/components/home/canvas-thumbnail"
 import { NoteGenDesktopReplica } from "@/components/home/notegen-desktop-replica"
 
 const desktopRecords = [
@@ -132,12 +133,19 @@ function useDemoLanguage() {
   }
 }
 
-export function NoteGenDemo({ lang }: { lang: DemoLang }) {
-  const text = (cn: string, en: string) => lang === "en" ? en : cn
-
+export function NoteGenDemo({
+  lang,
+  initialDesktopWorkspace = "records",
+  desktopAutoCycle = true,
+  mobileAutoAdvance = true,
+}: {
+  lang: DemoLang
+  initialDesktopWorkspace?: "writing" | "records" | "canvas"
+  desktopAutoCycle?: boolean
+  mobileAutoAdvance?: boolean
+}) {
   return (
     <DemoLanguageContext.Provider value={lang}>
-    <div className="flex flex-col">
       <section
         aria-label={lang === "en" ? "NoteGen desktop and mobile preview" : "NoteGen 桌面端与移动端预览"}
         className="relative mx-auto w-full"
@@ -145,39 +153,19 @@ export function NoteGenDemo({ lang }: { lang: DemoLang }) {
         <div className="hidden w-full pb-[3.5%] md:block">
           <div className="w-[96%]">
             <MacBookFrame>
-              <NoteGenDesktopReplica lang={lang} />
+              <NoteGenDesktopReplica
+                lang={lang}
+                initialWorkspace={initialDesktopWorkspace}
+                autoCycle={desktopAutoCycle}
+              />
             </MacBookFrame>
           </div>
         </div>
 
         <div className="relative mx-auto w-full max-w-[360px] px-2 md:absolute md:bottom-0 md:right-0 md:mx-0 md:w-[23%] md:min-w-[170px] md:max-w-[360px] md:px-0">
-          <MobileReplica />
+          <MobileReplica autoAdvance={mobileAutoAdvance} />
         </div>
       </section>
-
-      <div className="mt-20 pb-20 lg:pb-28">
-        <section className="mx-auto w-full max-w-5xl pb-12 pt-20 lg:pb-16 lg:pt-28">
-          <div className="flex max-w-4xl flex-col items-start gap-6">
-            <Badge variant="secondary">
-              {text("为什么是 NoteGen", "Why NoteGen")}
-            </Badge>
-            <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
-              {text("记录，不应该迫使你立刻整理。", "Capturing should not force you to organize immediately.")}
-            </h2>
-            <p className="max-w-3xl text-lg leading-8 text-muted-foreground">
-              {text(
-                "想法出现的时候，你通常还不知道它属于哪个文件夹，也不知道它最终会成为周报、文章还是项目资料。NoteGen 先替你接住素材，等到真正需要时再整理。",
-                "When an idea appears, you rarely know which folder it belongs in or whether it will become a report, article, or project note. NoteGen captures it first and organizes it when you actually need it."
-              )}
-            </p>
-          </div>
-        </section>
-
-        <section className="hidden md:block">
-          <DesktopScenes />
-        </section>
-      </div>
-    </div>
     </DemoLanguageContext.Provider>
   )
 }
@@ -763,7 +751,7 @@ function CanvasScene() {
   )
 }
 
-function MobileReplica() {
+function MobileReplica({ autoAdvance = true }: { autoAdvance?: boolean }) {
   const { lang, text } = useDemoLanguage()
   const [page, setPage] = useState<"chat" | "writing" | "record" | "canvas">("chat")
   const [quickOpen, setQuickOpen] = useState(false)
@@ -806,7 +794,11 @@ function MobileReplica() {
               </div>
             </div>
             <div className="h-[calc(100%-36px)]">
-              {page === "chat" && <MobileChatPage onComplete={() => setPage("writing")} />}
+              {page === "chat" && (
+                <MobileChatPage onComplete={() => {
+                  if (autoAdvance) setPage("writing")
+                }} />
+              )}
               {page === "writing" && <MobileWritingPage />}
               {page === "record" && <MobileRecordPage />}
               {page === "canvas" && <MobileCanvasPage />}
@@ -1834,9 +1826,7 @@ function MobileCanvasPage() {
           <div key={title} className="relative">
             <button type="button" className="w-full min-w-0 overflow-hidden rounded-xl border bg-background text-left">
               <div className="relative aspect-[4/3] bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:12px_12px]">
-                <span className="absolute left-2 top-3 h-8 w-14 rounded border bg-background" />
-                <span className="absolute bottom-3 right-2 h-8 w-14 rounded border bg-background" />
-                <span className={cn("absolute left-[42%] top-1/2 h-px w-8 bg-border", index % 2 && "rotate-12")} />
+                <CanvasThumbnail variant={index} />
               </div>
               <span className="block truncate px-2.5 py-2 text-xs font-medium">{title}</span>
             </button>

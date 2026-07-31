@@ -5,6 +5,7 @@ import type { Translations } from 'fumadocs-ui/i18n';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata, Viewport } from 'next';
 import { getHtmlLang, normalizeLang, siteConfig } from '@/lib/seo';
+import { Toaster } from '@/components/ui/sonner';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -54,7 +55,10 @@ export default async function Layout(
           }}
           search={{
             enabled: true,
-          }}>{children}</RootProvider>
+          }}>
+          {children}
+          <Toaster position="top-center" />
+        </RootProvider>
       </body>
       <GoogleAnalytics gaId="G-SEWZ8WZX0C" />
     </html>

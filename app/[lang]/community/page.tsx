@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import SectionWrap from '../(home)/section-wrap';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { MessageCircleIcon, UsersRoundIcon } from 'lucide-react';
+import { QrActionPage } from '@/components/marketing/qr-action-page';
 import { normalizeLang, siteConfig } from '@/lib/seo';
 
 const content = {
@@ -18,6 +12,11 @@ const content = {
     title: '加入 NoteGen 交流群',
     description:
       '可以在交流群反馈问题、交流使用经验。QQ 群可直接扫码加入，微信群请备注 NoteGen 入群。',
+    badge: 'NoteGen 社区',
+    principles: ['问题反馈', '使用交流', '经验分享'],
+    note: '交流群适合讨论使用方式和反馈问题。提交可复现的 Bug 或功能建议时，推荐同时在 GitHub 创建 Issue。',
+    sectionTitle: '选择加入方式',
+    sectionDescription: 'QQ 群可直接加入；微信群需要先添加管理员，并备注 NoteGen。',
     qrcodes: {
       qq: {
         title: 'QQ 群',
@@ -39,6 +38,11 @@ const content = {
     title: 'Join the NoteGen community',
     description:
       'Use the community groups for feedback and usage discussions. Scan the QQ group QR directly, or mention NoteGen for WeChat group access.',
+    badge: 'NoteGen community',
+    principles: ['Feedback', 'Usage discussions', 'Shared experience'],
+    note: 'Community groups are best for discussion and feedback. For reproducible bugs or feature requests, opening a GitHub Issue is also recommended.',
+    sectionTitle: 'Choose how to join',
+    sectionDescription: 'Join QQ directly, or add the WeChat admin and mention NoteGen.',
     qrcodes: {
       qq: {
         title: 'QQ group',
@@ -115,6 +119,8 @@ export default async function CommunityPage({
         src: qqGroupQrUrl,
         alt: t.qrcodes.qq.alt,
       },
+      icon: UsersRoundIcon,
+      priority: true,
     },
     {
       title: t.qrcodes.wechatAdmin.title,
@@ -123,75 +129,21 @@ export default async function CommunityPage({
         src: wechatAdminQrUrl,
         alt: t.qrcodes.wechatAdmin.alt,
       },
+      icon: MessageCircleIcon,
     },
   ];
 
   return (
-    <main className="min-h-screen">
-      <SectionWrap className="py-10 md:py-14 xl:w-full">
-        <div className="mx-auto flex max-w-3xl flex-col gap-8">
-          <div className="flex max-w-2xl flex-col gap-4">
-            <h1 className="text-3xl font-bold leading-tight md:text-5xl">
-              {t.title}
-            </h1>
-            <p className="text-base leading-7 text-muted-foreground md:text-lg md:leading-8">
-              {t.description}
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            {qrItems.map((item) => (
-              <QrCard
-                key={item.title}
-                title={item.title}
-                description={item.description}
-                image={item.image}
-              />
-            ))}
-          </div>
-        </div>
-      </SectionWrap>
-    </main>
-  );
-}
-
-type QrImage = {
-  src: string;
-  alt: string;
-};
-
-function QrCard({
-  title,
-  description,
-  image,
-}: {
-  title: string;
-  description: string;
-  image: QrImage;
-}) {
-  return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <PosterImage image={image} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function PosterImage({ image }: { image: QrImage }) {
-  return (
-    <div className="mx-auto flex h-[260px] w-[180px] items-center justify-center overflow-hidden rounded-md border bg-background p-3">
-      <img
-        src={image.src}
-        alt={image.alt}
-        loading="lazy"
-        decoding="async"
-        className="max-h-full max-w-full object-contain"
-      />
-    </div>
+    <QrActionPage
+      badge={t.badge}
+      badgeIcon={UsersRoundIcon}
+      title={t.title}
+      description={t.description}
+      principles={t.principles}
+      note={t.note}
+      sectionTitle={t.sectionTitle}
+      sectionDescription={t.sectionDescription}
+      items={qrItems}
+    />
   );
 }

@@ -1,34 +1,76 @@
 "use client";
-import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { Monitor, Github, Smartphone, Apple, Laptop, Package, Disc3 } from 'lucide-react';
-import SectionWrap from '../(home)/section-wrap';
-import { GlowingEffect } from '@/components/ui/glowing-effect';
-import { GITHUB_RELEASES_URL, type DownloadUrls } from '@/src/config/downloads';
+
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
+import {
+  Apple,
+  ArrowDownToLine,
+  Check,
+  ChevronRight,
+  CircleHelp,
+  Download,
+  ExternalLink,
+  Github,
+  Laptop,
+  Monitor,
+  Package,
+  ShieldCheck,
+  Smartphone,
+  Terminal,
+  type LucideIcon,
+} from "lucide-react";
+import SectionWrap from "../(home)/section-wrap";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  GITHUB_RELEASES_URL,
+  type DownloadUrls,
+} from "@/src/config/downloads";
+import { toast } from "sonner";
 
 type DownloadKey =
-  | 'windows'
-  | 'macosAppleSilicon'
-  | 'macosIntel'
-  | 'linuxAppImage'
-  | 'linuxDeb'
-  | 'linuxRpm'
-  | 'androidApk'
-  | 'iosTestFlight';
+  | "windows"
+  | "macosAppleSilicon"
+  | "macosIntel"
+  | "linuxAppImage"
+  | "linuxDeb"
+  | "linuxRpm"
+  | "androidApk"
+  | "iosTestFlight";
 
 type DownloadItem = {
   id: DownloadKey;
   href: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
   title: string;
   description: string;
+  format: string;
+  action: string;
   external?: boolean;
+};
+
+type PlatformGroup = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  items: DownloadItem[];
 };
 
 type NavigatorWithUserAgentData = Navigator & {
   userAgentData?: {
     platform?: string;
-    getHighEntropyValues?: (hints: string[]) => Promise<{ architecture?: string; platform?: string }>;
+    getHighEntropyValues?: (
+      hints: string[],
+    ) => Promise<{ architecture?: string; platform?: string }>;
   };
 };
 
@@ -37,244 +79,336 @@ type DownloadClientProps = {
   downloadUrls: DownloadUrls;
 };
 
-export default function DownloadClient({ version, downloadUrls }: DownloadClientProps) {
+const copy = {
+  cn: {
+    eyebrow: "开源 · 本地优先 · 跨平台",
+    title: "下载 NoteGen，开始记录。",
+    description:
+      "无需注册。灵感、截图、链接和文件先进入记录箱，需要时再由 AI 整理成可编辑的 Markdown。",
+    currentVersion: "最新稳定版",
+    recommended: "适合当前设备",
+    detecting: "正在识别你的设备…",
+    unknown: "选择适合你的平台",
+    unknownDescription: "我们暂时无法识别当前设备，请从下方选择安装包。",
+    download: "立即下载",
+    releaseNotes: "查看 GitHub Releases",
+    autoDownload: {
+      title: "下载即将自动开始",
+      description: "如果浏览器没有响应，可以手动重新下载。",
+      retry: "重新下载",
+    },
+    trust: ["免费开源", "本地保存", "持续更新"],
+    allPlatforms: "选择你的平台",
+    allPlatformsDescription: "同一份 NoteGen，覆盖桌面端和移动端。",
+    packagesLabel: "可用安装包",
+    groups: {
+      windows: {
+        title: "Windows",
+        description: "Windows 10 及以上",
+      },
+      macos: {
+        title: "macOS",
+        description: "根据 Mac 芯片选择",
+      },
+      linux: {
+        title: "Linux",
+        description: "通用包与主流发行版",
+      },
+      mobile: {
+        title: "移动端",
+        description: "Android 与 iOS 测试版",
+      },
+    },
+    downloads: {
+      windows: {
+        title: "Windows 64 位",
+        description: "标准安装程序",
+        format: ".exe",
+        action: "下载 Windows 版",
+      },
+      macosAppleSilicon: {
+        title: "Apple 芯片",
+        description: "M1 / M2 / M3 / M4 系列",
+        format: ".dmg",
+        action: "下载 Apple 芯片版",
+      },
+      macosIntel: {
+        title: "Intel 芯片",
+        description: "适用于 Intel Mac",
+        format: ".dmg",
+        action: "下载 Intel 版",
+      },
+      linuxAppImage: {
+        title: "AppImage",
+        description: "免安装，适合多数发行版",
+        format: "x86_64",
+        action: "下载 AppImage",
+      },
+      linuxDeb: {
+        title: "Debian / Ubuntu",
+        description: "APT 系发行版",
+        format: ".deb",
+        action: "下载 DEB",
+      },
+      linuxRpm: {
+        title: "Fedora / RHEL",
+        description: "RPM 系发行版",
+        format: ".rpm",
+        action: "下载 RPM",
+      },
+      androidApk: {
+        title: "Android",
+        description: "ARM64 安装包",
+        format: ".apk",
+        action: "下载 Android 版",
+      },
+      iosTestFlight: {
+        title: "iPhone / iPad",
+        description: "通过 TestFlight 安装",
+        format: "TestFlight",
+        action: "加入 iOS 测试",
+      },
+    },
+    install: {
+      title: "安装前，你可能想知道",
+      description: "常见安装问题都整理在这里。",
+      macos: {
+        title: "macOS 安全提示",
+        description:
+          "NoteGen 暂未签名。如果系统提示应用“已损坏”，将应用拖入“应用程序”后打开终端，运行：",
+        fallback: "如果系统不支持 -r 参数",
+      },
+      chooseMac: {
+        title: "不知道 Mac 芯片？",
+        description:
+          "点击左上角  →“关于本机”。看到 Apple M 系列请选择 Apple 芯片版；看到 Intel 请选择 Intel 版。",
+      },
+      linux: {
+        title: "Linux 怎么选？",
+        description:
+          "不确定时优先选择 AppImage；Ubuntu / Debian 选择 DEB；Fedora / RHEL / openSUSE 选择 RPM。",
+      },
+      source: {
+        title: "想核对发布文件？",
+        description: "所有正式版本都会同步到 GitHub Releases，可在那里查看完整文件列表。",
+        action: "前往 GitHub Releases",
+      },
+    },
+  },
+  en: {
+    eyebrow: "Open source · Local-first · Cross-platform",
+    title: "Download NoteGen. Start capturing.",
+    description:
+      "No account required. Capture ideas, screenshots, links, and files first, then turn them into editable Markdown with AI.",
+    currentVersion: "Latest stable",
+    recommended: "Recommended for this device",
+    detecting: "Detecting your device…",
+    unknown: "Choose your platform",
+    unknownDescription:
+      "We could not identify this device. Pick the matching installer below.",
+    download: "Download now",
+    releaseNotes: "View GitHub Releases",
+    autoDownload: {
+      title: "Your download is starting",
+      description:
+        "If your browser does not respond, you can download it manually.",
+      retry: "Download again",
+    },
+    trust: ["Free and open source", "Stored locally", "Actively maintained"],
+    allPlatforms: "Choose your platform",
+    allPlatformsDescription:
+      "The same NoteGen experience across desktop and mobile.",
+    packagesLabel: "Available packages",
+    groups: {
+      windows: {
+        title: "Windows",
+        description: "Windows 10 and later",
+      },
+      macos: {
+        title: "macOS",
+        description: "Choose your Mac chip",
+      },
+      linux: {
+        title: "Linux",
+        description: "Universal and native packages",
+      },
+      mobile: {
+        title: "Mobile",
+        description: "Android and iOS beta",
+      },
+    },
+    downloads: {
+      windows: {
+        title: "Windows 64-bit",
+        description: "Standard installer",
+        format: ".exe",
+        action: "Download for Windows",
+      },
+      macosAppleSilicon: {
+        title: "Apple silicon",
+        description: "M1 / M2 / M3 / M4 series",
+        format: ".dmg",
+        action: "Download for Apple silicon",
+      },
+      macosIntel: {
+        title: "Intel chip",
+        description: "For Intel-based Macs",
+        format: ".dmg",
+        action: "Download for Intel",
+      },
+      linuxAppImage: {
+        title: "AppImage",
+        description: "Portable, for most distributions",
+        format: "x86_64",
+        action: "Download AppImage",
+      },
+      linuxDeb: {
+        title: "Debian / Ubuntu",
+        description: "For APT-based distributions",
+        format: ".deb",
+        action: "Download DEB",
+      },
+      linuxRpm: {
+        title: "Fedora / RHEL",
+        description: "For RPM-based distributions",
+        format: ".rpm",
+        action: "Download RPM",
+      },
+      androidApk: {
+        title: "Android",
+        description: "ARM64 package",
+        format: ".apk",
+        action: "Download for Android",
+      },
+      iosTestFlight: {
+        title: "iPhone / iPad",
+        description: "Install with TestFlight",
+        format: "TestFlight",
+        action: "Join the iOS beta",
+      },
+    },
+    install: {
+      title: "Good to know before installing",
+      description: "Quick answers to the most common installation questions.",
+      macos: {
+        title: "macOS security notice",
+        description:
+          "NoteGen is not signed yet. If macOS says the app is “damaged,” move it to Applications, open Terminal, and run:",
+        fallback: "If your system does not support the -r option",
+      },
+      chooseMac: {
+        title: "Not sure which Mac chip?",
+        description:
+          "Choose Apple menu → About This Mac. Select Apple silicon for an M-series chip, or Intel for an Intel processor.",
+      },
+      linux: {
+        title: "Which Linux package?",
+        description:
+          "Choose AppImage if unsure, DEB for Ubuntu / Debian, or RPM for Fedora / RHEL / openSUSE.",
+      },
+      source: {
+        title: "Want to verify the release?",
+        description:
+          "Every stable build is also published to GitHub Releases with the complete asset list.",
+        action: "Open GitHub Releases",
+      },
+    },
+  },
+} as const;
+
+export default function DownloadClient({
+  version,
+  downloadUrls,
+}: DownloadClientProps) {
   const params = useParams();
-  const lang = (params?.lang as 'cn' | 'en') || 'cn';
-  const [recommendedKey, setRecommendedKey] = useState<DownloadKey | null>(null);
+  const lang = (params?.lang as "cn" | "en") || "cn";
+  const t = copy[lang];
+  const [recommendedKey, setRecommendedKey] = useState<DownloadKey | null>(
+    null,
+  );
   const [platformDetected, setPlatformDetected] = useState(false);
+  const autoDownloadTriggered = useRef(false);
 
-  const content = {
-    cn: {
-      title: '下载 NoteGen',
-      description: '我们会优先推荐适合当前设备的安装包，也可以手动选择其他平台。',
-      recommended: {
-        title: '推荐下载',
-        detecting: '正在识别当前平台...',
-        ready: '已根据当前设备推荐合适的安装包。',
-        unknown: '未能识别当前平台，请在下方选择对应系统。',
-        badge: '当前平台',
-      },
-      other: {
-        title: '其他平台下载',
-        description: '如果推荐不符合您的设备，请从下面选择对应安装包。',
-        windows: {
-          title: 'Windows',
-          description: '64 位安装程序',
-        },
-        macosAppleSilicon: {
-          title: 'macOS Apple Silicon',
-          description: '适用于 Apple M 系列芯片',
-        },
-        macosIntel: {
-          title: 'macOS Intel',
-          description: '适用于 Intel 芯片 Mac',
-        },
-        linuxAppImage: {
-          title: 'Linux AppImage',
-          description: '免安装通用包',
-        },
-        linuxDeb: {
-          title: 'Linux DEB',
-          description: '适用于 Debian / Ubuntu',
-        },
-        linuxRpm: {
-          title: 'Linux RPM',
-          description: '适用于 Fedora / RHEL / openSUSE',
-        },
-        android: {
-          title: 'Android APK (ARM64)',
-          description: '适用于 arm64-v8a Android 设备',
-        },
-        ios: {
-          title: 'iOS TestFlight',
-          description: '安装 TestFlight 并加入测试版本',
-        },
-      },
-      fallback: {
-        title: '备用下载',
-        description: '如果 CDN 下载异常，可以前往 GitHub Releases。',
-        version: '当前版本',
-        github: {
-          title: 'GitHub Releases',
-          label: '备用下载：GitHub Releases',
-          description: '备用下载入口',
-        },
-      },
-      install: {
-        title: '安装指南',
-        macos: {
-          title: 'macOS',
-          intel: 'Intel 芯片: x64.dmg',
-          silicon: 'Apple M 芯片: aarch64.dmg',
-          damageWarning: 'NoteGen 暂未签名，因此安装时会出现文件已损坏的提示',
-          intelFix: 'Intel：打开"系统偏好设置 > 安全性与隐私"，允许"来自未知开发者"的应用',
-          siliconFix: 'Silicon：打开终端并运行以下命令：',
-          command: 'sudo xattr -r -d com.apple.quarantine /Applications/NoteGen.app',
-          fallback: '如果提示错误 option -r not recognized，请改为运行以下两条命令：',
-          fallbackCommand1: 'sudo xattr -d com.apple.quarantine /Applications/NoteGen.app',
-          fallbackCommand2: 'sudo xattr -d com.apple.quarantine /Applications/NoteGen.app/Contents/MacOS/*',
-        },
-        linux: {
-          title: 'Linux',
-          appImage: 'AppImage: amd64.AppImage',
-          deb: 'DEB: amd64.deb',
-          rpm: 'RPM: x86_64.rpm',
-        },
-        windows: {
-          title: 'Windows',
-          x64: '64 位: x64-setup.exe',
-        },
-      },
-    },
-    en: {
-      title: 'Download NoteGen',
-      description: 'We recommend the installer for this device first, and you can still choose any other platform.',
-      recommended: {
-        title: 'Recommended Download',
-        detecting: 'Detecting your platform...',
-        ready: 'Recommended for your current device.',
-        unknown: 'We could not detect your platform. Choose the matching system below.',
-        badge: 'Current platform',
-      },
-      other: {
-        title: 'Other Platforms',
-        description: 'If the recommendation does not match your device, choose the right package below.',
-        windows: {
-          title: 'Windows',
-          description: '64-bit installer',
-        },
-        macosAppleSilicon: {
-          title: 'macOS Apple Silicon',
-          description: 'For Apple M-series Macs',
-        },
-        macosIntel: {
-          title: 'macOS Intel',
-          description: 'For Intel-based Macs',
-        },
-        linuxAppImage: {
-          title: 'Linux AppImage',
-          description: 'Portable package',
-        },
-        linuxDeb: {
-          title: 'Linux DEB',
-          description: 'For Debian / Ubuntu',
-        },
-        linuxRpm: {
-          title: 'Linux RPM',
-          description: 'For Fedora / RHEL / openSUSE',
-        },
-        android: {
-          title: 'Android APK (ARM64)',
-          description: 'For arm64-v8a Android devices',
-        },
-        ios: {
-          title: 'iOS TestFlight',
-          description: 'Install TestFlight and join the testing version',
-        },
-      },
-      fallback: {
-        title: 'Fallback Download',
-        description: 'If the CDN download is unavailable, use GitHub Releases.',
-        version: 'Current version',
-        github: {
-          title: 'GitHub Releases',
-          label: 'Fallback: GitHub Releases',
-          description: 'Fallback download',
-        },
-      },
-      install: {
-        title: 'Installation Guide',
-        macos: {
-          title: 'macOS',
-          intel: 'Intel Chip: x64.dmg',
-          silicon: 'Apple M Chip: aarch64.dmg',
-          damageWarning: 'NoteGen is not yet signed, so you may see a "file is damaged" warning during installation',
-          intelFix: 'Intel: Go to "System Preferences > Security & Privacy" and allow apps from "unidentified developer"',
-          siliconFix: 'Silicon: Open Terminal and run the following command:',
-          command: 'sudo xattr -r -d com.apple.quarantine /Applications/NoteGen.app',
-          fallback: 'If you get "option -r not recognized" error, run these two commands instead:',
-          fallbackCommand1: 'sudo xattr -d com.apple.quarantine /Applications/NoteGen.app',
-          fallbackCommand2: 'sudo xattr -d com.apple.quarantine /Applications/NoteGen.app/Contents/MacOS/*',
-        },
-        linux: {
-          title: 'Linux',
-          appImage: 'AppImage: amd64.AppImage',
-          deb: 'DEB: amd64.deb',
-          rpm: 'RPM: x86_64.rpm',
-        },
-        windows: {
-          title: 'Windows',
-          x64: '64-bit: x64-setup.exe',
-        },
-      },
-    },
-  };
-
-  const t = content[lang];
-  const downloads: DownloadItem[] = useMemo(() => [
+  const downloads: DownloadItem[] = [
     {
-      id: 'windows',
+      id: "windows",
       href: downloadUrls.windows,
-      icon: <Monitor className="w-8 h-8 text-blue-500" />,
-      title: t.other.windows.title,
-      description: t.other.windows.description,
+      icon: Monitor,
+      ...t.downloads.windows,
     },
     {
-      id: 'macosAppleSilicon',
+      id: "macosAppleSilicon",
       href: downloadUrls.macosAppleSilicon,
-      icon: <Apple className="w-8 h-8" />,
-      title: t.other.macosAppleSilicon.title,
-      description: t.other.macosAppleSilicon.description,
+      icon: Apple,
+      ...t.downloads.macosAppleSilicon,
     },
     {
-      id: 'macosIntel',
+      id: "macosIntel",
       href: downloadUrls.macosIntel,
-      icon: <Laptop className="w-8 h-8 text-zinc-500" />,
-      title: t.other.macosIntel.title,
-      description: t.other.macosIntel.description,
+      icon: Laptop,
+      ...t.downloads.macosIntel,
     },
     {
-      id: 'linuxAppImage',
+      id: "linuxAppImage",
       href: downloadUrls.linuxAppImage,
-      icon: <Package className="w-8 h-8 text-orange-500" />,
-      title: t.other.linuxAppImage.title,
-      description: t.other.linuxAppImage.description,
+      icon: Package,
+      ...t.downloads.linuxAppImage,
     },
     {
-      id: 'linuxDeb',
+      id: "linuxDeb",
       href: downloadUrls.linuxDeb,
-      icon: <Package className="w-8 h-8 text-red-500" />,
-      title: t.other.linuxDeb.title,
-      description: t.other.linuxDeb.description,
+      icon: Package,
+      ...t.downloads.linuxDeb,
     },
     {
-      id: 'linuxRpm',
+      id: "linuxRpm",
       href: downloadUrls.linuxRpm,
-      icon: <Disc3 className="w-8 h-8 text-sky-500" />,
-      title: t.other.linuxRpm.title,
-      description: t.other.linuxRpm.description,
+      icon: Package,
+      ...t.downloads.linuxRpm,
     },
     {
-      id: 'androidApk',
+      id: "androidApk",
       href: downloadUrls.androidApk,
-      icon: <Smartphone className="w-8 h-8 text-green-500" />,
-      title: t.other.android.title,
-      description: t.other.android.description,
+      icon: Smartphone,
+      ...t.downloads.androidApk,
     },
     {
-      id: 'iosTestFlight',
-      href: 'https://testflight.apple.com/join/8KjFRTCq',
-      icon: <Apple className="w-8 h-8" />,
-      title: t.other.ios.title,
-      description: t.other.ios.description,
+      id: "iosTestFlight",
+      href: "https://testflight.apple.com/join/8KjFRTCq",
+      icon: Apple,
       external: true,
+      ...t.downloads.iosTestFlight,
     },
-  ], [t]);
+  ];
 
-  const recommendedDownload = downloads.find((item) => item.id === recommendedKey);
-  const otherDownloads = recommendedDownload
-    ? downloads.filter((item) => item.id !== recommendedDownload.id)
-    : downloads;
+  const groups: PlatformGroup[] = [
+    {
+      icon: Monitor,
+      ...t.groups.windows,
+      items: downloads.filter((item) => item.id === "windows"),
+    },
+    {
+      icon: Apple,
+      ...t.groups.macos,
+      items: downloads.filter((item) => item.id.startsWith("macos")),
+    },
+    {
+      icon: Terminal,
+      ...t.groups.linux,
+      items: downloads.filter((item) => item.id.startsWith("linux")),
+    },
+    {
+      icon: Smartphone,
+      ...t.groups.mobile,
+      items: downloads.filter(
+        (item) => item.id === "androidApk" || item.id === "iosTestFlight",
+      ),
+    },
+  ];
+
+  const recommendedDownload = downloads.find(
+    (item) => item.id === recommendedKey,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -295,217 +429,397 @@ export default function DownloadClient({ version, downloadUrls }: DownloadClient
     };
   }, []);
 
+  useEffect(() => {
+    if (
+      !recommendedDownload ||
+      recommendedDownload.external ||
+      autoDownloadTriggered.current
+    ) {
+      return;
+    }
+
+    toast(t.autoDownload.title, {
+      description: t.autoDownload.description,
+      duration: 6000,
+      action: {
+        label: t.autoDownload.retry,
+        onClick: () => triggerDownload(recommendedDownload.href),
+      },
+    });
+
+    const timer = window.setTimeout(() => {
+      if (autoDownloadTriggered.current) {
+        return;
+      }
+
+      autoDownloadTriggered.current = true;
+      triggerDownload(recommendedDownload.href);
+    }, 600);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [recommendedDownload?.external, recommendedDownload?.href]);
+
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <SectionWrap className="py-12 md:py-16">
-        <div className="max-w-3xl">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">{t.title}</h1>
-          <p className="text-lg md:text-xl text-fd-muted-foreground leading-8">
+    <main className="min-h-screen">
+      <SectionWrap className="py-12 md:py-16 lg:py-20">
+        <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
+          <Badge variant="outline">{t.eyebrow}</Badge>
+          <h1 className="mt-6 max-w-4xl text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            {t.title}
+          </h1>
+          <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
             {t.description}
           </p>
+
+          <Card className="mt-10 w-full overflow-hidden text-left shadow-lg sm:mt-12">
+            <CardHeader className="gap-4 border-b md:grid-cols-[1fr_auto] md:items-center">
+              <div className="flex items-center gap-4">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border bg-muted">
+                  {recommendedDownload ? (
+                    <recommendedDownload.icon className="size-6" />
+                  ) : (
+                    <Download className="size-6" />
+                  )}
+                </div>
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CardTitle className="text-xl">
+                      {!platformDetected && t.detecting}
+                      {platformDetected &&
+                        (recommendedDownload?.title || t.unknown)}
+                    </CardTitle>
+                    {recommendedDownload && (
+                      <Badge variant="secondary">{t.recommended}</Badge>
+                    )}
+                  </div>
+                  <CardDescription className="text-sm sm:text-base">
+                    {recommendedDownload?.description || t.unknownDescription}
+                  </CardDescription>
+                </div>
+              </div>
+              <CardAction className="col-auto row-auto self-auto justify-self-stretch md:col-start-2 md:row-span-2 md:row-start-1 md:justify-self-end">
+                {recommendedDownload ? (
+                  <Button size="lg" asChild className="w-full md:w-auto">
+                    <a
+                      href={recommendedDownload.href}
+                      target={
+                        recommendedDownload.external ? "_blank" : undefined
+                      }
+                      rel={
+                        recommendedDownload.external
+                          ? "noopener noreferrer"
+                          : undefined
+                      }
+                    >
+                      <ArrowDownToLine data-icon="inline-start" />
+                      {recommendedDownload.action}
+                    </a>
+                  </Button>
+                ) : (
+                  <Button size="lg" asChild className="w-full md:w-auto">
+                    <a href="#all-platforms">
+                      {t.unknown}
+                      <ChevronRight data-icon="inline-end" />
+                    </a>
+                  </Button>
+                )}
+              </CardAction>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5 pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {t.trust.map((item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"
+                  >
+                    <Check className="size-4" aria-hidden="true" />
+                    {item}
+                  </span>
+                ))}
+              </div>
+              <span className="shrink-0 text-sm text-muted-foreground">
+                {t.currentVersion}{" "}
+                <strong className="font-medium text-foreground">v{version}</strong>
+              </span>
+            </CardContent>
+            <CardFooter className="border-t">
+              <Button variant="ghost" size="sm" asChild>
+                <a
+                  href={GITHUB_RELEASES_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github data-icon="inline-start" />
+                  {t.releaseNotes}
+                  <ExternalLink data-icon="inline-end" />
+                </a>
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </SectionWrap>
 
-      {/* Recommended Section */}
-      <SectionWrap className="py-8">
-        <div className="max-w-2xl">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">{t.recommended.title}</h2>
-          <p className="text-fd-muted-foreground mb-6">
-            {!platformDetected && t.recommended.detecting}
-            {platformDetected && !recommendedDownload && t.recommended.unknown}
-            {recommendedDownload && t.recommended.ready}
-          </p>
-          {recommendedDownload && (
-            <GlowingCard {...recommendedDownload} badge={t.recommended.badge} featured />
-          )}
-
-          <div className="mt-4 flex flex-col gap-3 rounded-lg border bg-fd-muted/30 px-4 py-3 text-sm text-fd-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              {t.fallback.version}: <strong className="font-semibold text-fd-foreground">v{version}</strong>
-            </span>
-            <a
-              href={GITHUB_RELEASES_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-fit items-center gap-2 font-medium text-fd-foreground transition-colors hover:text-fd-primary"
-            >
-              <Github className="h-4 w-4" />
-              {t.fallback.github.label}
-            </a>
+      <SectionWrap className="py-12 md:py-16">
+        <div id="all-platforms" className="scroll-mt-24">
+          <div className="mb-8 flex flex-col gap-2">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              {t.allPlatforms}
+            </h2>
+            <p className="text-muted-foreground">
+              {t.allPlatformsDescription}
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {groups.map((group) => (
+              <PlatformCard
+                key={group.title}
+                group={group}
+                packagesLabel={t.packagesLabel}
+              />
+            ))}
           </div>
         </div>
       </SectionWrap>
 
-      {/* Other Platforms Section */}
-      <SectionWrap className="py-8 bg-fd-accent/5">
-        <div className="mb-6 max-w-3xl">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">{t.other.title}</h2>
-          <p className="text-fd-muted-foreground">{t.other.description}</p>
+      <SectionWrap className="py-12 md:py-16">
+        <div className="mb-8 flex flex-col gap-2">
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            {t.install.title}
+          </h2>
+          <p className="text-muted-foreground">{t.install.description}</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {otherDownloads.map((item) => (
-            <GlowingCard key={item.href} {...item} compact />
-          ))}
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="mb-2 flex size-10 items-center justify-center rounded-lg border bg-muted">
+                <ShieldCheck className="size-5" />
+              </div>
+              <CardTitle>{t.install.macos.title}</CardTitle>
+              <CardDescription className="max-w-2xl leading-6">
+                {t.install.macos.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <CommandLine command="sudo xattr -r -d com.apple.quarantine /Applications/NoteGen.app" />
+              <details className="group">
+                <summary className="cursor-pointer text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                  {t.install.macos.fallback}
+                </summary>
+                <div className="mt-3 flex flex-col gap-2">
+                  <CommandLine command="sudo xattr -d com.apple.quarantine /Applications/NoteGen.app" />
+                  <CommandLine command="sudo xattr -d com.apple.quarantine /Applications/NoteGen.app/Contents/MacOS/*" />
+                </div>
+              </details>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="mb-2 flex size-10 items-center justify-center rounded-lg border bg-muted">
+                <CircleHelp className="size-5" />
+              </div>
+              <CardTitle>{t.install.chooseMac.title}</CardTitle>
+              <CardDescription className="leading-6">
+                {t.install.chooseMac.description}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <InfoCard icon={Terminal} {...t.install.linux} />
+
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="mb-2 flex size-10 items-center justify-center rounded-lg border bg-muted">
+                <Github className="size-5" />
+              </div>
+              <CardTitle>{t.install.source.title}</CardTitle>
+              <CardDescription className="leading-6">
+                {t.install.source.description}
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button variant="outline" asChild>
+                <a
+                  href={GITHUB_RELEASES_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github data-icon="inline-start" />
+                  {t.install.source.action}
+                  <ExternalLink data-icon="inline-end" />
+                </a>
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </SectionWrap>
-
-      {/* Installation Guide */}
-      <SectionWrap className="py-16">
-        <h2 className="text-2xl md:text-3xl font-bold mb-8">{t.install.title}</h2>
-
-        {/* macOS */}
-        <div className="max-w-3xl mb-12">
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Apple className="w-5 h-5" />
-            {t.install.macos.title}
-          </h3>
-          <div className="space-y-4 text-fd-muted-foreground">
-            <p className="text-sm font-mono bg-fd-muted px-3 py-2 rounded">{t.install.macos.intel}</p>
-            <p className="text-sm font-mono bg-fd-muted px-3 py-2 rounded">{t.install.macos.silicon}</p>
-            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-              <p className="text-sm text-amber-600 dark:text-amber-400">{t.install.macos.damageWarning}</p>
-            </div>
-            <p><strong>Intel:</strong> {t.install.macos.intelFix}</p>
-            <p><strong>Silicon:</strong> {t.install.macos.siliconFix}</p>
-            <pre className="text-sm font-mono bg-fd-muted p-4 rounded-lg overflow-x-auto">
-              <code>{t.install.macos.command}</code>
-            </pre>
-            <p className="text-sm">{t.install.macos.fallback}</p>
-            <pre className="text-sm font-mono bg-fd-muted p-4 rounded-lg overflow-x-auto">
-              <code>{t.install.macos.fallbackCommand1}<br/>{t.install.macos.fallbackCommand2}</code>
-            </pre>
-          </div>
-        </div>
-
-        {/* Linux */}
-        <div className="max-w-3xl mb-12">
-          <h3 className="text-xl font-semibold mb-4">{t.install.linux.title}</h3>
-          <div className="flex flex-wrap gap-2">
-            <p className="text-fd-muted-foreground text-sm font-mono bg-fd-muted px-3 py-2 rounded">
-              {t.install.linux.appImage}
-            </p>
-            <p className="text-fd-muted-foreground text-sm font-mono bg-fd-muted px-3 py-2 rounded">
-              {t.install.linux.deb}
-            </p>
-            <p className="text-fd-muted-foreground text-sm font-mono bg-fd-muted px-3 py-2 rounded">
-              {t.install.linux.rpm}
-            </p>
-          </div>
-        </div>
-
-        {/* Windows */}
-        <div className="max-w-3xl">
-          <h3 className="text-xl font-semibold mb-4">{t.install.windows.title}</h3>
-          <div className="space-y-2">
-            <p className="text-fd-muted-foreground text-sm font-mono bg-fd-muted px-3 py-2 rounded">
-              {t.install.windows.x64}
-            </p>
-          </div>
-        </div>
-      </SectionWrap>
-    </div>
+    </main>
   );
 }
 
-interface GlowingCardProps {
-  href: string;
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  external?: boolean;
-  badge?: string;
-  featured?: boolean;
-  compact?: boolean;
+function PlatformCard({
+  group,
+  packagesLabel,
+}: {
+  group: PlatformGroup;
+  packagesLabel: string;
+}) {
+  const GroupIcon = group.icon;
+
+  return (
+    <Card className="gap-0 overflow-hidden py-0">
+      <CardHeader className="grid grid-cols-[auto_1fr] items-center gap-4 border-b bg-muted/50 py-6">
+        <div className="flex size-12 items-center justify-center rounded-xl bg-foreground text-background shadow-sm">
+          <GroupIcon className="size-6" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <CardTitle className="text-xl">{group.title}</CardTitle>
+          <CardDescription>{group.description}</CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 p-4">
+        <div className="px-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+          {packagesLabel}
+        </div>
+        <div className="flex flex-col gap-2">
+          {group.items.map((item) => (
+            <DownloadRow key={item.id} item={item} />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
-function GlowingCard({ href, icon, title, description, external, badge, featured, compact }: GlowingCardProps) {
+function DownloadRow({ item }: { item: DownloadItem }) {
   return (
     <a
-      href={href}
-      target={external ? '_blank' : undefined}
-      rel={external ? 'noopener noreferrer' : undefined}
-      className="group relative block h-full"
+      href={item.href}
+      target={item.external ? "_blank" : undefined}
+      rel={item.external ? "noopener noreferrer" : undefined}
+      aria-label={item.action}
+      className="group flex items-center gap-3 rounded-lg border bg-background px-4 py-3 outline-none transition-colors hover:bg-muted/70 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
     >
-      <div className={`relative h-full rounded-lg border p-2 ${featured ? 'border-fd-primary/40' : ''}`}>
-        <GlowingEffect
-          spread={40}
-          glow={true}
-          disabled={false}
-          proximity={64}
-          inactiveZone={0.01}
-        />
-        <div className={`border-0.75 relative flex h-full flex-col justify-between overflow-hidden rounded-md dark:shadow-[0px_0px_27px_0px_#2D2D2D] ${compact ? 'gap-4 p-4' : 'gap-6 p-6'}`}>
-          <div className="relative flex flex-1 flex-col justify-between gap-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="w-fit rounded-lg border border-gray-600 p-2">
-                {icon}
-              </div>
-              {badge && (
-                <span className="shrink-0 rounded-md bg-fd-primary px-2 py-1 text-xs font-medium text-fd-primary-foreground">
-                  {badge}
-                </span>
-              )}
-            </div>
-            <div className="space-y-3">
-              <h3 className={`pt-0.5 font-sans font-semibold text-balance text-black dark:text-white ${compact ? 'text-lg/[1.5rem]' : 'text-xl/[1.375rem] md:text-2xl/[1.875rem]'}`}>
-                {title}
-              </h3>
-              <p className={`font-sans text-black dark:text-neutral-400 ${compact ? 'text-sm/[1.25rem]' : 'text-sm/[1.125rem] md:text-base/[1.375rem]'}`}>
-                {description}
-              </p>
-            </div>
-          </div>
+      <Badge
+        variant="secondary"
+        className="hidden min-w-14 justify-center font-mono sm:inline-flex"
+      >
+        {item.format}
+      </Badge>
+      <div className="min-w-0 flex-1">
+        <div className="font-medium">{item.title}</div>
+        <div className="mt-0.5 text-sm text-muted-foreground">
+          {item.description}
         </div>
       </div>
+      <Badge variant="outline" className="font-mono sm:hidden">
+        {item.format}
+      </Badge>
+      {item.external ? (
+        <ExternalLink
+          className="size-4 shrink-0 text-muted-foreground"
+          aria-hidden="true"
+        />
+      ) : (
+        <ArrowDownToLine
+          className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-y-0.5"
+          aria-hidden="true"
+        />
+      )}
     </a>
   );
 }
 
+function CommandLine({ command }: { command: string }) {
+  return (
+    <pre className="overflow-x-auto rounded-lg border bg-muted px-4 py-3 text-sm">
+      <code>{command}</code>
+    </pre>
+  );
+}
+
+function InfoCard({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="mb-2 flex size-10 items-center justify-center rounded-lg border bg-muted">
+          <Icon className="size-5" />
+        </div>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription className="leading-6">{description}</CardDescription>
+      </CardHeader>
+    </Card>
+  );
+}
+
 async function getRecommendedDownloadKey(): Promise<DownloadKey | null> {
-  if (typeof navigator === 'undefined') {
+  if (typeof navigator === "undefined") {
     return null;
   }
 
   const nav = navigator as NavigatorWithUserAgentData;
-  const platform = `${nav.userAgentData?.platform || navigator.platform || ''}`.toLowerCase();
+  const platform =
+    `${nav.userAgentData?.platform || navigator.platform || ""}`.toLowerCase();
   const userAgent = navigator.userAgent.toLowerCase();
   const platformText = `${platform} ${userAgent}`;
 
   if (/android/.test(platformText)) {
-    return 'androidApk';
+    return "androidApk";
   }
 
   if (/iphone|ipad|ipod/.test(platformText)) {
-    return 'iosTestFlight';
+    return "iosTestFlight";
   }
 
   if (/win/.test(platformText)) {
-    return 'windows';
+    return "windows";
   }
 
   if (/mac/.test(platformText)) {
     const architecture = await getArchitecture(nav);
 
     if (architecture && /x86|x64|amd64/.test(architecture)) {
-      return 'macosIntel';
+      return "macosIntel";
     }
 
-    return 'macosAppleSilicon';
+    return "macosAppleSilicon";
   }
 
   if (/linux/.test(platformText)) {
-    return 'linuxAppImage';
+    return "linuxAppImage";
   }
 
   return null;
 }
 
+function triggerDownload(href: string) {
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = "";
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 async function getArchitecture(nav: NavigatorWithUserAgentData) {
   try {
-    const values = await nav.userAgentData?.getHighEntropyValues?.(['architecture']);
-    return values?.architecture?.toLowerCase() || '';
+    const values = await nav.userAgentData?.getHighEntropyValues?.([
+      "architecture",
+    ]);
+    return values?.architecture?.toLowerCase() || "";
   } catch {
-    return '';
+    return "";
   }
 }

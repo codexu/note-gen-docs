@@ -7,6 +7,7 @@ type ContactCopyCardProps = {
   label: string;
   value: string;
   type: 'wechat' | 'email';
+  copyText: string;
   copiedText: string;
 };
 
@@ -14,12 +15,25 @@ export function ContactCopyCard({
   label,
   value,
   type,
+  copyText,
   copiedText,
 }: ContactCopyCardProps) {
   const [copied, setCopied] = useState(false);
 
   async function copyValue() {
-    await navigator.clipboard.writeText(value);
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      textarea.remove();
+    }
+
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
   }
@@ -31,7 +45,7 @@ export function ContactCopyCard({
       type="button"
       onClick={copyValue}
       className="group flex w-full items-start gap-3 rounded-lg border bg-muted/30 p-4 text-left transition-colors hover:border-primary/30 hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      aria-label={`${copiedText}: ${value}`}
+      aria-label={`${copied ? copiedText : copyText}: ${value}`}
     >
       <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-background">
         <Icon className="size-4" aria-hidden="true" />
@@ -49,7 +63,7 @@ export function ContactCopyCard({
           <Copy className="size-4" aria-hidden="true" />
         )}
       </div>
-      <span className="sr-only">{copied ? copiedText : value}</span>
+      <span className="sr-only">{copied ? copiedText : copyText}</span>
     </button>
   );
 }

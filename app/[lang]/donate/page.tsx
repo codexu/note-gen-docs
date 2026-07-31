@@ -1,24 +1,77 @@
 import type { Metadata } from 'next';
-import SectionWrap from '../(home)/section-wrap';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  BotIcon,
+  BugIcon,
+  Globe2Icon,
+  HeartHandshakeIcon,
+  MessageCircleIcon,
+  ServerCogIcon,
+  Share2Icon,
+  SmartphoneIcon,
+  StarIcon,
+  WalletCardsIcon,
+} from 'lucide-react';
+import { QrActionPage } from '@/components/marketing/qr-action-page';
 import { normalizeLang, siteConfig } from '@/lib/seo';
 
 const content = {
   cn: {
     meta: {
       title: '捐赠 NoteGen - 支持开源持续维护',
-      description: '通过自愿捐赠支持 NoteGen 这个开源 AI Markdown 笔记项目持续维护。',
+      description: '通过自愿捐赠支持 NoteGen 这个开源 AI 知识工作台持续维护。',
     },
     title: '支持 NoteGen',
     description:
-      'NoteGen 会继续坚持免费开源、无广告、无捆绑。如果这个项目对你有帮助，可以通过下面的收款码自愿支持维护。',
-    note: '捐赠不影响 NoteGen 的免费开源使用，也不等同于购买服务或承诺特定功能排期。',
+      'NoteGen 免费、开源，也需要持续投入开发、测试、发布和维护。如果它已经成为你日常工作的一部分，欢迎分担一点让项目继续运行的成本。',
+    badge: '支持开源',
+    principles: ['永久免费开源', '无广告', '无捆绑'],
+    note: '捐赠支持项目维护本身，不购买功能优先级、私人技术支持或特定功能承诺。无论是否捐赠，核心功能都会保持免费开源。',
+    usage: {
+      title: '捐赠会用在哪里',
+      description: '收到的支持会优先用于承担项目持续运行和发布所需的实际成本。',
+      items: [
+        {
+          title: '模型服务与服务器',
+          description: '用于 AI 功能调试、模型 API 调用和必要的测试服务器。',
+        },
+        {
+          title: '域名与基础设施',
+          description: '用于官网域名、对象存储，以及图片和下载资源分发。',
+        },
+        {
+          title: 'Apple Developer 账号',
+          description: '用于 iOS 与 macOS 应用的签名、发布和 TestFlight。',
+        },
+        {
+          title: '持续维护',
+          description: '用于必要的开发、监控和社区服务成本。',
+        },
+      ],
+    },
+    sectionTitle: '选择支持方式',
+    sectionDescription: '自愿选择任意一种方式即可。每一份支持都会用于帮助项目继续维护。',
+    alternativeSupport: {
+      title: '不捐赠，也可以支持',
+      description: '钱不是唯一的支持方式。下面这些行动同样能帮助 NoteGen 被看见、发现问题并持续改进。',
+      copiedShareAction: '链接已复制',
+      items: [
+        {
+          title: '给 GitHub 点 Star',
+          description: '让更多需要本地优先知识工具的人发现 NoteGen。',
+          action: '打开 GitHub',
+        },
+        {
+          title: '提交清晰反馈',
+          description: '附带复现步骤的问题反馈，可以直接节省排查时间。',
+          action: '提交 Issue',
+        },
+        {
+          title: '推荐给需要的人',
+          description: '把 NoteGen 分享给真正可能用得上的朋友或同事。',
+          action: '分享 NoteGen',
+        },
+      ],
+    },
     qrcodes: {
       alipay: {
         title: '支付宝',
@@ -35,12 +88,60 @@ const content = {
   en: {
     meta: {
       title: 'Donate to NoteGen - Support Open Source Maintenance',
-      description: 'Support NoteGen through voluntary donations for this open-source AI Markdown notes project.',
+      description: 'Support the continued maintenance of NoteGen, an open-source AI knowledge workspace.',
     },
     title: 'Support NoteGen',
     description:
-      'NoteGen will stay free, open source, ad-free, and bundle-free. If it helps you, you can voluntarily support maintenance with the QR codes below.',
-    note: 'Donations do not affect free open-source usage and are not a service purchase or a promise of a feature schedule.',
+      'NoteGen is free and open source, but development, testing, releases, and maintenance still require ongoing work. If it has become part of your daily routine, you are welcome to help share that cost.',
+    badge: 'Support open source',
+    principles: ['Free and open source', 'Ad-free', 'Bundle-free'],
+    note: 'A donation supports the work itself. It does not buy feature priority, private support, or a promise to build something specific. Core features remain free and open source for everyone.',
+    usage: {
+      title: 'Where your support goes',
+      description: 'Contributions are prioritized for the real costs of keeping the project running and available.',
+      items: [
+        {
+          title: 'AI models and servers',
+          description: 'Model API usage, AI feature testing, and necessary test servers.',
+        },
+        {
+          title: 'Domain and infrastructure',
+          description: 'The website domain, object storage, and distribution of images and downloads.',
+        },
+        {
+          title: 'Apple Developer membership',
+          description: 'Signing, releasing, and TestFlight distribution for the iOS and macOS apps.',
+        },
+        {
+          title: 'Ongoing maintenance',
+          description: 'Essential development, monitoring, and community service costs.',
+        },
+      ],
+    },
+    sectionTitle: 'Choose a way to support',
+    sectionDescription: 'Choose either option if you would like to contribute. Every contribution helps sustain the project.',
+    alternativeSupport: {
+      title: 'Other ways to help',
+      description: 'Money is not the only useful form of support. These actions help NoteGen reach people, find problems, and keep improving.',
+      copiedShareAction: 'Link copied',
+      items: [
+        {
+          title: 'Star NoteGen on GitHub',
+          description: 'Help more people looking for a local-first knowledge tool discover the project.',
+          action: 'Open GitHub',
+        },
+        {
+          title: 'Share useful feedback',
+          description: 'A clear report with reproduction steps can save hours of investigation.',
+          action: 'Open an issue',
+        },
+        {
+          title: 'Recommend it to someone',
+          description: 'Share NoteGen with a friend or colleague who may genuinely find it useful.',
+          action: 'Share NoteGen',
+        },
+      ],
+    },
     qrcodes: {
       alipay: {
         title: 'Alipay',
@@ -108,6 +209,13 @@ export default async function DonatePage({
   const { lang } = await params;
   const language = normalizeLang(lang);
   const t = content[language];
+  const usageIcons = [BotIcon, Globe2Icon, SmartphoneIcon, ServerCogIcon];
+  const alternativeSupportIcons = [StarIcon, BugIcon, Share2Icon];
+  const alternativeSupportUrls = [
+    'https://github.com/codexu/note-gen',
+    'https://github.com/codexu/note-gen/issues',
+    undefined,
+  ];
 
   const qrItems = [
     {
@@ -117,6 +225,7 @@ export default async function DonatePage({
         src: alipayDonationQrUrl,
         alt: t.qrcodes.alipay.alt,
       },
+      icon: WalletCardsIcon,
       priority: true,
     },
     {
@@ -126,88 +235,51 @@ export default async function DonatePage({
         src: wechatPayDonationQrUrl,
         alt: t.qrcodes.wechatPay.alt,
       },
+      icon: MessageCircleIcon,
       priority: false,
     },
   ];
 
   return (
-    <main className="min-h-screen">
-      <SectionWrap className="py-10 md:py-14 xl:w-full">
-        <div className="mx-auto flex max-w-3xl flex-col gap-8">
-          <div className="flex max-w-2xl flex-col gap-4">
-            <h1 className="text-3xl font-bold leading-tight md:text-5xl">
-              {t.title}
-            </h1>
-            <p className="text-base leading-7 text-muted-foreground md:text-lg md:leading-8">
-              {t.description}
-            </p>
-            <p className="text-sm leading-6 text-muted-foreground">
-              {t.note}
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            {qrItems.map((item) => (
-              <QrCard
-                key={item.title}
-                title={item.title}
-                description={item.description}
-                image={item.image}
-                priority={item.priority}
-              />
-            ))}
-          </div>
-        </div>
-      </SectionWrap>
-    </main>
-  );
-}
-
-type QrImage = {
-  src: string;
-  alt: string;
-};
-
-function QrCard({
-  title,
-  description,
-  image,
-  priority,
-}: {
-  title: string;
-  description: string;
-  image: QrImage;
-  priority: boolean;
-}) {
-  return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <PosterImage image={image} priority={priority} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function PosterImage({
-  image,
-  priority = false,
-}: {
-  image: QrImage;
-  priority?: boolean;
-}) {
-  return (
-    <div className="mx-auto flex h-[260px] w-[180px] items-center justify-center overflow-hidden rounded-md border bg-background p-3">
-      <img
-        src={image.src}
-        alt={image.alt}
-        loading={priority ? 'eager' : 'lazy'}
-        decoding="async"
-        className="max-h-full max-w-full object-contain"
-      />
-    </div>
+    <QrActionPage
+      badge={t.badge}
+      badgeIcon={HeartHandshakeIcon}
+      title={t.title}
+      description={t.description}
+      principles={t.principles}
+      note={t.note}
+      details={{
+        ...t.usage,
+        items: t.usage.items.map((item, index) => ({
+          ...item,
+          icon: usageIcons[index],
+        })),
+      }}
+      sectionTitle={t.sectionTitle}
+      sectionDescription={t.sectionDescription}
+      items={qrItems}
+      alternativeSupport={{
+        ...t.alternativeSupport,
+        items: t.alternativeSupport.items.map((item, index) => ({
+          ...item,
+          icon: alternativeSupportIcons[index],
+          href: alternativeSupportUrls[index],
+          share:
+            index === 2
+              ? {
+                  path: `/${language}`,
+                  title: 'NoteGen',
+                  text:
+                    language === 'cn'
+                      ? 'NoteGen：免费、开源、本地优先的 AI 知识工作台。'
+                      : 'NoteGen: a free, open-source, local-first AI knowledge workspace.',
+                  label: item.action,
+                  copiedLabel: t.alternativeSupport.copiedShareAction,
+                }
+              : undefined,
+        })),
+      }}
+      layout="stack"
+    />
   );
 }

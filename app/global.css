@@ -5,10 +5,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
-#nd-nav {
-  > div {
-    @apply xl:border-r xl:border-l border-fd-border;
-  }
+#nd-nav > nav {
+  border-inline-width: 0 !important;
 }
 
 @theme inline {

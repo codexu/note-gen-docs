@@ -1,13 +1,22 @@
 import type { Metadata } from 'next';
-import { ShieldCheck } from 'lucide-react';
-import SectionWrap from '../(home)/section-wrap';
+import {
+  GithubIcon,
+  Globe2Icon,
+  HandshakeIcon,
+  Settings2Icon,
+  ShieldCheckIcon,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { normalizeLang, siteConfig } from '@/lib/seo';
 import { ContactCopyCard } from './contact-copy-card';
 
@@ -20,9 +29,11 @@ const content = {
     title: '商务合作',
     description:
       'NoteGen 可以开放少量外部展示合作，但会保持产品体验克制。软件内部不会做任何广告位，只有模型服务商可以合作增加配置模板。',
+    badge: '合作与展示',
     sections: {
       available: {
         title: '可合作内容',
+        description: '合作内容需要与 NoteGen 用户相关，并且不干扰记录、写作和下载流程。',
         items: [
           {
             title: 'GitHub 仓库展示',
@@ -46,6 +57,7 @@ const content = {
       },
       contact: {
         title: '联系方式',
+        description: '请简单说明合作方、合作内容和期望展示位置，我们会尽快回复。',
         items: [
           {
             label: '微信',
@@ -63,6 +75,7 @@ const content = {
             type: 'email',
           },
         ],
+        copyText: '复制',
         copiedText: '已复制',
       },
     },
@@ -75,9 +88,11 @@ const content = {
     title: 'Business cooperation',
     description:
       'NoteGen can support limited external placement cooperation while keeping the product experience restrained. The app itself will not include ad placements; only model providers can cooperate on configuration templates.',
+    badge: 'Partnerships',
     sections: {
       available: {
         title: 'Available cooperation',
+        description: 'Partnerships must be relevant to NoteGen users and must not interrupt capture, writing, or download flows.',
         items: [
           {
             title: 'GitHub repository placement',
@@ -101,6 +116,7 @@ const content = {
       },
       contact: {
         title: 'Contact',
+        description: 'Please include who you represent, the proposed cooperation, and the placement you have in mind.',
         items: [
           {
             label: 'WeChat',
@@ -118,6 +134,7 @@ const content = {
             type: 'email',
           },
         ],
+        copyText: 'Copy',
         copiedText: 'Copied',
       },
     },
@@ -173,59 +190,85 @@ export default async function BusinessPage({
   const { lang } = await params;
   const language = normalizeLang(lang);
   const t = content[language];
+  const cooperationIcons = [GithubIcon, Globe2Icon, Settings2Icon];
 
   return (
     <main className="min-h-screen">
-      <SectionWrap className="py-10 md:py-14 xl:w-full">
-        <div className="mx-auto flex max-w-4xl flex-col gap-8">
-          <div className="flex max-w-2xl flex-col gap-4">
-            <h1 className="text-3xl font-bold leading-tight md:text-5xl">
+      <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-24">
+        <div className="flex max-w-3xl flex-col items-start gap-6">
+          <Badge variant="outline">
+            <HandshakeIcon data-icon="inline-start" />
+            {t.badge}
+          </Badge>
+          <div className="flex flex-col gap-4">
+            <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
               {t.title}
             </h1>
-            <p className="text-base leading-7 text-muted-foreground md:text-lg md:leading-8">
+            <p className="text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
               {t.description}
             </p>
           </div>
+        </div>
 
-          <section className="rounded-xl border border-primary/20 bg-primary/[0.03] p-5 shadow-sm md:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <ShieldCheck className="size-5" aria-hidden="true" />
-              </div>
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-lg font-semibold leading-none">
-                    {t.sections.boundary.title}
-                  </h2>
-                  <p className="text-sm leading-6 text-muted-foreground md:text-base md:leading-7">
-                    {t.sections.boundary.description}
-                  </p>
-                </div>
-                <p className="text-sm font-medium leading-6">
-                  {t.sections.boundary.note}
-                </p>
-              </div>
-            </div>
-          </section>
+        <Card className="mt-12 bg-muted/30 shadow-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <ShieldCheckIcon className="size-5" aria-hidden="true" />
+              {t.sections.boundary.title}
+            </CardTitle>
+            <CardDescription className="max-w-4xl text-sm leading-6 md:text-base md:leading-7">
+              {t.sections.boundary.description}
+            </CardDescription>
+            <CardAction>
+              <Badge>{language === 'cn' ? '固定原则' : 'Fixed principle'}</Badge>
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="border-t pt-6 text-sm font-medium leading-6">
+            {t.sections.boundary.note}
+          </CardFooter>
+        </Card>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {t.sections.available.items.map((item) => (
-              <Card key={item.title} className="h-full">
-                <CardHeader>
-                  <CardTitle className="text-base">{item.title}</CardTitle>
-                  <CardDescription>{item.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
+        <Separator className="my-12" />
+
+        <section className="flex flex-col gap-6">
+          <div className="flex max-w-2xl flex-col gap-2">
+            <h2 className="text-2xl font-semibold tracking-tight">{t.sections.available.title}</h2>
+            <p className="text-sm leading-6 text-muted-foreground">{t.sections.available.description}</p>
           </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {t.sections.available.items.map((item, index) => {
+              const Icon = cooperationIcons[index];
 
+              return (
+                <Card key={item.title} className="h-full">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+                      {item.title}
+                    </CardTitle>
+                    <CardDescription className="leading-6">{item.description}</CardDescription>
+                    <CardAction>
+                      <Badge variant="outline">{String(index + 1).padStart(2, '0')}</Badge>
+                    </CardAction>
+                  </CardHeader>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mt-12 grid gap-6 lg:grid-cols-[0.7fr_1.3fr] lg:items-start">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-2xl font-semibold tracking-tight">{t.sections.contact.title}</h2>
+            <p className="text-sm leading-6 text-muted-foreground">{t.sections.contact.description}</p>
+          </div>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t.sections.contact.title}</CardTitle>
+              <CardTitle className="text-base">
+                {language === 'cn' ? '选择联系方式' : 'Choose a contact method'}
+              </CardTitle>
               <CardDescription>
-                {language === 'cn'
-                  ? '如需沟通商务合作，可以通过以下方式联系。'
-                  : 'For business cooperation, please use the contact details below.'}
+                {language === 'cn' ? '点击任意卡片即可复制。' : 'Select any card to copy it.'}
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 md:grid-cols-3">
@@ -235,13 +278,14 @@ export default async function BusinessPage({
                   label={item.label}
                   value={item.value}
                   type={item.type}
+                  copyText={t.sections.contact.copyText}
                   copiedText={t.sections.contact.copiedText}
                 />
               ))}
             </CardContent>
           </Card>
-        </div>
-      </SectionWrap>
+        </section>
+      </section>
     </main>
   );
 }

@@ -12,6 +12,7 @@ import {
   Copy,
   CopySlash,
   Download,
+  Database,
   EllipsisVertical,
   FilePlus,
   FilePlus2,
@@ -25,6 +26,7 @@ import {
   Highlighter,
   ImageIcon,
   ImagePlus,
+  Languages,
   Link,
   List,
   Magnet,
@@ -60,6 +62,7 @@ import {
 
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
+import { CanvasThumbnail } from "@/components/home/canvas-thumbnail"
 import { cn } from "@/lib/utils"
 
 const records = [
@@ -215,7 +218,7 @@ export function NoteGenDesktopReplica({
           className={cn(
             "grid min-w-0 origin-top-left",
             panelLayout === "three"
-              ? "h-full w-full grid-cols-[30%_40%_30%]"
+              ? "h-full w-full grid-cols-[26%_44%_30%]"
               : "h-[117.647%] w-[117.647%] scale-[0.85] grid-cols-1"
           )}
         >
@@ -528,9 +531,7 @@ function CanvasSidebarContent({ lang }: { lang: "cn" | "en" }) {
             )}
           >
             <div className="relative aspect-[4/3] border-b bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:10px_10px]">
-              <span className="absolute left-[10%] top-[18%] h-[28%] w-[38%] rounded border bg-background" />
-              <span className="absolute bottom-[16%] right-[8%] h-[28%] w-[38%] rounded border bg-background" />
-              <span className={cn("absolute left-[40%] top-1/2 h-px w-[30%] bg-border", index % 2 === 1 && "rotate-12")} />
+              <CanvasThumbnail variant={index} />
             </div>
             <div className="min-w-0 px-2 py-1.5">
               <p className="truncate font-medium">{name}</p>
@@ -1123,6 +1124,10 @@ function AgentPanel({ lang }: { lang: "cn" | "en" }) {
           <div className="flex items-center justify-between px-2 pb-2">
             <div className="flex items-center gap-1">
               <IconButton icon={Plus} />
+              <IconButton icon={Languages} />
+              <IconButton icon={Tags} />
+              <IconButton icon={Files} />
+              <IconButton icon={Database} />
               <IconButton icon={ToolCase} />
             </div>
             <div className="flex items-center gap-2 pr-1">
