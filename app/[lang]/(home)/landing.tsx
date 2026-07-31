@@ -145,15 +145,15 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
   const privacyItems = isEnglish
     ? [
         ["Stored locally by default", "Capture, browse, and keep writing even without a network connection."],
-        ["Plain Markdown files", "Open them without NoteGen and keep them readable for the long term."],
+        ["Standard Markdown files", "Open them without NoteGen and keep them readable for the long term."],
         ["You choose the services", "You decide which models, image hosting, and sync locations to use."],
-        ["Free and open source", "Start without an account, with transparent code and data boundaries."],
+        ["Completely free and open source", "No subscription, account, or feature paywall. Third-party services may charge separately."],
       ]
     : [
         ["默认保存在本地", "没有网络，也可以记录、浏览和继续写作。"],
-        ["普通 Markdown 文件", "不依赖 NoteGen 才能打开，适合真正长期保存。"],
+        ["标准 Markdown 文件", "不依赖 NoteGen 才能打开，适合真正长期保存。"],
         ["服务由你选择", "模型、图床和同步位置，都由你决定。"],
-        ["免费且开源", "无需登录即可开始，代码与数据边界保持透明。"],
+        ["完全免费且开源", "无需订阅、无需登录、没有功能付费墙；第三方服务可能单独收费。"],
       ]
 
   return (
@@ -162,7 +162,7 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
           <Badge variant="outline">
             <span className="size-1.5 rounded-full bg-foreground" />
-            {text("开源 · 本地优先 · 跨平台", "Open source · Local first · Cross-platform")}
+            {text("完全免费 · 开源 · 本地优先", "Completely free · Open source · Local first")}
           </Badge>
           <div className="flex flex-col gap-5">
             <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-7xl">
@@ -170,8 +170,8 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
             </h1>
             <p className="mx-auto max-w-3xl text-balance text-lg leading-8 text-muted-foreground sm:text-xl">
               {text(
-                "灵感出现时，先把文字、语音、截图、链接和文件留下。需要输出时，再让 AI 将这些素材整理成可继续编辑的 Markdown 笔记、文章、图表与画布。",
-                "Capture text, voice, screenshots, links, and files the moment they appear. When it is time to create, let AI turn them into editable Markdown notes, articles, diagrams, and canvases."
+                "随手留下文字、语音和资料，再让 AI 整理成可编辑的笔记、文章、图表与画布。",
+                "Capture text, voice, and source material, then let AI turn it into editable notes, articles, diagrams, and canvases."
               )}
             </p>
           </div>
@@ -190,6 +190,12 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
               {text("看看如何工作", "See how it works")}
             </a>
           </div>
+          <p className="text-sm font-medium text-foreground">
+            {text(
+              "NoteGen 无订阅、无需登录，所有核心功能免费使用。",
+              "No subscription or account. All core NoteGen features are free."
+            )}
+          </p>
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <MonitorSmartphoneIcon />
             Windows · macOS · Linux · Android · iOS
@@ -197,28 +203,7 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
         </div>
 
         <div className="mx-auto mt-20 max-w-7xl">
-          <NoteGenDemo />
-        </div>
-      </section>
-
-      <Separator />
-
-      <section className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[0.7fr_1.3fr] lg:py-28">
-        <div>
-          <Badge variant="secondary">
-            {text("为什么是 NoteGen", "Why NoteGen")}
-          </Badge>
-        </div>
-        <div className="flex max-w-3xl flex-col gap-6">
-          <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
-            {text("记录，不应该迫使你立刻整理。", "Capturing should not force you to organize immediately.")}
-          </h2>
-          <p className="text-lg leading-8 text-muted-foreground">
-            {text(
-              "想法出现的时候，你通常还不知道它属于哪个文件夹，也不知道它最终会成为周报、文章还是项目资料。NoteGen 先替你接住素材，等到真正需要时再整理。",
-              "When an idea appears, you rarely know which folder it belongs in or whether it will become a report, article, or project note. NoteGen captures it first and organizes it when you actually need it."
-            )}
-          </p>
+          <NoteGenDemo lang={lang} />
         </div>
       </section>
 
@@ -347,8 +332,8 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
             </h2>
             <p className="text-muted-foreground">
               {text(
-                "免费、开源，无需注册。支持桌面端与移动端。",
-                "Free, open source, and no account required. Available on desktop and mobile."
+                "完全免费、开源，无订阅、无需注册。支持桌面端与移动端。",
+                "Completely free and open source, with no subscription or account required. Available on desktop and mobile."
               )}
             </p>
           </div>

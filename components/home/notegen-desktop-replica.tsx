@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { memo, useEffect, useState } from "react"
 import {
   CalendarDays,
   Check,
@@ -20,12 +19,16 @@ import {
   Files,
   Filter,
   Folder,
+  FolderOpen,
   FolderPlus,
+  Grid3X3,
   Highlighter,
   ImageIcon,
   ImagePlus,
   Link,
   List,
+  Magnet,
+  Maximize2,
   MessageSquareDashed,
   MessageSquarePlus,
   Mic,
@@ -46,13 +49,17 @@ import {
   Tag,
   Tags,
   ToolCase,
+  Trash2,
   Type,
   Undo2,
+  WandSparkles,
   Wrench,
   X,
+  ZoomOut,
 } from "lucide-react"
 
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 const records = [
@@ -86,6 +93,37 @@ const records = [
   },
 ]
 
+const recordsEn = [
+  {
+    type: "Audio",
+    title: "Take it slow by West Lake",
+    content: "A slow walk through Quyuan Garden, Beishan Road, and Solitary Hill",
+    time: "Just now",
+    icon: Mic,
+  },
+  {
+    type: "Link",
+    title: "Faxi Temple reservations and hours",
+    content: "Reservation, opening hours, and travel information",
+    time: "12 min ago",
+    icon: Link,
+  },
+  {
+    type: "Text",
+    title: "Hangzhou cuisine for dinner",
+    content: "Remember to book a table in advance",
+    time: "09:40",
+    icon: Type,
+  },
+  {
+    type: "Image",
+    title: "Tianmuli architecture and shops map",
+    content: "Tianmuli architecture and shops map",
+    time: "Yesterday",
+    icon: ImageIcon,
+  },
+]
+
 const recordTools = [
   CopySlash,
   Mic,
@@ -101,6 +139,10 @@ const recordBadgeTone = {
   链接: "border-blue-300/80 bg-blue-100 text-blue-900 dark:border-blue-900/80 dark:bg-blue-950 dark:text-blue-200",
   文本: "border-lime-300/80 bg-lime-100 text-lime-900 dark:border-lime-900/80 dark:bg-lime-950 dark:text-lime-200",
   图片: "border-fuchsia-300/80 bg-fuchsia-100 text-fuchsia-900 dark:border-fuchsia-900/80 dark:bg-fuchsia-950 dark:text-fuchsia-200",
+  Audio: "border-rose-300/80 bg-rose-100 text-rose-900 dark:border-rose-900/80 dark:bg-rose-950 dark:text-rose-200",
+  Link: "border-blue-300/80 bg-blue-100 text-blue-900 dark:border-blue-900/80 dark:bg-blue-950 dark:text-blue-200",
+  Text: "border-lime-300/80 bg-lime-100 text-lime-900 dark:border-lime-900/80 dark:bg-lime-950 dark:text-lime-200",
+  Image: "border-fuchsia-300/80 bg-fuchsia-100 text-fuchsia-900 dark:border-fuchsia-900/80 dark:bg-fuchsia-950 dark:text-fuchsia-200",
 } satisfies Record<string, string>
 
 function IconButton({
@@ -125,10 +167,30 @@ function IconButton({
   )
 }
 
-export function NoteGenDesktopReplica() {
-  const [workspace, setWorkspace] = useState<"writing" | "records" | "canvas">("records")
+const MemoizedEditor = memo(Editor)
+const MemoizedEnglishEditor = memo(EnglishEditor)
+const MemoizedAgentPanel = memo(AgentPanel)
+
+export function NoteGenDesktopReplica({
+  lang = "cn",
+  initialWorkspace = "records",
+  autoCycle = true,
+  panelLayout = "three",
+  titleBarMode = "full",
+  fill = false,
+}: {
+  lang?: "cn" | "en"
+  initialWorkspace?: Workspace
+  autoCycle?: boolean
+  panelLayout?: "three" | "left" | "center" | "right"
+  titleBarMode?: "full" | "none" | "record-tools" | "writing-tools" | "agent-tools" | "canvas-tools"
+  fill?: boolean
+}) {
+  const [workspace, setWorkspace] = useState<Workspace>(initialWorkspace)
 
   useEffect(() => {
+    if (!autoCycle) return
+
     const timer = window.setTimeout(() => {
       setWorkspace((current) => {
         const currentIndex = workspaceTabs.findIndex((tab) => tab.id === current)
@@ -137,52 +199,95 @@ export function NoteGenDesktopReplica() {
     }, 3000)
 
     return () => window.clearTimeout(timer)
-  }, [workspace])
+  }, [autoCycle, workspace])
 
   return (
     <div
       data-testid="notegen-desktop-replica"
-      className="aspect-[16/10] w-full overflow-hidden rounded-xl border bg-background text-[9px] leading-normal shadow-xl sm:text-[10px] lg:text-xs"
+      className={cn(
+        "w-full overflow-hidden rounded-xl border bg-background text-[9px] leading-normal shadow-xl sm:text-[10px] lg:text-xs",
+        fill ? "h-full" : "aspect-[16/10]"
+      )}
     >
-      <DesktopTitleBar />
-      <div className="grid h-[calc(100%-36px)] min-w-0 grid-cols-[25%_47%_28%]">
-        <WorkspaceSidebar workspace={workspace} onWorkspaceChange={setWorkspace} />
-        <Editor />
-        <AgentPanel />
+      {titleBarMode !== "none" ? <DesktopTitleBar lang={lang} mode={titleBarMode} /> : null}
+      <div className={cn("overflow-hidden", titleBarMode === "none" ? "h-full" : "h-[calc(100%-36px)]")}>
+        <div
+          className={cn(
+            "grid min-w-0 origin-top-left",
+            panelLayout === "three"
+              ? "h-full w-full grid-cols-[30%_40%_30%]"
+              : "h-[117.647%] w-[117.647%] scale-[0.85] grid-cols-1"
+          )}
+        >
+          {panelLayout === "three" || panelLayout === "left" ? (
+            <WorkspaceSidebar lang={lang} workspace={workspace} onWorkspaceChange={setWorkspace} />
+          ) : null}
+          {panelLayout === "three" || panelLayout === "center" ? (
+            <>
+              {workspace === "records" ? <RecordDetailReplica lang={lang} /> : null}
+              {workspace === "writing" && (lang === "en" ? <MemoizedEnglishEditor /> : <MemoizedEditor />)}
+              {workspace === "canvas" ? <CanvasEditorReplica lang={lang} /> : null}
+            </>
+          ) : null}
+          {panelLayout === "three" || panelLayout === "right" ? <MemoizedAgentPanel lang={lang} /> : null}
+        </div>
       </div>
     </div>
   )
 }
 
-function DesktopTitleBar() {
+function DesktopTitleBar({
+  lang,
+  mode,
+}: {
+  lang: "cn" | "en"
+  mode: "full" | "record-tools" | "writing-tools" | "agent-tools" | "canvas-tools"
+}) {
+  const compactTools = mode === "writing-tools"
+    ? [Undo2, Redo2, FilePlus, FolderPlus]
+    : mode === "agent-tools"
+      ? [Search, MessageSquareDashed, MessageSquarePlus]
+      : mode === "canvas-tools"
+        ? [Undo2, Redo2, Palette, EllipsisVertical]
+        : recordTools
+  const titleTools = mode === "full" ? recordTools : compactTools
+
   return (
-    <header className="relative flex h-9 items-center border-b bg-background pl-[72px]">
-      <div className="absolute left-3 top-1/2 flex -translate-y-1/2 gap-2">
-        <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-        <span className="size-2.5 rounded-full bg-[#febc2e]" />
-        <span className="size-2.5 rounded-full bg-[#28c840]" />
-      </div>
+    <header className={cn("relative flex h-9 items-center border-b bg-background", mode === "full" ? "pl-[72px]" : "pl-2")}>
+      {mode === "full" ? (
+        <div className="absolute left-3 top-1/2 flex -translate-y-1/2 gap-2">
+          <span className="size-2.5 rounded-full bg-[#ff5f57]" />
+          <span className="size-2.5 rounded-full bg-[#febc2e]" />
+          <span className="size-2.5 rounded-full bg-[#28c840]" />
+        </div>
+      ) : null}
 
       <div className="flex shrink-0 items-center gap-0.5 px-2">
-        {recordTools.map((Icon, index) => (
+        {titleTools.map((Icon, index) => (
           <IconButton key={index} icon={Icon} />
         ))}
       </div>
 
-      <div className="mx-auto flex h-6 w-[34%] min-w-44 max-w-md items-center justify-center gap-2 rounded-sm border text-[10px] text-muted-foreground">
-        <Search className="size-3.5" strokeWidth={1.7} />
-        <span className="truncate">搜索笔记、记录和画布</span>
-      </div>
+      {mode === "full" ? (
+        <>
+          <div className="mx-auto flex h-6 w-[34%] min-w-44 max-w-md items-center justify-center gap-2 rounded-sm border text-[10px] text-muted-foreground">
+            <Search className="size-3.5" strokeWidth={1.7} />
+            <span className="truncate">{lang === "en" ? "Search notes, records, and canvases" : "搜索笔记、记录和画布"}</span>
+          </div>
 
-      <div className="flex shrink-0 items-center gap-0.5 px-2">
-        <IconButton icon={PanelLeft} />
-        <IconButton icon={SquarePen} />
-        <IconButton icon={PanelRight} />
-        <IconButton icon={CalendarDays} />
-        <IconButton icon={Cloud} />
-        <IconButton icon={Pin} />
-        <IconButton icon={Settings} />
-      </div>
+          <div className="flex shrink-0 items-center gap-0.5 px-2">
+            <IconButton icon={PanelLeft} />
+            <IconButton icon={SquarePen} />
+            <IconButton icon={PanelRight} />
+            <IconButton icon={CalendarDays} />
+            <IconButton icon={Cloud} />
+            <IconButton icon={Pin} />
+            <IconButton icon={Settings} />
+          </div>
+        </>
+      ) : (
+        <div className="flex-1" aria-hidden="true" />
+      )}
     </header>
   )
 }
@@ -195,82 +300,46 @@ const workspaceTabs = [
   { id: "canvas", label: "画布", icon: Palette },
 ] satisfies Array<{ id: Workspace; label: string; icon: typeof Files }>
 
-const workspaceTabButtonVariants = {
-  initial: {
-    gap: 0,
-    paddingLeft: ".375rem",
-    paddingRight: ".375rem",
-  },
-  animate: (isSelected: boolean) => ({
-    gap: isSelected ? ".375rem" : 0,
-    paddingLeft: isSelected ? "0.75rem" : ".375rem",
-    paddingRight: isSelected ? "0.75rem" : ".375rem",
-  }),
-}
-
-const workspaceTabLabelVariants = {
-  initial: { width: 0, opacity: 0 },
-  animate: { width: "auto", opacity: 1 },
-  exit: { width: 0, opacity: 0 },
-}
-
-const workspaceTabTransition = {
-  delay: 0.1,
-  type: "spring" as const,
-  bounce: 0,
-  duration: 0.6,
-}
+const workspaceTabsEn = [
+  { id: "writing", label: "Writing", icon: Files },
+  { id: "records", label: "Records", icon: Highlighter },
+  { id: "canvas", label: "Canvas", icon: Palette },
+] satisfies Array<{ id: Workspace; label: string; icon: typeof Files }>
 
 function WorkspaceTabs({
+  lang,
   workspace,
   onWorkspaceChange,
 }: {
+  lang: "cn" | "en"
   workspace: Workspace
   onWorkspaceChange: (workspace: Workspace) => void
 }) {
   return (
     <div
-      aria-label="切换工作区"
+      aria-label={lang === "en" ? "Switch workspace" : "切换工作区"}
       className="flex flex-wrap items-center gap-0.5 rounded-xl border bg-background p-0.5"
     >
-      {workspaceTabs.map(({ id, label, icon: Icon }) => {
+      {(lang === "en" ? workspaceTabsEn : workspaceTabs).map(({ id, label, icon: Icon }) => {
         const active = workspace === id
 
         return (
-          <motion.button
+          <button
             key={id}
             type="button"
-            variants={workspaceTabButtonVariants}
-            initial={false}
-            animate="animate"
-            custom={active}
-            transition={workspaceTabTransition}
             onClick={() => onWorkspaceChange(id)}
             aria-pressed={active}
             aria-label={label}
             className={cn(
-              "relative flex cursor-pointer items-center rounded-lg py-1.5 text-sm font-medium transition-colors duration-300",
+              "relative flex h-7 cursor-pointer items-center justify-center rounded-lg text-sm font-medium transition-colors duration-150 ease-out",
               active
-                ? "bg-muted text-primary"
-                : "text-muted-foreground opacity-70 hover:bg-muted hover:text-foreground"
+                ? "gap-1.5 bg-muted px-3 text-primary"
+                : "px-1.5 text-muted-foreground opacity-70 hover:bg-muted hover:text-foreground"
             )}
           >
             <Icon className="size-4 shrink-0" />
-            <AnimatePresence initial={false}>
-              {active ? (
-                <motion.span
-                  variants={workspaceTabLabelVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={workspaceTabTransition}
-                  className="overflow-hidden whitespace-nowrap"
-                >
-                  {label}
-                </motion.span>
-              ) : null}
-            </AnimatePresence>
-          </motion.button>
+            {active ? <span className="whitespace-nowrap text-[10px]">{label}</span> : null}
+          </button>
         )
       })}
     </div>
@@ -278,24 +347,34 @@ function WorkspaceTabs({
 }
 
 function WorkspaceSidebar({
+  lang,
   workspace,
   onWorkspaceChange,
 }: {
+  lang: "cn" | "en"
   workspace: Workspace
   onWorkspaceChange: (workspace: Workspace) => void
 }) {
   return (
     <section className="flex min-w-0 flex-col border-r">
       <div className="flex h-12 shrink-0 items-center justify-between border-b px-2">
-        <WorkspaceTabs workspace={workspace} onWorkspaceChange={onWorkspaceChange} />
+        <WorkspaceTabs lang={lang} workspace={workspace} onWorkspaceChange={onWorkspaceChange} />
         <WorkspaceActions workspace={workspace} />
       </div>
 
-      {workspace === "writing" ? <WritingSidebarContent /> : null}
-      {workspace === "records" ? <RecordsSidebarContent /> : null}
-      {workspace === "canvas" ? <CanvasSidebarContent /> : null}
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div className={cn("absolute inset-0 transition-opacity duration-150", workspace === "writing" ? "opacity-100" : "pointer-events-none opacity-0")}>
+          <WritingSidebarContent lang={lang} />
+        </div>
+        <div className={cn("absolute inset-0 transition-opacity duration-150", workspace === "records" ? "opacity-100" : "pointer-events-none opacity-0")}>
+          <RecordsSidebarContent lang={lang} />
+        </div>
+        <div className={cn("absolute inset-0 transition-opacity duration-150", workspace === "canvas" ? "opacity-100" : "pointer-events-none opacity-0")}>
+          <CanvasSidebarContent lang={lang} />
+        </div>
+      </div>
 
-      <WorkspaceFooter workspace={workspace} />
+      <WorkspaceFooter lang={lang} workspace={workspace} />
     </section>
   )
 }
@@ -322,7 +401,9 @@ function WorkspaceActions({ workspace }: { workspace: Workspace }) {
   )
 }
 
-function RecordsSidebarContent() {
+function RecordsSidebarContent({ lang }: { lang: "cn" | "en" }) {
+  const visibleRecords = lang === "en" ? recordsEn : records
+
   return (
     <div className="min-h-0 flex-1 overflow-hidden">
       <div className="border-b">
@@ -330,12 +411,12 @@ function RecordsSidebarContent() {
           <div className="flex min-w-0 items-center gap-2">
             <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
             <Tags className="size-3.5 shrink-0 text-muted-foreground" />
-            <span className="truncate">杭州旅行</span>
+            <span className="truncate">{lang === "en" ? "Hangzhou trip" : "杭州旅行"}</span>
           </div>
           <span className="text-[10px] font-normal text-muted-foreground">4</span>
         </div>
         <div className="border-t border-border/60">
-          {records.map((record, index) => (
+          {visibleRecords.map((record, index) => (
             <RecordItem key={record.title} record={record} active={index === 0} />
           ))}
         </div>
@@ -345,7 +426,7 @@ function RecordsSidebarContent() {
         <div className="flex items-center gap-2">
           <ChevronRight className="size-3.5" />
           <Tags className="size-3.5" />
-          <span>产品想法</span>
+          <span>{lang === "en" ? "Product ideas" : "产品想法"}</span>
         </div>
         <span className="text-[10px]">7</span>
       </div>
@@ -353,7 +434,7 @@ function RecordsSidebarContent() {
         <div className="flex items-center gap-2">
           <ChevronRight className="size-3.5" />
           <Tags className="size-3.5" />
-          <span>日常记录</span>
+          <span>{lang === "en" ? "Daily notes" : "日常记录"}</span>
         </div>
         <span className="text-[10px]">18</span>
       </div>
@@ -361,8 +442,17 @@ function RecordsSidebarContent() {
   )
 }
 
-function WritingSidebarContent() {
-  const files = [
+function WritingSidebarContent({ lang }: { lang: "cn" | "en" }) {
+  const files = lang === "en" ? [
+    { label: "00 Inbox", depth: 0, folder: true, open: true },
+    { label: "Places to Visit.md", depth: 1, folder: false },
+    { label: "01 Projects", depth: 0, folder: true, open: true },
+    { label: "Hangzhou Trip", depth: 1, folder: true, open: true },
+    { label: "Weekend Itinerary.md", depth: 2, folder: false, active: true },
+    { label: "Saved Restaurants.md", depth: 2, folder: false },
+    { label: "02 Areas", depth: 0, folder: true },
+    { label: "03 Resources", depth: 0, folder: true },
+  ] : [
     { label: "00 Inbox", depth: 0, folder: true, open: true },
     { label: "杭州想去的地方.md", depth: 1, folder: false },
     { label: "01 Projects", depth: 0, folder: true, open: true },
@@ -378,7 +468,7 @@ function WritingSidebarContent() {
       <div className="p-2">
         <div className="flex h-7 items-center gap-2 rounded-md border px-2 text-muted-foreground">
           <Search className="size-3.5" />
-          <span>搜索文件</span>
+          <span>{lang === "en" ? "Search files" : "搜索文件"}</span>
         </div>
       </div>
       <div className="flex flex-col gap-0.5 px-2">
@@ -409,8 +499,13 @@ function WritingSidebarContent() {
   )
 }
 
-function CanvasSidebarContent() {
-  const canvases = [
+function CanvasSidebarContent({ lang }: { lang: "cn" | "en" }) {
+  const canvases = lang === "en" ? [
+    ["Weekend Hangzhou Route", "3 nodes · Just now"],
+    ["West Lake Walk", "4 nodes · Today"],
+    ["Restaurants and Coffee", "5 nodes · Yesterday"],
+    ["Rainy-day Alternative", "4 nodes · Yesterday"],
+  ] : [
     ["杭州周末路线", "3 个节点 · 刚刚"],
     ["西湖散步", "4 个节点 · 今天"],
     ["餐厅与咖啡", "5 个节点 · 昨天"],
@@ -421,7 +516,7 @@ function CanvasSidebarContent() {
     <div className="min-h-0 flex-1 overflow-hidden p-2">
       <div className="mb-2 flex h-7 items-center gap-2 rounded-md border px-2 text-muted-foreground">
         <Search className="size-3.5" />
-        <span>搜索画布</span>
+        <span>{lang === "en" ? "Search canvases" : "搜索画布"}</span>
       </div>
       <div className="grid grid-cols-2 gap-2">
         {canvases.map(([name, meta], index) => (
@@ -448,7 +543,12 @@ function CanvasSidebarContent() {
   )
 }
 
-function WorkspaceFooter({ workspace }: { workspace: Workspace }) {
+function WorkspaceFooter({ lang, workspace }: { lang: "cn" | "en"; workspace: Workspace }) {
+  const englishLabel = workspace === "writing"
+    ? "Local workspace · 6 files"
+    : workspace === "canvas"
+      ? "4 canvases"
+      : "Showing 4 records"
   const label = workspace === "writing"
       ? "本地工作区 · 6 个文件"
     : workspace === "canvas"
@@ -457,7 +557,7 @@ function WorkspaceFooter({ workspace }: { workspace: Workspace }) {
 
   return (
     <footer className="flex h-6 shrink-0 items-center border-t bg-background px-2 text-[10px] text-muted-foreground">
-      <span>{label}</span>
+      <span>{lang === "en" ? englishLabel : label}</span>
     </footer>
   )
 }
@@ -466,7 +566,7 @@ function RecordItem({
   record,
   active,
 }: {
-  record: (typeof records)[number]
+  record: (typeof records)[number] | (typeof recordsEn)[number]
   active?: boolean
 }) {
   const Icon = record.icon
@@ -491,28 +591,312 @@ function RecordItem({
   )
 }
 
+function SharedEditorTabs({
+  lang,
+  workspace,
+}: {
+  lang: "cn" | "en"
+  workspace: Workspace
+}) {
+  const isEnglish = lang === "en"
+  const tabs = [
+    {
+      id: "writing",
+      kind: "file" as const,
+      label: isEnglish ? "Weekend Itinerary.md" : "周末杭州行程.md",
+      active: workspace === "writing",
+    },
+    {
+      id: "records",
+      kind: "record" as const,
+      label: isEnglish ? "West Lake walk" : "西湖边想走慢一点",
+      active: workspace === "records",
+    },
+    {
+      id: "canvas",
+      kind: "canvas" as const,
+      label: isEnglish ? "Hangzhou Route" : "杭州周末路线",
+      active: workspace === "canvas",
+    },
+  ]
+
+  return (
+    <div className="flex h-12 shrink-0 items-center border-b bg-background">
+      <div className="flex h-full shrink-0 items-center gap-0.5 border-r px-2">
+        <IconButton icon={Undo2} className="text-foreground" />
+        <IconButton icon={Redo2} className="opacity-35" />
+      </div>
+      <div className="flex min-w-0 flex-1 items-center overflow-hidden px-1">
+        {tabs.map((tab) => (
+          <div
+            key={tab.id}
+            className={cn(
+              "relative flex h-9 min-w-0 flex-1 items-center gap-1.5 px-2.5",
+              tab.active ? "font-medium text-foreground" : "text-muted-foreground"
+            )}
+          >
+            {tab.kind === "record" ? (
+              <Mic className={cn("size-3.5 shrink-0 text-rose-500", tab.active && "text-rose-600")} />
+            ) : tab.kind === "canvas" ? (
+              <Palette className={cn("size-3.5 shrink-0", tab.active && "text-primary")} />
+            ) : (
+              <FileText className={cn("size-3.5 shrink-0", tab.active && "text-primary")} />
+            )}
+            <span className="truncate">{tab.label}</span>
+            {tab.active ? <X className="size-3 shrink-0 text-muted-foreground/70" /> : null}
+            {tab.active ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" /> : null}
+          </div>
+        ))}
+        <IconButton icon={Plus} className="ml-auto mr-1" />
+      </div>
+    </div>
+  )
+}
+
+function RecordDetailReplica({ lang }: { lang: "cn" | "en" }) {
+  const isEnglish = lang === "en"
+
+  return (
+    <section className="flex min-h-0 min-w-0 flex-col border-r">
+      <SharedEditorTabs lang={lang} workspace="records" />
+
+      <div className="shrink-0 border-b bg-background/95 px-5 py-3">
+        <div className="flex min-w-0 items-center gap-5">
+          <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md">
+            <Mic className="size-11 text-rose-500/20" />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className={cn(
+                  "shrink-0 rounded border px-2 py-0.5 text-[9px] font-medium",
+                  recordBadgeTone[isEnglish ? "Audio" : "录音"]
+                )}>
+                  {isEnglish ? "Audio" : "录音"}
+                </span>
+                <span className="truncate text-[9px] text-muted-foreground">
+                  2026-07-31 09:40:12
+                </span>
+              </div>
+              <div className="flex shrink-0 items-center gap-0.5">
+                <IconButton icon={Tag} className="size-7" />
+                <IconButton icon={FolderOpen} className="size-7" />
+                <IconButton icon={Sparkles} className="size-7" />
+                <IconButton icon={Trash2} className="size-7 text-destructive/70" />
+              </div>
+            </div>
+            <p className="truncate text-[10px] text-muted-foreground">
+              {isEnglish ? "Take it slow by West Lake" : "西湖边想走慢一点"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <article className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <section className="flex flex-col gap-3 border-b px-5 py-4">
+          <h2 className="text-[10px] font-medium text-muted-foreground">
+            {isEnglish ? "Audio" : "录音"}
+          </h2>
+          <div className="flex h-11 items-center gap-3 rounded-md border px-3">
+            <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
+              <Mic className="size-3" />
+            </span>
+            <div className="flex h-6 min-w-0 flex-1 items-center gap-[2px] overflow-hidden">
+              {[8, 13, 18, 10, 22, 16, 25, 12, 19, 8, 14, 21, 11, 17, 9, 13, 7, 15, 10, 6].map((height, index) => (
+                <span
+                  key={index}
+                  className={cn("w-0.5 shrink-0 rounded-full", index < 9 ? "bg-foreground/70" : "bg-muted-foreground/25")}
+                  style={{ height }}
+                />
+              ))}
+            </div>
+            <span className="shrink-0 text-[9px] text-muted-foreground">00:42</span>
+          </div>
+        </section>
+        <section className="px-5 py-4">
+          <h2 className="text-[10px] font-medium text-muted-foreground">
+            {isEnglish ? "Content" : "内容"}
+          </h2>
+          <div className="mt-4 leading-6">
+            <p>
+              {isEnglish
+                ? "I want to take it slow by West Lake. Start at Quyuan Garden, walk along Beishan Road, and stop at Solitary Hill before lunch."
+                : "西湖边想走慢一点。从曲院风荷出发，沿北山街走到孤山，中午之前结束这段路线。"}
+            </p>
+            <p className="mt-3 text-muted-foreground">
+              {isEnglish
+                ? "Leave enough time for unplanned stops and do not schedule fixed check-in times."
+                : "给散步和临时停留留出时间，不安排固定的打卡节点。"}
+            </p>
+          </div>
+          <div className="mt-6 flex items-center gap-1.5 text-[9px] text-muted-foreground">
+            <span>{isEnglish ? "61 characters · 2 lines" : "42 字 · 2 行"}</span>
+          </div>
+        </section>
+      </article>
+    </section>
+  )
+}
+
+function CanvasEditorReplica({ lang }: { lang: "cn" | "en" }) {
+  const isEnglish = lang === "en"
+  const tools = [SquarePen, Type, FileText, ImagePlus, Link, CheckSquare]
+
+  return (
+    <section className="flex min-h-0 min-w-0 flex-col border-r">
+      <SharedEditorTabs lang={lang} workspace="canvas" />
+      <div className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:14px_14px]">
+        <svg
+          className="pointer-events-none absolute inset-0 size-full text-muted-foreground/50"
+          viewBox="0 0 500 400"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M 185 105 C 250 105, 245 190, 305 190" fill="none" stroke="currentColor" strokeWidth="1.2" />
+          <path d="M 305 215 C 260 270, 230 285, 190 305" fill="none" stroke="currentColor" strokeWidth="1.2" />
+          <circle cx="185" cy="105" r="2.5" fill="currentColor" />
+          <circle cx="305" cy="190" r="2.5" fill="currentColor" />
+          <circle cx="190" cy="305" r="2.5" fill="currentColor" />
+        </svg>
+        <div className="absolute left-2 top-2 z-10 flex flex-col gap-0.5 rounded-lg border bg-background p-1 shadow-sm">
+          {tools.map((Icon, index) => (
+            <span key={index} className={cn("flex size-7 items-center justify-center rounded-md text-muted-foreground", index === 0 && "bg-muted text-foreground")}>
+              <Icon className="size-3.5" />
+            </span>
+          ))}
+        </div>
+        <div className="absolute left-[17%] top-[15%] w-[36%] rounded-md border bg-background shadow-sm">
+          <div className="flex items-center gap-1.5 border-b px-3 py-2 text-[9px] text-muted-foreground">
+            <FileText className="size-3" />
+            {isEnglish ? "Note" : "笔记"}
+          </div>
+          <div className="p-3">
+            <p className="font-medium">{isEnglish ? "West Lake walking route" : "西湖步行路线"}</p>
+            <p className="mt-1.5 text-[9px] leading-4 text-muted-foreground">
+              {isEnglish ? "Quyuan Garden → Beishan Road → Solitary Hill" : "曲院风荷 → 北山街 → 孤山"}
+            </p>
+          </div>
+        </div>
+        <div className="absolute right-[7%] top-[40%] w-[36%] rounded-md border-2 border-primary/70 bg-background shadow-md">
+          <div className="flex items-center gap-1.5 border-b px-3 py-2 text-[9px] text-muted-foreground">
+            <Mic className="size-3 text-rose-500" />
+            {isEnglish ? "Record" : "记录"}
+          </div>
+          <div className="p-3">
+            <p className="font-medium">{isEnglish ? "Take it slow by West Lake" : "西湖边想走慢一点"}</p>
+            <p className="mt-1.5 line-clamp-2 text-[9px] leading-4 text-muted-foreground">
+              {isEnglish ? "Keep Saturday morning open for walking and unplanned stops." : "周六上午留给散步和临时停留，不安排固定打卡时间。"}
+            </p>
+          </div>
+        </div>
+        <div className="absolute bottom-[9%] left-[20%] w-[36%] rounded-md border bg-background shadow-sm">
+          <div className="flex items-center gap-1.5 border-b px-3 py-2 text-[9px] text-muted-foreground">
+            <Link className="size-3 text-blue-500" />
+            {isEnglish ? "Link" : "链接"}
+          </div>
+          <div className="p-3">
+            <p className="font-medium">{isEnglish ? "Faxi Temple reservation" : "法喜寺预约说明"}</p>
+            <p className="mt-1.5 truncate text-[9px] text-muted-foreground">example.com/hangzhou-faxi</p>
+          </div>
+        </div>
+      </div>
+      <footer className="flex h-6 shrink-0 items-center justify-between border-t bg-background px-3 text-[9px] text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Grid3X3 className="size-3" />
+          <Magnet className="size-3" />
+          <WandSparkles className="size-3" />
+          <Download className="size-3" />
+        </div>
+        <div className="flex items-center gap-2">
+          <ZoomOut className="size-3" />
+          <span>100%</span>
+          <Maximize2 className="size-3" />
+        </div>
+      </footer>
+    </section>
+  )
+}
+
+function EnglishEditor() {
+  return (
+    <section className="flex min-h-0 min-w-0 flex-col border-r">
+      <SharedEditorTabs lang="en" workspace="writing" />
+      <article className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mx-auto max-w-[590px] px-[8%] py-[7%]">
+          <h1 className="text-[clamp(20px,2.1vw,30px)] font-bold tracking-tight">Weekend in Hangzhou</h1>
+          <p className="mt-4 leading-6 text-muted-foreground">
+            Focus the two days on <strong className="font-semibold text-foreground">West Lake, Xiangshan, and the west side</strong>,
+            leaving more time for walks, meals, and spontaneous stops.
+          </p>
+          <blockquote className="my-5 border-l-2 pl-4 italic leading-5 text-muted-foreground">
+            Choose one main route each day. If a place feels right, stay a little longer.
+          </blockquote>
+          <h2 className="mt-6 text-sm font-semibold">Itinerary overview</h2>
+          <ul className="mt-2 list-disc pl-5 leading-6 text-muted-foreground">
+            <li>Saturday: West Lake, Xiangshan campus, and Hangzhou cuisine</li>
+            <li>Sunday: Faxi Temple, Tianmuli, and gifts before departure</li>
+          </ul>
+          <div className="mt-5 overflow-hidden rounded-lg border">
+            <table className="w-full border-collapse text-left text-[10px]">
+              <thead className="bg-muted/60 text-foreground">
+                <tr>
+                  <th className="border-b px-3 py-2 font-medium">Day</th>
+                  <th className="border-b px-3 py-2 font-medium">Main route</th>
+                  <th className="border-b px-3 py-2 font-medium">Walking</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                <tr>
+                  <td className="border-b px-3 py-2">Sat</td>
+                  <td className="border-b px-3 py-2">Beishan Rd → Xiangshan</td>
+                  <td className="border-b px-3 py-2">About 9 km</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-2">Sun</td>
+                  <td className="px-3 py-2">Faxi Temple → Tianmuli</td>
+                  <td className="px-3 py-2">About 6 km</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <h2 className="mt-6 text-sm font-semibold">Saturday · West Lake and Xiangshan</h2>
+          <h3 className="mt-3 font-medium">09:00—12:00　West Lake walk</h3>
+          <p className="mt-1 leading-6 text-muted-foreground">
+            Start at Quyuan Garden and follow Beishan Road to Solitary Hill, leaving time for unplanned stops.
+          </p>
+          <h3 className="mt-4 font-medium">12:15—13:30　Lunch</h3>
+          <p className="mt-1 leading-6 text-muted-foreground">
+            Have a simple lunch near Solitary Hill and save the full Hangzhou meal for dinner.
+          </p>
+          <h3 className="mt-4 font-medium">15:00—17:30　Xiangshan campus</h3>
+          <p className="mt-1 leading-6 text-muted-foreground">
+            Explore the architecture and public spaces, with time for coffee before leaving.
+          </p>
+          <h2 className="mt-6 text-sm font-semibold">Before departure</h2>
+          <div className="mt-3 flex flex-col gap-2 text-muted-foreground">
+            {(["Book Saturday dinner", "Confirm Faxi Temple hours", "Download the offline route", "Pack rain gear"] as const).map((item, index) => (
+              <div key={item} className="flex items-center gap-2">
+                <span className={cn("flex size-4 shrink-0 items-center justify-center rounded border", index < 2 && "bg-primary text-primary-foreground")}>
+                  {index < 2 ? <Check className="size-3" /> : null}
+                </span>
+                <span className={cn(index < 2 && "line-through opacity-60")}>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </article>
+      <footer className="flex h-6 shrink-0 items-center justify-between border-t bg-background px-3 text-[9px] text-muted-foreground">
+        <span>862 characters · 4 min</span>
+        <span className="flex items-center gap-1"><Cloud className="size-3" /> Synced</span>
+      </footer>
+    </section>
+  )
+}
+
 function Editor() {
   return (
     <section className="flex min-h-0 min-w-0 flex-col border-r">
-      <div className="flex h-12 shrink-0 items-center border-b bg-background">
-        <div className="flex h-full shrink-0 items-center gap-0.5 border-r px-2">
-          <IconButton icon={Undo2} className="text-foreground" />
-          <IconButton icon={Redo2} className="opacity-35" />
-        </div>
-        <div className="flex min-w-0 flex-1 items-center px-1">
-          <div className="relative flex h-9 min-w-0 max-w-[55%] items-center gap-1.5 px-3 font-medium">
-            <FileText className="size-3.5 shrink-0" />
-            <span className="truncate">周末杭州行程.md</span>
-            <X className="size-3 shrink-0 text-muted-foreground" />
-            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" />
-          </div>
-          <div className="flex h-9 min-w-0 items-center gap-1.5 px-3 text-muted-foreground">
-            <FileText className="size-3.5 shrink-0" />
-            <span className="truncate">餐厅收藏.md</span>
-          </div>
-          <IconButton icon={Plus} className="ml-auto mr-1" />
-        </div>
-      </div>
+      <SharedEditorTabs lang="cn" workspace="writing" />
 
       <article className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="mx-auto max-w-[590px] px-[8%] py-[7%]">
@@ -657,9 +1041,14 @@ function Editor() {
   )
 }
 
-function AgentPanel() {
-  const [processOpen, setProcessOpen] = useState(false)
-  const agentEvents = [
+function AgentPanel({ lang }: { lang: "cn" | "en" }) {
+  const [processOpen, setProcessOpen] = useState(true)
+  const agentEvents = lang === "en" ? [
+    "Records · Read 3 Hangzhou items",
+    "Canvas · Read weekend Hangzhou route",
+    "Notes · Search Hangzhou travel history",
+    "Notes · Write Weekend Itinerary.md",
+  ] : [
     "记录 · 读取 3 条杭州收藏",
     "画布 · 读取杭州周末路线",
     "笔记 · 检索杭州旅行历史",
@@ -667,10 +1056,10 @@ function AgentPanel() {
   ]
 
   return (
-    <section className="flex min-w-0 flex-col">
+    <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
       <header className="flex h-12 shrink-0 items-center justify-between border-b px-3">
         <div className="flex min-w-0 items-center gap-1.5 font-medium">
-          <span className="truncate">杭州周末行程</span>
+          <span className="truncate">{lang === "en" ? "Weekend in Hangzhou" : "杭州周末行程"}</span>
           <span className="text-[10px] font-normal text-muted-foreground">(3)</span>
           <ChevronDown className="size-3.5 text-muted-foreground" />
         </div>
@@ -680,10 +1069,10 @@ function AgentPanel() {
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex justify-end">
           <div className="max-w-[88%] rounded-lg border bg-muted/35 px-3 py-2 leading-5">
-            结合这些内容，整理周末杭州行程并保存。
+            {lang === "en" ? "Use this material to organize and save a weekend Hangzhou itinerary." : "结合这些内容，整理周末杭州行程并保存。"}
           </div>
         </div>
 
@@ -696,17 +1085,17 @@ function AgentPanel() {
           >
             <div className="flex items-center gap-2 font-medium">
               <Check className="size-3.5" />
-              已处理
+              {lang === "en" ? "Processed" : "已处理"}
             </div>
             <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
-              3.7s · 执行 4 次
+              {lang === "en" ? "3.7s · 4 actions" : "3.7s · 执行 4 次"}
               <ChevronRight className={cn("size-3 transition-transform", processOpen && "rotate-90")} />
             </span>
           </button>
           {processOpen ? <div className="ml-1 border-l pl-3 pt-1">
             <div className="mb-1 flex items-center gap-2 py-1 text-[10px] text-muted-foreground">
               <Cloud className="size-3" />
-              <span>检索到 2 个知识库来源 · 已使用 trip-planner</span>
+              <span>{lang === "en" ? "Found 2 knowledge sources · Used trip-planner" : "检索到 2 个知识库来源 · 已使用 trip-planner"}</span>
             </div>
             {agentEvents.map((label) => (
               <div key={label} className="flex items-center gap-2 py-1 text-[10px] text-muted-foreground">
@@ -718,16 +1107,16 @@ function AgentPanel() {
         </div>
 
         <div className="leading-5">
-          <p>已读取关联的 3 条旅行记录、1 个路线画布和 2 篇历史笔记。</p>
-          <p className="mt-2">我重新安排了两天路线，减少跨区往返，并补充了餐厅预约、雨天备选和返程提醒。</p>
-          <p className="mt-2 text-muted-foreground">行程已保存，正在为你打开写作页面。</p>
+          <p>{lang === "en" ? "I read 3 related travel records, 1 route canvas, and 2 previous notes." : "已读取关联的 3 条旅行记录、1 个路线画布和 2 篇历史笔记。"}</p>
+          <p className="mt-2">{lang === "en" ? "I reorganized the two-day route and added restaurant bookings, a rainy-day alternative, and a return reminder." : "我重新安排了两天路线，减少跨区往返，并补充了餐厅预约、雨天备选和返程提醒。"}</p>
+          <p className="mt-2 text-muted-foreground">{lang === "en" ? "The itinerary is saved. Opening it in Writing now." : "行程已保存，正在为你打开写作页面。"}</p>
         </div>
       </div>
 
       <div className="shrink-0 p-1">
         <div className="rounded-lg border bg-background shadow-sm">
           <div className="min-h-12 px-3 py-2 text-muted-foreground">
-            你可以提问或将记录整理为文章...
+            {lang === "en" ? "Ask a question or organize records into an article..." : "你可以提问或将记录整理为文章..."}
           </div>
           <div className="flex items-center justify-between px-2 pb-2">
             <div className="flex items-center gap-1">
@@ -737,7 +1126,7 @@ function AgentPanel() {
             <div className="flex items-center gap-2 pr-1">
               <span className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[10px] text-muted-foreground">
                 <ShieldQuestion className="size-4" />
-                <span>询问</span>
+                <span>{lang === "en" ? "Ask" : "询问"}</span>
               </span>
               <span className="flex h-8 items-center justify-center rounded-md bg-primary px-3 text-primary-foreground">
                 <Send className="size-4" />
@@ -747,10 +1136,6 @@ function AgentPanel() {
         </div>
       </div>
 
-      <footer className="flex h-6 shrink-0 items-center justify-between border-t px-2 text-[9px] text-muted-foreground">
-        <span>GPT-5</span>
-        <span>通用助手</span>
-      </footer>
     </section>
   )
 }

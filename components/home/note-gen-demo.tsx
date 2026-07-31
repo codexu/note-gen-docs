@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react"
 import {
   ArrowUpIcon,
   BoldIcon,
@@ -101,10 +101,16 @@ const desktopRecords = [
   ["图片", "天目里建筑路线", "保存了园区地图和几家想逛的小店。", "昨天"],
 ]
 
-const mobileRecords = [
+const mobileRecordsCn = [
   { type: "recording", label: "录音", preview: "西湖边想走慢一点：曲院风荷、北山街和孤山", time: "10:42" },
   { type: "link", label: "链接", preview: "法喜寺预约与开放时间", time: "10:16" },
   { type: "text", label: "文本", preview: "晚餐想吃杭帮菜，记得提前订座", time: "09:40" },
+]
+
+const mobileRecordsEn = [
+  { type: "recording", label: "Audio", preview: "A slow walk by West Lake: Quyuan Garden, Beishan Road, and Solitary Hill", time: "10:42" },
+  { type: "link", label: "Link", preview: "Faxi Temple reservations and opening hours", time: "10:16" },
+  { type: "text", label: "Text", preview: "Book a table for Hangzhou cuisine tonight", time: "09:40" },
 ]
 
 const mobileRecordTone = {
@@ -114,17 +120,32 @@ const mobileRecordTone = {
   image: "border-fuchsia-300/80 bg-fuchsia-100 text-fuchsia-900",
 }
 
-export function NoteGenDemo() {
+type DemoLang = "cn" | "en"
+
+const DemoLanguageContext = createContext<DemoLang>("cn")
+
+function useDemoLanguage() {
+  const lang = useContext(DemoLanguageContext)
+  return {
+    lang,
+    text: (cn: string, en: string) => lang === "en" ? en : cn,
+  }
+}
+
+export function NoteGenDemo({ lang }: { lang: DemoLang }) {
+  const text = (cn: string, en: string) => lang === "en" ? en : cn
+
   return (
-    <div className="flex flex-col gap-20">
+    <DemoLanguageContext.Provider value={lang}>
+    <div className="flex flex-col">
       <section
-        aria-label="NoteGen 桌面端与移动端预览"
+        aria-label={lang === "en" ? "NoteGen desktop and mobile preview" : "NoteGen 桌面端与移动端预览"}
         className="relative mx-auto w-full"
       >
         <div className="hidden w-full pb-[3.5%] md:block">
           <div className="w-[96%]">
             <MacBookFrame>
-              <NoteGenDesktopReplica />
+              <NoteGenDesktopReplica lang={lang} />
             </MacBookFrame>
           </div>
         </div>
@@ -134,10 +155,30 @@ export function NoteGenDemo() {
         </div>
       </section>
 
-      <section className="hidden md:block">
-        <DesktopScenes />
-      </section>
+      <div className="mt-20 pb-20 lg:pb-28">
+        <section className="mx-auto w-full max-w-5xl pb-12 pt-20 lg:pb-16 lg:pt-28">
+          <div className="flex max-w-4xl flex-col items-start gap-6">
+            <Badge variant="secondary">
+              {text("为什么是 NoteGen", "Why NoteGen")}
+            </Badge>
+            <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
+              {text("记录，不应该迫使你立刻整理。", "Capturing should not force you to organize immediately.")}
+            </h2>
+            <p className="max-w-3xl text-lg leading-8 text-muted-foreground">
+              {text(
+                "想法出现的时候，你通常还不知道它属于哪个文件夹，也不知道它最终会成为周报、文章还是项目资料。NoteGen 先替你接住素材，等到真正需要时再整理。",
+                "When an idea appears, you rarely know which folder it belongs in or whether it will become a report, article, or project note. NoteGen captures it first and organizes it when you actually need it."
+              )}
+            </p>
+          </div>
+        </section>
+
+        <section className="hidden md:block">
+          <DesktopScenes />
+        </section>
+      </div>
     </div>
+    </DemoLanguageContext.Provider>
   )
 }
 
@@ -156,64 +197,127 @@ function MacBookFrame({ children }: { children: React.ReactNode }) {
 }
 
 function DesktopScenes() {
+  const { text } = useDemoLanguage()
+
   return (
-    <div className="mt-16 flex flex-col gap-28">
+    <div className="flex flex-col gap-28">
       <DesktopScene
-        badge="记录"
-        title="先把发生的事情留下。"
-        description="文字、语音、截图、图片、链接、文件和待办进入同一条记录流。标签以折叠分组呈现，真正需要时再筛选和整理。"
+        step="01"
+        badge={text("记录", "Capture")}
+        title={text("先把发生的事情留下。", "Capture what happens first.")}
+        description={text("文字、语音、截图、图片、链接、文件和待办进入同一条记录流。标签以折叠分组呈现，真正需要时再筛选和整理。", "Text, audio, screenshots, images, links, files, and tasks enter one stream. Filter and organize them only when needed.")}
+        details={[
+          [text("支持内容", "Formats"), text("文字、语音、截图、图片、链接、文件、待办", "Text, audio, screenshots, images, links, files, and tasks")],
+          [text("整理方式", "Organization"), text("标签折叠分组，按需筛选", "Collapsible tag groups and on-demand filters")],
+          [text("数据位置", "Storage"), text("默认保存在本地", "Stored locally by default")],
+        ]}
       >
         <RecordScene />
       </DesktopScene>
       <DesktopScene
-        badge="写作"
-        title="在普通 Markdown 文件里继续。"
-        description="文件树、标签页、编辑工具栏和正文处在同一个连续界面。内容最终仍然是你可以随时打开和迁移的普通文件。"
-        reverse
+        step="02"
+        badge={text("画布", "Canvas")}
+        title={text("把材料放到无限画布上。", "Place your material on an infinite canvas.")}
+        description={text("笔记、图片、网页和 AI 生成结果可以成为独立节点。用连接关系梳理研究、流程和仍未成形的想法。", "Notes, images, web pages, and AI output become independent nodes. Connect them to map research, workflows, and emerging ideas.")}
+        details={[
+          [text("节点类型", "Nodes"), text("笔记、记录、图片、链接与图形", "Notes, records, images, links, and shapes")],
+          [text("组织方式", "Structure"), text("自由连接、分组与自动布局", "Free connections, grouping, and auto layout")],
+          [text("AI 能力", "AI"), text("生成图表、流程图与 Mermaid", "Generate charts, flowcharts, and Mermaid")],
+        ]}
       >
-        <WritingScene />
+        <CanvasScene />
       </DesktopScene>
       <DesktopScene
+        step="03"
         badge="Agent"
-        title="让 Agent 使用你的本地知识。"
-        description="Agent 在右侧执行检索、读取文件和整理结构。过程、引用来源和最终回答都保留在同一个对话上下文中。"
+        title={text("让 Agent 使用你的本地知识。", "Let the Agent use your local knowledge.")}
+        description={text("Agent 在右侧执行检索、读取文件和整理结构。过程、引用来源和最终回答都保留在同一个对话上下文中。", "The Agent searches, reads files, and organizes information on the right, keeping its process, sources, and answer in one conversation.")}
+        details={[
+          [text("知识来源", "Knowledge"), text("记录、文件、画布与知识库", "Records, files, canvases, and knowledge bases")],
+          [text("执行过程", "Process"), text("检索、工具调用与引用来源可见", "Visible searches, tool calls, and sources")],
+          [text("结果去向", "Output"), text("回答可继续整理并写回文件", "Continue refining answers and write them back to files")],
+        ]}
       >
         <AgentScene />
       </DesktopScene>
       <DesktopScene
-        badge="画布"
-        title="把材料放到无限画布上。"
-        description="笔记、图片、网页和 AI 生成结果可以成为独立节点。用连接关系梳理研究、流程和仍未成形的想法。"
-        reverse
+        step="04"
+        badge={text("写作", "Writing")}
+        title={text("在标准 Markdown 文件里继续。", "Continue in standard Markdown files.")}
+        description={text("文件树、标签页、编辑工具栏和正文处在同一个连续界面。内容最终仍然是你可以随时打开和迁移的普通文件。", "The file tree, tabs, toolbar, and document share one continuous workspace. Your content remains portable plain files.")}
+        details={[
+          [text("文件格式", "Format"), text("标准 Markdown 文件", "Standard Markdown files")],
+          [text("工作界面", "Workspace"), text("文件树、标签页与连续编辑", "File tree, tabs, and continuous editing")],
+          [text("内容能力", "Content"), text("文本、表格、公式、图表与 Mermaid", "Text, tables, math, diagrams, and Mermaid")],
+        ]}
       >
-        <CanvasScene />
+        <WritingScene />
       </DesktopScene>
     </div>
   )
 }
 
 function DesktopScene({
+  step,
   badge,
   title,
   description,
-  reverse = false,
+  details,
   children,
 }: {
+  step: string
   badge: string
   title: string
   description: string
-  reverse?: boolean
+  details: Array<[string, string]>
   children: React.ReactNode
 }) {
+  const reverse = Number(step) % 2 === 0
+
   return (
-    <article className="grid items-center gap-10 lg:grid-cols-[0.36fr_0.64fr] lg:gap-16">
-      <div className={cn("flex flex-col gap-5", reverse && "lg:order-2")}>
+    <article
+      className={cn(
+        "mx-auto grid w-full items-center gap-12 lg:grid-cols-2 lg:gap-0"
+      )}
+    >
+      <div
+        className={cn(
+          "flex w-full max-w-lg flex-col gap-5",
+          reverse
+            ? "lg:col-start-2 lg:row-start-1 lg:justify-self-end"
+            : "lg:col-start-1 lg:row-start-1 lg:justify-self-start"
+        )}
+      >
         <Badge variant="outline" className="w-fit">{badge}</Badge>
         <h3 className="text-balance text-3xl font-semibold tracking-tight lg:text-4xl">{title}</h3>
         <p className="text-pretty text-base leading-7 text-muted-foreground">{description}</p>
+        <dl className="mt-2 border-y text-sm">
+          {details.map(([label, value], index) => (
+            <div
+              key={label}
+              className={cn(
+                "grid grid-cols-[5.5rem_1fr] gap-4 py-3",
+                index > 0 && "border-t"
+              )}
+            >
+              <dt className="text-xs text-muted-foreground">{label}</dt>
+              <dd className="leading-5 text-muted-foreground">{value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
-      <div className={cn("overflow-hidden rounded-[1.25rem] bg-muted/40 p-3", reverse && "lg:order-1")}>
-        {children}
+
+      <div
+        className={cn(
+          "w-full max-w-[540px] overflow-hidden rounded-[1.5rem] bg-muted/40 p-3",
+          reverse
+            ? "lg:col-start-1 lg:row-start-1 lg:justify-self-start"
+            : "lg:col-start-2 lg:row-start-1 lg:justify-self-end"
+        )}
+      >
+        <div className="aspect-[4/3] w-full">
+          {children}
+        </div>
       </div>
     </article>
   )
@@ -565,255 +669,73 @@ function DesktopChat() {
   )
 }
 
-function SceneWindow({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="aspect-[4/3] overflow-hidden rounded-xl border bg-background text-[9px] shadow-lg lg:text-[10px]">
-      <div className="flex h-8 items-center border-b px-3">
-        <div className="flex gap-1.5">
-          <span className="size-2 rounded-full bg-border" />
-          <span className="size-2 rounded-full bg-border" />
-          <span className="size-2 rounded-full bg-border" />
-        </div>
-        <div className="flex flex-1 justify-center font-medium">NoteGen</div>
-        <span className="text-muted-foreground">本地工作区</span>
-      </div>
-      <div className="h-[calc(100%-32px)]">{children}</div>
-    </div>
-  )
-}
-
 function RecordScene() {
+  const { lang } = useDemoLanguage()
   return (
-    <SceneWindow>
-      <div className="grid h-full grid-cols-[42%_58%]">
-        <div className="flex min-w-0 flex-col border-r">
-          <div className="flex h-11 items-center justify-between border-b px-3">
-            <div className="flex items-center gap-2 font-medium">
-              <HighlighterIcon className="size-3.5" /> 记录
-            </div>
-            <div className="flex gap-1">
-              <FilterIcon className="size-3.5" />
-              <PlusIcon className="size-3.5" />
-            </div>
-          </div>
-          <div className="flex h-9 items-center gap-2 border-b px-3 font-medium">
-            <ChevronDownIcon className="size-3" /> 杭州旅行
-            <span className="font-normal text-muted-foreground">4</span>
-          </div>
-          <div className="min-h-0 flex-1 overflow-hidden">
-            {desktopRecords.map(([type, title, body, time], index) => (
-              <div key={title} className={cn("border-b px-3 py-3", index === 0 && "bg-muted/60")}>
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="h-4 px-1 text-[8px]">{type}</Badge>
-                  <span className="text-[8px] text-muted-foreground">{time}</span>
-                </div>
-                <p className="mt-1.5 truncate font-medium">{title}</p>
-                <p className="mt-1 truncate text-muted-foreground">{body}</p>
-              </div>
-            ))}
-          </div>
-          <div className="flex h-6 items-center border-t px-3 text-[8px] text-muted-foreground">当前显示 4 条记录</div>
-        </div>
-        <div className="flex min-w-0 flex-col">
-          <div className="flex h-11 items-center justify-between border-b px-3">
-            <span className="font-medium">整理记录</span>
-            <Badge variant="secondary" className="h-4 text-[8px]">3 条已选择</Badge>
-          </div>
-          <div className="flex flex-1 flex-col gap-3 p-5">
-            <p className="font-mono text-[8px] text-muted-foreground">TRAVEL / WEEKEND</p>
-            <h4 className="text-base font-semibold">整理杭州周末行程</h4>
-            <p className="leading-5 text-muted-foreground">
-              将收藏的地点、预约链接和用餐想法放入同一个上下文，生成两天行程。
-            </p>
-            <div className="flex flex-col gap-2 rounded-lg border p-3">
-              {["语音 · 西湖散步路线", "链接 · 法喜寺预约", "文本 · 杭帮菜清单"].map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <span className="flex size-4 items-center justify-center rounded border"><CheckIcon className="size-2.5" /></span>
-                  {item}
-                </div>
-              ))}
-            </div>
-            <div className="mt-auto flex justify-end">
-              <span className="rounded-md bg-foreground px-3 py-1.5 text-background">生成行程</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </SceneWindow>
+    <NoteGenDesktopReplica
+      lang={lang}
+      initialWorkspace="records"
+      autoCycle={false}
+      panelLayout="left"
+      titleBarMode="none"
+      fill
+    />
   )
 }
 
 function WritingScene() {
+  const { lang } = useDemoLanguage()
   return (
-    <SceneWindow>
-      <div className="grid h-full grid-cols-[30%_70%]">
-        <div className="flex min-w-0 flex-col border-r">
-          <div className="flex h-11 items-center justify-between border-b px-3">
-            <div className="flex items-center gap-2 font-medium"><FilesIcon className="size-3.5" /> 文件</div>
-            <PlusIcon className="size-3.5" />
-          </div>
-          <div className="p-2">
-            <div className="flex h-7 items-center gap-2 rounded-md border px-2 text-muted-foreground">
-              <SearchIcon className="size-3" /> 搜索文件
-            </div>
-          </div>
-          <div className="flex flex-col gap-0.5 px-2">
-            {[
-              ["▾", "00 Inbox", 0],
-              ["", "杭州想去的地方.md", 1],
-              ["▾", "01 Projects", 0],
-              ["▾", "杭州旅行", 1],
-              ["", "周末杭州行程.md", 2],
-              ["", "餐厅收藏.md", 2],
-              ["›", "02 Areas", 0],
-              ["›", "03 Resources", 0],
-            ].map(([marker, label, depth]) => (
-              <div
-                key={label}
-                className={cn("flex h-7 items-center gap-1.5 rounded-md px-2", label === "周末杭州行程.md" && "bg-muted font-medium")}
-                style={{ paddingLeft: 8 + Number(depth) * 12 }}
-              >
-                <span className="w-3 text-muted-foreground">{marker}</span>
-                {String(label).endsWith(".md") ? <FileTextIcon className="size-3" /> : <FilesIcon className="size-3" />}
-                <span className="truncate">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="flex min-w-0 flex-col">
-          <div className="flex h-9 items-end border-b bg-muted/20 px-1">
-            <div className="flex h-9 items-center gap-1.5 border-b-2 border-foreground px-3">
-              <FileTextIcon className="size-3" /> 周末杭州行程.md <CircleIcon className="size-1.5 fill-current" />
-            </div>
-          </div>
-          <div className="flex h-9 items-center justify-between border-b px-2">
-            <div className="flex">
-              {[BoldIcon, ItalicIcon, ListIcon, Code2Icon, LinkIcon].map((Icon, index) => (
-                <span key={index} className="flex size-6 items-center justify-center"><Icon className="size-3" /></span>
-              ))}
-            </div>
-            <Badge variant="secondary" className="h-4 text-[8px]">Markdown</Badge>
-          </div>
-          <article className="px-[10%] py-[7%]">
-            <p className="font-mono text-[8px] text-muted-foreground">TRAVEL / HANGZHOU</p>
-            <h4 className="mt-2 text-xl font-semibold tracking-tight">周末杭州行程</h4>
-            <p className="mt-4 leading-5 text-muted-foreground">
-              两天以西湖和城西为主，减少往返，把时间留给散步和吃饭。
-            </p>
-            <h5 className="mt-5 font-semibold">周六 · 西湖与象山</h5>
-            <p className="mt-2 leading-5 text-muted-foreground">
-              曲院风荷 → 孤山 → 中国美院象山校区 → 杭帮菜晚餐。
-            </p>
-          </article>
-        </div>
-      </div>
-    </SceneWindow>
+    <NoteGenDesktopReplica
+      lang={lang}
+      initialWorkspace="writing"
+      autoCycle={false}
+      panelLayout="center"
+      titleBarMode="none"
+      fill
+    />
   )
 }
 
 function AgentScene() {
+  const { lang } = useDemoLanguage()
   return (
-    <SceneWindow>
-      <div className="grid h-full grid-cols-[55%_45%]">
-        <article className="border-r px-[8%] py-[7%]">
-          <p className="font-mono text-[8px] text-muted-foreground">TRAVEL / HANGZHOU</p>
-          <h4 className="mt-2 text-xl font-semibold">周末杭州行程</h4>
-          <p className="mt-4 leading-5 text-muted-foreground">
-            两天以西湖、象山和城西为主，减少往返，保留充足的步行时间。
-          </p>
-          <div className="mt-5 flex flex-col gap-2">
-            {["周六 · 西湖与象山", "周日 · 法喜寺与天目里", "雨天 · 博物馆备选"].map((item) => (
-              <div key={item} className="flex items-center gap-2">
-                <span className="flex size-4 items-center justify-center rounded border"><CheckIcon className="size-2.5" /></span>
-                {item}
-              </div>
-            ))}
-          </div>
-        </article>
-        <div className="flex min-w-0 flex-col">
-          <div className="flex h-11 items-center justify-between border-b px-3 font-medium">
-            <span className="flex items-center gap-2"><BotIcon className="size-3.5" /> Agent</span>
-            <PlusIcon className="size-3.5" />
-          </div>
-          <div className="flex flex-1 flex-col gap-3 p-3">
-            <ConversationContextStrip compact />
-            <div className="ml-5 rounded-lg bg-muted px-3 py-2">结合这些内容，整理周末杭州行程</div>
-            <div className="text-muted-foreground">正在使用本地知识</div>
-            <div className="rounded-lg border p-2">
-              {["搜索杭州旅行笔记", "读取路线画布", "写入行程笔记"].map((item) => (
-                <div key={item} className="flex items-center gap-2 py-1 text-muted-foreground">
-                  <CheckIcon className="size-3" /> {item}
-                </div>
-              ))}
-            </div>
-            <p className="leading-5">已整理成两天路线，并补上餐厅预约和雨天备选。</p>
-            <div className="mt-auto rounded-lg border p-2 text-muted-foreground">输入消息或按 / 使用 Skills</div>
-          </div>
-        </div>
-      </div>
-    </SceneWindow>
+    <NoteGenDesktopReplica
+      lang={lang}
+      initialWorkspace="writing"
+      autoCycle={false}
+      panelLayout="right"
+      titleBarMode="none"
+      fill
+    />
   )
 }
 
 function CanvasScene() {
+  const { lang } = useDemoLanguage()
   return (
-    <SceneWindow>
-      <div className="relative h-full bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:18px_18px]">
-        <div className="absolute inset-x-0 top-0 flex h-10 items-center justify-between border-b bg-background/90 px-3">
-          <span className="flex items-center gap-2 font-medium"><PaletteIcon className="size-3.5" /> 杭州周末路线</span>
-          <div className="flex items-center gap-2">
-            <span className="rounded-md border bg-background px-2 py-1">自动布局</span>
-            <span className="rounded-md bg-foreground px-2 py-1 text-background">AI 生成</span>
-          </div>
-        </div>
-        <CanvasNode className="left-[8%] top-[22%]" icon={HighlighterIcon} eyebrow="周六上午" title="西湖步行路线">
-          曲院风荷 → 北山街 → 孤山
-        </CanvasNode>
-        <CanvasNode className="left-[58%] top-[32%] border-2 border-foreground" icon={PaletteIcon} eyebrow="周六下午" title="象山与晚餐">
-          美院象山校区 → 杭帮菜
-        </CanvasNode>
-        <CanvasNode className="bottom-[12%] left-[20%]" icon={FileTextIcon} eyebrow="周日" title="法喜寺与天目里">
-          上午礼佛，下午逛街再返程
-        </CanvasNode>
-        <div className="absolute left-[37%] top-[36%] h-px w-[23%] rotate-[8deg] bg-border" />
-        <div className="absolute bottom-[29%] left-[43%] h-px w-[20%] -rotate-[25deg] bg-border" />
-      </div>
-    </SceneWindow>
-  )
-}
-
-function CanvasNode({
-  className,
-  icon: Icon,
-  eyebrow,
-  title,
-  children,
-}: {
-  className: string
-  icon: typeof HighlighterIcon
-  eyebrow: string
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className={cn("absolute w-[34%] rounded-lg border bg-background p-3 shadow-sm", className)}>
-      <div className="mb-2 flex items-center gap-2 text-muted-foreground"><Icon className="size-3" /> {eyebrow}</div>
-      <div className="font-medium">{title}</div>
-      <div className="mt-1 text-muted-foreground">{children}</div>
-    </div>
+    <NoteGenDesktopReplica
+      lang={lang}
+      initialWorkspace="canvas"
+      autoCycle={false}
+      panelLayout="center"
+      titleBarMode="none"
+      fill
+    />
   )
 }
 
 function MobileReplica() {
+  const { lang, text } = useDemoLanguage()
   const [page, setPage] = useState<"chat" | "writing" | "record" | "canvas">("chat")
   const [quickOpen, setQuickOpen] = useState(false)
   const dockItems = useMemo<NoteGenDockItem[]>(() => [
-    { id: "chat", icon: MessageSquareIcon, label: "对话" },
-    { id: "writing", icon: SquarePenIcon, label: "写作" },
-    { id: "quick-action", icon: PlusIcon, label: "快捷" },
-    { id: "record", icon: HighlighterIcon, label: "记录" },
-    { id: "canvas", icon: PaletteIcon, label: "画布" },
-  ], [])
+    { id: "chat", icon: MessageSquareIcon, label: text("对话", "Chat") },
+    { id: "writing", icon: SquarePenIcon, label: text("写作", "Write") },
+    { id: "quick-action", icon: PlusIcon, label: text("快捷", "Quick") },
+    { id: "record", icon: HighlighterIcon, label: text("记录", "Record") },
+    { id: "canvas", icon: PaletteIcon, label: text("画布", "Canvas") },
+  ], [lang])
   const routeActiveIndex = dockItems.findIndex((item) => item.id === page)
   const quickActionIndex = dockItems.findIndex((item) => item.id === "quick-action")
   const activeIndex = quickOpen ? quickActionIndex : Math.max(routeActiveIndex, 0)
@@ -876,7 +798,7 @@ function MobileReplica() {
                 <div
                   className="w-full rounded-t-[24px] border-x border-t bg-background px-2 pb-[calc(0.5rem+var(--notegen-demo-safe-area-bottom))] pt-3 shadow-2xl"
                   role="dialog"
-                  aria-label="快速记录"
+                  aria-label={text("快速记录", "Quick capture")}
                   onClick={(event) => event.stopPropagation()}
                 >
                   <div className="mx-auto mb-2 h-1 w-12 rounded-full bg-muted" />
@@ -894,21 +816,23 @@ function MobileReplica() {
 }
 
 function MobileQuickTools({ onClose }: { onClose: () => void }) {
+  const { text } = useDemoLanguage()
+
   return (
     <div className="flex w-full flex-col gap-2">
-      <ToolSectionLabel>写作</ToolSectionLabel>
+      <ToolSectionLabel>{text("写作", "Writing")}</ToolSectionLabel>
       <div className="grid w-full grid-cols-2 gap-1.5">
-        <MobileQuickTool icon={SquarePenIcon} label="笔记" onClick={onClose} />
-        <MobileQuickTool icon={SparklesIcon} label="整理成笔记" onClick={onClose} />
+        <MobileQuickTool icon={SquarePenIcon} label={text("笔记", "Note")} showChevron onClick={onClose} />
+        <MobileQuickTool icon={SparklesIcon} label={text("整理成笔记", "Organize into note")} showChevron onClick={onClose} />
       </div>
-      <ToolSectionLabel>记录</ToolSectionLabel>
+      <ToolSectionLabel>{text("记录", "Capture")}</ToolSectionLabel>
       <div className="grid w-full grid-cols-2 gap-1.5">
-        <MobileQuickTool icon={TypeIcon} label="文本" onClick={onClose} />
-        <MobileQuickTool icon={MicIcon} label="录音" onClick={onClose} />
-        <MobileQuickTool icon={ImageUpIcon} label="图片" onClick={onClose} />
-        <MobileQuickTool icon={LinkIcon} label="链接" onClick={onClose} />
-        <MobileQuickTool icon={PaperclipIcon} label="文件" onClick={onClose} />
-        <MobileQuickTool icon={CheckSquareIcon} label="待办" onClick={onClose} />
+        <MobileQuickTool icon={TypeIcon} label={text("文本", "Text")} onClick={onClose} />
+        <MobileQuickTool icon={MicIcon} label={text("录音", "Audio")} onClick={onClose} />
+        <MobileQuickTool icon={ImageUpIcon} label={text("图片", "Image")} onClick={onClose} />
+        <MobileQuickTool icon={LinkIcon} label={text("链接", "Link")} onClick={onClose} />
+        <MobileQuickTool icon={PaperclipIcon} label={text("文件", "File")} onClick={onClose} />
+        <MobileQuickTool icon={CheckSquareIcon} label={text("待办", "Task")} onClick={onClose} />
       </div>
     </div>
   )
@@ -926,10 +850,12 @@ function ToolSectionLabel({ children }: { children: React.ReactNode }) {
 function MobileQuickTool({
   icon: Icon,
   label,
+  showChevron = false,
   onClick,
 }: {
   icon: typeof TypeIcon
   label: string
+  showChevron?: boolean
   onClick: () => void
 }) {
   return (
@@ -943,17 +869,20 @@ function MobileQuickTool({
         <Icon className="size-4" />
       </span>
       <span className="min-w-0 flex-1 truncate text-left text-sm font-medium leading-none">{label}</span>
-      {label === "笔记" || label === "整理成笔记" ? <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" /> : null}
+      {showChevron ? <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" /> : null}
     </button>
   )
 }
 
 function MobileRecordPage() {
+  const { lang, text } = useDemoLanguage()
+  const mobileRecords = lang === "en" ? mobileRecordsEn : mobileRecordsCn
+
   return (
     <div className="h-full">
       <header className="flex h-14 items-center justify-between border-b px-2">
         <div className="flex h-11 items-center gap-1 px-2 text-sm font-medium">
-          全部记录 <ChevronDownIcon className="size-4 text-muted-foreground" />
+          {text("全部记录", "All records")} <ChevronDownIcon className="size-4 text-muted-foreground" />
         </div>
         <div className="flex">
           {[FilterIcon, CheckSquareIcon, Trash2Icon].map((Icon, index) => (
@@ -964,7 +893,7 @@ function MobileRecordPage() {
         </div>
       </header>
       <main className="notegen-demo-under-dock h-[calc(100%-56px)] overflow-y-auto px-3 py-2">
-        <div className="mb-2 text-xs font-medium text-muted-foreground">今天</div>
+        <div className="mb-2 text-xs font-medium text-muted-foreground">{text("今天", "Today")}</div>
         <div className="flex flex-col gap-2">
           {mobileRecords.map((record) => (
             <div key={record.preview} className="rounded-xl border bg-background px-3 py-3">
@@ -981,17 +910,17 @@ function MobileRecordPage() {
             </div>
           ))}
         </div>
-        <div className="mb-2 mt-4 text-xs font-medium text-muted-foreground">昨天</div>
+        <div className="mb-2 mt-4 text-xs font-medium text-muted-foreground">{text("昨天", "Yesterday")}</div>
         <div className="rounded-xl border bg-background px-3 py-3">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center rounded-md border border-fuchsia-300/80 bg-fuchsia-100 px-1.5 py-0.5 text-[10px] font-medium text-fuchsia-900">图片</span>
+            <span className="inline-flex items-center rounded-md border border-fuchsia-300/80 bg-fuchsia-100 px-1.5 py-0.5 text-[10px] font-medium text-fuchsia-900">{text("图片", "Image")}</span>
             <span className="text-xs text-muted-foreground">18:22</span>
           </div>
           <div className="mt-2 flex items-center gap-2">
             <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-muted">
               <ImageIcon className="size-4 text-muted-foreground" />
             </div>
-            <p className="line-clamp-2 text-sm text-muted-foreground">天目里建筑与店铺地图</p>
+            <p className="line-clamp-2 text-sm text-muted-foreground">{text("天目里建筑与店铺地图", "Tianmuli architecture and shops map")}</p>
           </div>
         </div>
       </main>
@@ -1000,16 +929,17 @@ function MobileRecordPage() {
 }
 
 function MobileChatPage({ onComplete }: { onComplete: () => void }) {
+  const { lang, text } = useDemoLanguage()
   const [processOpen, setProcessOpen] = useState(true)
   const [ragOpen, setRagOpen] = useState(false)
   const [skillsOpen, setSkillsOpen] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const chatScrollRef = useRef<HTMLDivElement>(null)
-  const prompt = "结合这些内容，整理周末杭州行程并保存。"
+  const prompt = text("结合这些内容，整理周末杭州行程并保存。", "Use this material to organize and save a weekend Hangzhou itinerary.")
   const associationSteps = [
-    { kind: "record", query: "西湖", start: 250, selectAt: 1150 },
-    { kind: "canvas", query: "杭州", start: 1300, selectAt: 2200 },
-    { kind: "file", query: "餐厅", start: 2350, selectAt: 3250 },
+    { kind: "record", query: text("西湖", "West Lake"), start: 250, selectAt: 1150 },
+    { kind: "canvas", query: text("杭州", "Hangzhou"), start: 1300, selectAt: 2200 },
+    { kind: "file", query: text("餐厅", "Restaurants"), start: 2350, selectAt: 3250 },
   ] as const
   const typingStart = 3450
   const typingSpeed = 58
@@ -1038,16 +968,16 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
   const messageSentAt = 5300
   const processStart = 5450
   const agentEvents = [
-    { label: "记录 · 读取 3 条杭州收藏", start: 5600, duration: 680 },
-    { label: "画布 · 读取杭州周末路线", start: 6380, duration: 540 },
-    { label: "笔记 · 检索杭州旅行历史", start: 7020, duration: 980 },
-    { label: "笔记 · 写入周末杭州行程.md", start: 8100, duration: 840 },
+    { label: text("记录 · 读取 3 条杭州收藏", "Records · Read 3 Hangzhou items"), start: 5600, duration: 680 },
+    { label: text("画布 · 读取杭州周末路线", "Canvas · Read weekend Hangzhou route"), start: 6380, duration: 540 },
+    { label: text("笔记 · 检索杭州旅行历史", "Notes · Search Hangzhou travel history"), start: 7020, duration: 980 },
+    { label: text("笔记 · 写入周末杭州行程.md", "Notes · Write Weekend Hangzhou Itinerary.md"), start: 8100, duration: 840 },
   ] as const
   const responseStart = 9100
   const responseSegments = [
-    "已读取关联的 3 条旅行记录、1 个路线画布和 2 篇历史笔记。",
-    "我重新安排了两天路线，减少跨区往返，并补充了餐厅预约、雨天备选和返程提醒。",
-    "行程已保存，正在为你打开写作页面。",
+    text("已读取关联的 3 条旅行记录、1 个路线画布和 2 篇历史笔记。", "I read 3 related travel records, 1 route canvas, and 2 previous notes."),
+    text("我重新安排了两天路线，减少跨区往返，并补充了餐厅预约、雨天备选和返程提醒。", "I reorganized the two-day route to reduce travel and added restaurant bookings, a rainy-day alternative, and a return reminder."),
+    text("行程已保存，正在为你打开写作页面。", "The itinerary is saved. Opening it in Writing now."),
   ] as const
   const responseLength = responseSegments.reduce((total, segment) => total + segment.length, 0)
   const visibleCharacters = Math.min(
@@ -1146,8 +1076,8 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
                 {processComplete ? <CheckCircle2Icon /> : <Loader2Icon className="animate-spin text-primary" />}
               </MarkerIcon>
               <MarkerContent className="flex-1 truncate">
-                {processComplete ? "已处理" : "处理中"}{" "}
-                {formatDuration(Math.min(processElapsed, responseStart - processStart))} · 执行 {visibleEvents.length} 次
+                {processComplete ? text("已处理", "Processed") : text("处理中", "Processing")}{" "}
+                {formatDuration(Math.min(processElapsed, responseStart - processStart))} · {text(`执行 ${visibleEvents.length} 次`, `${visibleEvents.length} actions`)}
               </MarkerContent>
               <MarkerIcon>
                 <ChevronRightIcon className={cn("transition-transform", processOpen && "rotate-90")} />
@@ -1167,14 +1097,14 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
                   className="py-1.5"
                 >
                   <MarkerIcon><DatabaseIcon /></MarkerIcon>
-                  <MarkerContent className="flex-1 truncate">检索到 2 个知识库来源</MarkerContent>
+                  <MarkerContent className="flex-1 truncate">{text("检索到 2 个知识库来源", "Found 2 knowledge sources")}</MarkerContent>
                   <MarkerIcon>
                     <ChevronRightIcon className={cn("transition-transform", ragOpen && "rotate-90")} />
                   </MarkerIcon>
                 </Marker> : null}
                 {elapsed >= 5550 && ragOpen ? (
                   <div className="flex flex-col gap-1 pl-6">
-                    {["杭州想去的地方.md", "餐厅收藏.md"].map((source) => (
+                    {(lang === "en" ? ["Places to Visit in Hangzhou.md", "Saved Restaurants.md"] : ["杭州想去的地方.md", "餐厅收藏.md"]).map((source) => (
                       <Marker key={source} className="py-1 text-xs">
                         <MarkerIcon><FileTextIcon /></MarkerIcon>
                         <MarkerContent className="flex-1 truncate">{source}</MarkerContent>
@@ -1194,7 +1124,7 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
                   className="py-1.5"
                 >
                   <MarkerIcon><SparklesIcon /></MarkerIcon>
-                  <MarkerContent className="flex-1 truncate">已使用 1 个技能</MarkerContent>
+                  <MarkerContent className="flex-1 truncate">{text("已使用 1 个技能", "Used 1 skill")}</MarkerContent>
                   <MarkerIcon>
                     <ChevronRightIcon className={cn("transition-transform", skillsOpen && "rotate-90")} />
                   </MarkerIcon>
@@ -1236,7 +1166,7 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
             ) : null}
 
             {responseComplete ? <div className="mt-2 flex flex-wrap items-center justify-between gap-1">
-              <span className="-translate-x-3 px-3 text-xs text-muted-foreground">刚刚</span>
+              <span className="-translate-x-3 px-3 text-xs text-muted-foreground">{text("刚刚", "Just now")}</span>
               <div className="ml-auto flex items-center">
                 {[HighlighterIcon, CopyIcon, LanguagesIcon, Volume2Icon, XIcon].map((Icon, index) => (
                   <span key={index} className="flex size-8 items-center justify-center text-muted-foreground">
@@ -1257,8 +1187,8 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
                 <ComposerResourceMenu kind={activeAssociation.kind} />
               ) : null}
               <InputGroupTextarea
-                aria-label="对话输入"
-                placeholder={messageSent || composerText.length === 0 ? "你可以提问或将记录整理为文章..." : undefined}
+                aria-label={text("对话输入", "Chat input")}
+                placeholder={messageSent || composerText.length === 0 ? text("你可以提问或将记录整理为文章...", "Ask a question or organize records into an article...") : undefined}
                 value={messageSent ? "" : composerText}
                 readOnly
                 className="min-h-10 max-h-10 w-full px-2 py-2 text-sm placeholder:text-[13px]"
@@ -1266,15 +1196,15 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
             </div>
             <InputGroupAddon align="block-end" className="justify-between p-0">
               <div className="flex items-center gap-1">
-                <InputGroupButton size="icon-sm" aria-label="添加附件"><PaperclipIcon /></InputGroupButton>
-                <InputGroupButton size="icon-sm" aria-label="选择工具"><ToolCaseIcon /></InputGroupButton>
+                <InputGroupButton size="icon-sm" aria-label={text("添加附件", "Add attachment")}><PaperclipIcon /></InputGroupButton>
+                <InputGroupButton size="icon-sm" aria-label={text("选择工具", "Choose tool")}><ToolCaseIcon /></InputGroupButton>
               </div>
               <div className="flex items-center gap-2 pr-1">
-                <InputGroupButton size="icon-sm" aria-label="权限设置"><ShieldQuestionIcon /></InputGroupButton>
+                <InputGroupButton size="icon-sm" aria-label={text("权限设置", "Permission settings")}><ShieldQuestionIcon /></InputGroupButton>
                 <InputGroupButton
                   size="icon-sm"
                   variant="secondary"
-                  aria-label="发送"
+                  aria-label={text("发送", "Send")}
                   disabled={messageSent || !promptFullyTyped}
                   className={cn(
                     "transition-transform",
@@ -1293,6 +1223,7 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
 }
 
 function MobileWritingPage() {
+  const { lang, text } = useDemoLanguage()
   const [isEditing, setIsEditing] = useState(false)
   const [writingElapsed, setWritingElapsed] = useState(0)
   const writingScrollRef = useRef<HTMLElement>(null)
@@ -1342,12 +1273,14 @@ function MobileWritingPage() {
           "min-h-0 flex-1 cursor-text overflow-y-auto px-5 pt-6 text-sm leading-7 outline-none",
           isEditing ? "notegen-demo-writing-scroll" : "notegen-demo-under-dock"
         )}
-        aria-label="编辑周末杭州行程"
+        aria-label={text("编辑周末杭州行程", "Edit weekend Hangzhou itinerary")}
         tabIndex={0}
         onClick={() => setIsEditing(true)}
         onFocus={() => setIsEditing(true)}
       >
-        {writingStreamComplete ? (
+        {writingStreamComplete && lang === "en" ? (
+          <MobileWritingEnglishDocument />
+        ) : writingStreamComplete ? (
           <>
         <h1 className="text-2xl font-semibold tracking-tight">周末杭州行程</h1>
         <p className="mt-4 text-muted-foreground">
@@ -1492,12 +1425,82 @@ function WritingCursor({ active }: { active: boolean }) {
   ) : null
 }
 
+function MobileWritingEnglishDocument() {
+  return (
+    <>
+      <h1 className="text-2xl font-semibold tracking-tight">Weekend in Hangzhou</h1>
+      <p className="mt-4 text-muted-foreground">
+        Focus the two days on <strong className="font-semibold text-foreground">West Lake, Xiangshan, and the west side</strong>,
+        leaving more time for walks, meals, and spontaneous stops. Full addresses are saved in the{" "}
+        <a className="font-medium text-foreground underline underline-offset-4" href="#route">route notes</a>.
+      </p>
+      <blockquote className="mt-5 border-l-2 pl-4 italic text-muted-foreground">
+        Choose one main route each day. If a place feels right, stay a little longer.
+      </blockquote>
+      <h2 className="mt-7 text-base font-semibold">Itinerary overview</h2>
+      <ul className="mt-2 list-disc pl-5 text-muted-foreground">
+        <li>Saturday: West Lake, Xiangshan campus, and Hangzhou cuisine</li>
+        <li>Sunday: Faxi Temple, Tianmuli, and gifts before departure</li>
+      </ul>
+      <div className="mt-5 overflow-hidden rounded-lg border">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[310px] border-collapse text-left text-xs">
+            <thead className="bg-muted/60 text-foreground">
+              <tr>
+                <th className="border-b px-3 py-2 font-medium">Day</th>
+                <th className="border-b px-3 py-2 font-medium">Main route</th>
+                <th className="border-b px-3 py-2 font-medium">Walking</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted-foreground">
+              <tr>
+                <td className="border-b px-3 py-2">Sat</td>
+                <td className="border-b px-3 py-2">Beishan Rd → Xiangshan</td>
+                <td className="border-b px-3 py-2">About 9 km</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2">Sun</td>
+                <td className="px-3 py-2">Faxi Temple → Tianmuli</td>
+                <td className="px-3 py-2">About 6 km</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <h2 className="mt-7 text-base font-semibold">Saturday · West Lake and Xiangshan</h2>
+      <h3 className="mt-3 font-medium">09:00—12:00　West Lake walk</h3>
+      <p className="mt-1 text-muted-foreground">Start at Quyuan Garden, follow Beishan Road to Solitary Hill, and leave time for unplanned stops.</p>
+      <h3 className="mt-4 font-medium">12:15—13:30　Lunch</h3>
+      <p className="mt-1 text-muted-foreground">Have a simple lunch near Solitary Hill and save the full Hangzhou meal for dinner.</p>
+      <h3 className="mt-4 font-medium">15:00—17:30　Xiangshan campus</h3>
+      <p className="mt-1 text-muted-foreground">Explore the architecture and public spaces, with time for coffee before leaving.</p>
+      <h2 className="mt-7 text-base font-semibold">Before departure</h2>
+      <div className="mt-3 flex flex-col gap-2 text-muted-foreground">
+        {([
+          ["Book Saturday dinner", true],
+          ["Confirm Faxi Temple hours", true],
+          ["Download the offline route", false],
+          ["Pack rain gear and walking shoes", false],
+        ] as const).map(([item, checked]) => (
+          <div key={item} className="flex items-center gap-2">
+            <span className={cn("flex size-4 shrink-0 items-center justify-center rounded border", checked && "bg-primary text-primary-foreground")}>
+              {checked ? <CheckIcon className="size-3" /> : null}
+            </span>
+            <span className={cn(checked && "line-through opacity-60")}>{item}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
 function MobileWritingStream({ elapsed }: { elapsed: number }) {
-  const title = "周末杭州行程"
-  const intro = "两天以西湖、象山和城西为主，减少跨区往返，把时间留给散步、吃饭和临时停留。完整地址都放在路线备忘里。"
-  const quote = "不赶景点，只确定每天的一条主线；如果遇到喜欢的地方，就多停一会儿。"
-  const firstDay = "周六：西湖慢走、中国美院象山校区、杭帮菜"
-  const secondDay = "周日：法喜寺、天目里、返程前购买伴手礼"
+  const { text } = useDemoLanguage()
+  const title = text("周末杭州行程", "Weekend in Hangzhou")
+  const intro = text("两天以西湖、象山和城西为主，减少跨区往返，把时间留给散步、吃饭和临时停留。完整地址都放在路线备忘里。", "Focus the two days on West Lake, Xiangshan, and the west side of the city, leaving more time for walks, meals, and spontaneous stops.")
+  const quote = text("不赶景点，只确定每天的一条主线；如果遇到喜欢的地方，就多停一会儿。", "Choose one main route each day. If a place feels right, stay a little longer.")
+  const firstDay = text("周六：西湖慢走、中国美院象山校区、杭帮菜", "Saturday: West Lake, Xiangshan campus, and Hangzhou cuisine")
+  const secondDay = text("周日：法喜寺、天目里、返程前购买伴手礼", "Sunday: Faxi Temple, Tianmuli, and gifts before departure")
   const titleEnd = 220 + title.length * 54
   const introStart = titleEnd + 180
   const introEnd = introStart + intro.length * 17
@@ -1534,7 +1537,7 @@ function MobileWritingStream({ elapsed }: { elapsed: number }) {
 
       {elapsed >= overviewStart ? (
         <h2 className="mt-7 text-base font-semibold">
-          {revealWritingText("行程概览", elapsed, overviewStart, 52)}
+          {revealWritingText(text("行程概览", "Itinerary overview"), elapsed, overviewStart, 52)}
           <WritingCursor active={elapsed < overviewEnd} />
         </h2>
       ) : null}
@@ -1560,33 +1563,33 @@ function MobileWritingStream({ elapsed }: { elapsed: number }) {
             <table className="w-full min-w-[310px] border-collapse text-left text-xs">
               <thead className="bg-muted/60 text-foreground">
                 <tr>
-                  <th className="border-b px-3 py-2 font-medium">日期</th>
-                  <th className="border-b px-3 py-2 font-medium">主路线</th>
-                  <th className="border-b px-3 py-2 font-medium">步行</th>
+                  <th className="border-b px-3 py-2 font-medium">{text("日期", "Day")}</th>
+                  <th className="border-b px-3 py-2 font-medium">{text("主路线", "Main route")}</th>
+                  <th className="border-b px-3 py-2 font-medium">{text("步行", "Walking")}</th>
                 </tr>
               </thead>
               <tbody className="text-muted-foreground">
                 <tr>
                   <td className="border-b px-3 py-2">
-                    {revealWritingText("周六", elapsed, tableStart, 70)}
+                    {revealWritingText(text("周六", "Sat"), elapsed, tableStart, 70)}
                   </td>
                   <td className="border-b px-3 py-2">
-                    {revealWritingText("北山街 → 象山", elapsed, tableStart + 140, 32)}
+                    {revealWritingText(text("北山街 → 象山", "Beishan Rd → Xiangshan"), elapsed, tableStart + 140, 32)}
                   </td>
                   <td className="border-b px-3 py-2">
-                    {revealWritingText("约 9 km", elapsed, tableStart + 420, 40)}
+                    {revealWritingText(text("约 9 km", "About 9 km"), elapsed, tableStart + 420, 40)}
                   </td>
                 </tr>
                 {elapsed >= tableStart + 720 ? (
                   <tr>
                     <td className="px-3 py-2">
-                      {revealWritingText("周日", elapsed, tableStart + 720, 70)}
+                      {revealWritingText(text("周日", "Sun"), elapsed, tableStart + 720, 70)}
                     </td>
                     <td className="px-3 py-2">
-                      {revealWritingText("法喜寺 → 天目里", elapsed, tableStart + 860, 28)}
+                      {revealWritingText(text("法喜寺 → 天目里", "Faxi Temple → Tianmuli"), elapsed, tableStart + 860, 28)}
                     </td>
                     <td className="px-3 py-2">
-                      {revealWritingText("约 6 km", elapsed, tableStart + 1160, 40)}
+                      {revealWritingText(text("约 6 km", "About 6 km"), elapsed, tableStart + 1160, 40)}
                       <WritingCursor active={elapsed < 5800} />
                     </td>
                   </tr>
@@ -1678,7 +1681,42 @@ const writingToolbarSecondaryItems: Record<
   ],
 }
 
+const writingToolbarEnglishLabels: Record<string, string> = {
+  标题: "Heading",
+  列表: "List",
+  块级: "Block",
+  数学: "Math",
+  图表: "Diagram",
+  续写: "Continue",
+  生成章节: "Generate section",
+  总结全文: "Summarize",
+  自定义: "Custom",
+  正文: "Paragraph",
+  一级标题: "Heading 1",
+  二级标题: "Heading 2",
+  三级标题: "Heading 3",
+  无序列表: "Bullet list",
+  有序列表: "Numbered list",
+  待办列表: "Task list",
+  引用: "Quote",
+  代码块: "Code block",
+  分割线: "Divider",
+  图片: "Image",
+  表格: "Table",
+  行内公式: "Inline math",
+  块级公式: "Block math",
+  流程图: "Flowchart",
+  时序图: "Sequence",
+  甘特图: "Gantt",
+  类图: "Class",
+  状态图: "State",
+  饼图: "Pie",
+  "ER 图": "ER",
+  用户旅程: "Journey",
+}
+
 function MobileWritingToolbarDemo() {
+  const { lang, text } = useDemoLanguage()
   const [activeMenu, setActiveMenu] = useState<WritingToolbarMenu>("root")
   const items =
     activeMenu === "root"
@@ -1694,27 +1732,28 @@ function MobileWritingToolbarDemo() {
         {activeMenu !== "root" ? (
           <Button
             type="button"
-            aria-label="返回一级菜单"
-            title="返回一级菜单"
+            aria-label={text("返回一级菜单", "Back to main menu")}
+            title={text("返回一级菜单", "Back to main menu")}
             size="sm"
             className="h-10 min-w-10 shrink-0 rounded-full px-3 text-xs"
             onClick={() => setActiveMenu("root")}
           >
             <ChevronLeftIcon data-icon="inline-start" />
-            <span>{writingToolbarMenuLabels[activeMenu]}</span>
+            <span>{lang === "en" ? writingToolbarEnglishLabels[writingToolbarMenuLabels[activeMenu]] ?? writingToolbarMenuLabels[activeMenu] : writingToolbarMenuLabels[activeMenu]}</span>
           </Button>
         ) : null}
 
         {items.map((item) => {
           const Icon = item.icon
           const key = item.kind === "menu" ? item.menu : item.action
+          const label = lang === "en" ? writingToolbarEnglishLabels[item.label] ?? item.label : item.label
 
           return (
             <Button
               key={key}
               type="button"
-              aria-label={item.label}
-              title={item.label}
+              aria-label={label}
+              title={label}
               variant="ghost"
               size="sm"
               className="h-10 min-w-10 shrink-0 rounded-full px-3 text-xs text-muted-foreground hover:bg-muted/80 hover:text-foreground"
@@ -1728,7 +1767,7 @@ function MobileWritingToolbarDemo() {
               }}
             >
               <Icon data-icon="inline-start" />
-              <span>{item.label}</span>
+              <span>{label}</span>
             </Button>
           )
         })}
@@ -1738,22 +1777,22 @@ function MobileWritingToolbarDemo() {
 }
 
 function MobileCanvasPage() {
+  const { lang, text } = useDemoLanguage()
+  const canvases = lang === "en"
+    ? ["Weekend Hangzhou Route", "West Lake Walk", "Restaurants and Coffee", "Rainy-day Alternative"]
+    : ["杭州周末路线", "西湖散步", "餐厅与咖啡", "雨天备选"]
+
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-14 items-center gap-2 border-b bg-background px-2">
-        <span className="text-sm font-semibold">画布</span>
+        <span className="text-sm font-semibold">{text("画布", "Canvas")}</span>
         <div className="ml-auto flex items-center">
           <span className="flex size-10 items-center justify-center"><FilePlus2Icon className="size-5" /></span>
           <span className="flex size-10 items-center justify-center"><EllipsisVerticalIcon className="size-5" /></span>
         </div>
       </header>
       <div className="notegen-demo-under-dock grid min-h-0 flex-1 grid-cols-2 content-start gap-3 overflow-y-auto px-3 pt-3">
-        {[
-          "杭州周末路线",
-          "西湖散步",
-          "餐厅与咖啡",
-          "雨天备选",
-        ].map((title, index) => (
+        {canvases.map((title, index) => (
           <div key={title} className="relative">
             <button type="button" className="w-full min-w-0 overflow-hidden rounded-xl border bg-background text-left">
               <div className="relative aspect-[4/3] bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:12px_12px]">
