@@ -51,6 +51,10 @@ export default async function Layout(
           name="msvalidate.01"
           content="E1A1C420498230BF0F03A1F980BDEE12"
         />
+        <meta
+          name="baidu-site-verification"
+          content="codeva-KnH6wuoxrB"
+        />
       </head>
       <body className="flex flex-col min-h-screen">
         <RootProvider
