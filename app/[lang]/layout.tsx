@@ -46,6 +46,12 @@ export default async function Layout(
 
   return (
     <html lang={htmlLang} suppressHydrationWarning>
+      <head>
+        <meta
+          name="msvalidate.01"
+          content="E1A1C420498230BF0F03A1F980BDEE12"
+        />
+      </head>
       <body className="flex flex-col min-h-screen">
         <RootProvider
           i18n={{
