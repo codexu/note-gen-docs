@@ -163,12 +163,12 @@ export function NoteGenDemo({ lang }: { lang: DemoLang }) {
                 {text("为什么是 NoteGen", "Why NoteGen")}
               </Badge>
               <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
-                {text("记录，不应该迫使你立刻整理。", "Capturing should not force you to organize immediately.")}
+                {text("记录时，不用先想好放在哪里。", "You don't need to decide where a note belongs before writing it down.")}
               </h2>
               <p className="max-w-3xl text-lg leading-8 text-muted-foreground">
                 {text(
-                  "想法出现的时候，你通常还不知道它属于哪个文件夹，也不知道它最终会成为周报、文章还是项目资料。NoteGen 先替你接住素材，等到真正需要时再整理。",
-                  "When an idea appears, you rarely know which folder it belongs in or whether it will become a report, article, or project note. NoteGen captures it first and organizes it when you actually need it."
+                  "想到什么就记下来，不用马上分类。写周报、文章或整理项目资料时，可以从记录里选出需要的内容。",
+                  "Capture an idea without sorting it immediately. When writing a report, article, or project document, select the records you need."
                 )}
               </p>
             </div>
@@ -205,7 +205,7 @@ function DesktopScenes() {
       <DesktopScene
         step="01"
         badge={text("记录", "Capture")}
-        title={text("先把发生的事情留下。", "Capture what happens first.")}
+        title={text("文字、图片、语音等内容统一记录。", "Keep text, images, voice, and more in one place.")}
         description={text("文字、语音、截图、图片、链接、文件和待办进入同一条记录流。标签以折叠分组呈现，真正需要时再筛选和整理。", "Text, audio, screenshots, images, links, files, and tasks enter one stream. Filter and organize them only when needed.")}
         details={[
           [text("支持内容", "Formats"), text("文字、语音、截图、图片、链接、文件、待办", "Text, audio, screenshots, images, links, files, and tasks")],
@@ -218,7 +218,7 @@ function DesktopScenes() {
       <DesktopScene
         step="02"
         badge={text("画布", "Canvas")}
-        title={text("把材料放到无限画布上。", "Place your material on an infinite canvas.")}
+        title={text("在无限画布上自由绘图。", "Draw freely on an infinite canvas.")}
         description={text("笔记、图片、网页和 AI 生成结果可以成为独立节点。用连接关系梳理研究、流程和仍未成形的想法。", "Notes, images, web pages, and AI output become independent nodes. Connect them to map research, workflows, and emerging ideas.")}
         details={[
           [text("节点类型", "Nodes"), text("笔记、记录、图片、链接、图形与图表", "Notes, records, images, links, shapes, and charts")],
