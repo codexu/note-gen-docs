@@ -1,10 +1,10 @@
 ---
 title: Sync
-description: Sync Markdown, records, chats, and settings through Git, S3, or WebDAV.
+description: Sync NoteGen data through Git, S3, WebDAV, OneDrive, or iCloud Drive.
 icon: RefreshCw
 ---
 
-NoteGen supports GitHub, Gitee, GitLab, Gitea, S3, and WebDAV. The selected provider becomes the primary sync method.
+NoteGen supports GitHub, Gitee, GitLab, Gitea, S3, WebDAV, OneDrive, and iCloud Drive. The selected provider becomes the primary sync method.
 
 ![Sync configuration with GitHub repository, note, and record sync controls](https://files.seeusercontent.com/2026/07/16/c1cW/desktop-sync.jpeg)
 
@@ -41,6 +41,12 @@ Enter the access key ID, secret access key, region, bucket, endpoint, and option
 ### WebDAV
 
 Enter the server URL, username, password, and optional path prefix. Synology, QNAP, Nextcloud, and other compatible servers can be used. HTTPS is recommended.
+
+### OneDrive / iCloud Drive
+
+On desktop, choose a local sync folder managed by OneDrive, iCloud Drive, or another cloud-drive service. Android can grant access to a cloud folder through the system picker. On iOS, NoteGen can migrate the workspace into its iCloud Drive container. After migration, the cloud-drive service synchronizes Markdown and asset files between devices, while the original workspace remains as a safety copy.
+
+iCloud Drive requires an Apple Account with iCloud Drive enabled. NoteGen never receives the Apple Account password and does not relay iCloud files through NoteGen servers.
 
 ## Note auto-sync
 

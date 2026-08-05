@@ -1,10 +1,10 @@
 ---
 title: 同步配置
-description: 使用 Git、S3 或 WebDAV 同步 Markdown、记录、聊天和设置。
+description: 使用 Git、S3、WebDAV、OneDrive 或 iCloud Drive 同步 NoteGen 数据。
 icon: RefreshCw
 ---
 
-NoteGen 支持 GitHub、Gitee、GitLab、Gitea、S3 和 WebDAV。选择的平台会成为当前主要同步方式。
+NoteGen 支持 GitHub、Gitee、GitLab、Gitea、S3、WebDAV、OneDrive 和 iCloud Drive。选择的平台会成为当前主要同步方式。
 
 ![同步配置页，展示 GitHub 仓库、笔记和记录同步选项](https://files.seeusercontent.com/2026/07/16/c1cW/desktop-sync.jpeg)
 
@@ -41,6 +41,12 @@ NoteGen 支持 GitHub、Gitee、GitLab、Gitea、S3 和 WebDAV。选择的平台
 ### WebDAV
 
 配置服务器 URL、用户名、密码和可选路径前缀。适用于群晖、QNAP、Nextcloud 及其他兼容服务。建议使用 HTTPS。
+
+### OneDrive / iCloud Drive
+
+桌面端可以选择 OneDrive、iCloud Drive 或其他云盘中的本地同步文件夹。Android 可以通过系统文件选择器授权云盘目录；iOS 可以把工作区迁移到 NoteGen 的 iCloud Drive 容器。迁移完成后，Markdown 与资源文件由对应云盘服务在设备间同步，原工作区保留为安全副本。
+
+iOS 使用 iCloud Drive 前需要登录 Apple 账户并开启 iCloud Drive。NoteGen 不会获得 Apple 账户密码，也不会通过 NoteGen 服务器中转 iCloud 文件。
 
 ## 笔记自动同步
 

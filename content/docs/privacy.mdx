@@ -21,13 +21,19 @@ NoteGen 无需账号即可使用，笔记、记录、聊天、记忆、向量索
 | --- | --- | --- |
 | 内置免费模型或自定义在线模型 | 提示词、所选上下文、图片、音频或待处理文本 | 对应模型服务商 |
 | 知识库问答 | 查询文本及检索到的笔记片段 | 你配置的聊天、嵌入或重排服务 |
-| 云同步 | Markdown、资源、记录、聊天和允许同步的设置 | 所选 Git/S3/WebDAV 服务 |
+| 云同步 | Markdown、资源、记录、聊天和允许同步的设置 | 用户选择的 Git、S3、WebDAV、OneDrive 或 iCloud Drive 服务 |
 | 图床 | 上传的图片及必要的认证请求 | 所选图床服务 |
 | MCP | 工具参数以及工具执行所需的上下文 | 所选 MCP 服务器 |
 | 更新检查 | 当前版本和平台所需的请求信息 | NoteGen 下载服务或 GitHub |
 | 匿名启动统计 | 临时会话 ID、系统类型、语言和应用版本 | NoteGen 的 Aptabase 统计服务 |
 
 匿名启动统计不包含笔记内容、文件名、文件路径、AI 对话或硬件机器 ID。
+
+## iCloud Drive 同步
+
+iOS 用户可以主动将当前工作区迁移到 NoteGen 的 iCloud Drive 容器。迁移时，NoteGen 会复制 Markdown、图片、音频及工作区内的其他文件，随后由 Apple iCloud 在已登录同一 Apple 账户的设备之间同步。原本地工作区会保留为安全副本。
+
+NoteGen 无法访问用户的 Apple 账户，也不会通过 NoteGen 服务器接收 iCloud Drive 中的内容。iCloud 中的数据由用户的 Apple 账户管理，用户可以在系统的 iCloud Drive 设置或“文件”App 中查看和删除。使用此功能需遵守 Apple 的 iCloud 条款和隐私政策。
 
 ## 同步中的敏感配置
 

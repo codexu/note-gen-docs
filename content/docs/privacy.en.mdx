@@ -21,13 +21,19 @@ Switching workspaces does not move files from the previous workspace. Create a l
 | --- | --- | --- |
 | Built-in free or custom online models | Prompts, selected context, images, audio, or text being processed | The configured model provider |
 | Knowledge-base answers | Query text and retrieved note excerpts | Configured chat, embedding, or rerank providers |
-| Cloud sync | Markdown, assets, records, chats, and permitted settings | Selected Git, S3, or WebDAV service |
+| Cloud sync | Markdown, assets, records, chats, and permitted settings | The Git, S3, WebDAV, OneDrive, or iCloud Drive service selected by the user |
 | Image hosting | Uploaded images and authentication requests | Selected image host |
 | MCP | Tool arguments and context required by the tool | Selected MCP server |
 | Update checks | Version and platform request metadata | NoteGen download service or GitHub |
 | Anonymous startup analytics | Ephemeral session ID, OS, locale, and app version | NoteGen's Aptabase endpoint |
 
 Startup analytics does not contain note content, file names, file paths, AI chats, or a hardware machine ID.
+
+## iCloud Drive sync
+
+On iOS, users can choose to migrate the current workspace to NoteGen's iCloud Drive container. NoteGen copies Markdown files, images, audio, and other workspace files into that container, after which Apple iCloud synchronizes them between devices signed in to the same Apple Account. The original local workspace remains as a safety copy.
+
+NoteGen cannot access the user's Apple Account and does not receive iCloud Drive content through NoteGen servers. The user manages this data through their Apple Account and can view or delete it in iCloud Drive settings or the Files app. Use of this feature is also subject to Apple's iCloud terms and privacy policy.
 
 ## Sensitive settings and sync
 

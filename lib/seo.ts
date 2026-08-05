@@ -10,7 +10,7 @@ export const siteConfig = {
 export const homeSeo = {
   cn: {
     title: 'NoteGen - 开源免费的 AI Markdown 笔记软件',
-    description: 'NoteGen 是开源免费的跨平台 AI Markdown 笔记软件，支持先记录再整理、AI 自动成文、本地笔记、多端同步和自定义模型。',
+    description: 'NoteGen 是开源免费的跨平台 AI Markdown 笔记软件，支持先记录再整理、AI 自动成文、本地笔记，以及 OneDrive、iCloud Drive 等多端同步方案。',
     keywords: [
       'NoteGen',
       'AI 笔记软件',
@@ -22,11 +22,14 @@ export const homeSeo = {
       'AI 写作',
       '本地笔记',
       '免费同步',
+      '网盘同步',
+      'OneDrive 笔记',
+      'iCloud Drive 笔记',
     ],
   },
   en: {
     title: 'NoteGen - Open Source AI Markdown Notes',
-    description: 'NoteGen is an open-source AI Markdown note-taking app for capturing first, organizing later, syncing across devices, and turning notes into editable drafts.',
+    description: 'NoteGen is an open-source AI Markdown note-taking app for capturing first, organizing later, and syncing plain files across devices with OneDrive, iCloud Drive, and more.',
     keywords: [
       'NoteGen',
       'AI note-taking app',
@@ -38,6 +41,9 @@ export const homeSeo = {
       'AI writing',
       'local-first notes',
       'free sync',
+      'cloud drive sync',
+      'OneDrive notes',
+      'iCloud Drive notes',
     ],
   },
 } satisfies Record<SupportedLang, {
@@ -97,6 +103,7 @@ export function getHomeJsonLd(lang: SupportedLang) {
           'AI 自动整理成 Markdown 笔记',
           '桌面端和移动端记录',
           '多端免费同步',
+          'OneDrive 与 iCloud Drive 网盘同步',
           '本地笔记库',
           '开源免费',
         ]
@@ -105,6 +112,7 @@ export function getHomeJsonLd(lang: SupportedLang) {
           'AI organizes notes into Markdown drafts',
           'Capture on desktop and mobile',
           'Free sync across devices',
+          'OneDrive and iCloud Drive sync',
           'Local note library',
           'Open source and free',
         ],

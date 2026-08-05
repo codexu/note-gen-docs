@@ -2,11 +2,19 @@ import {
   ArrowRightIcon,
   BrainCircuitIcon,
   CheckIcon,
+  CloudIcon,
+  DatabaseIcon,
   DownloadIcon,
+  FileTextIcon,
+  GitBranchIcon,
+  GithubIcon,
   HeartIcon,
+  KeyRoundIcon,
   MonitorSmartphoneIcon,
   NetworkIcon,
+  ServerIcon,
   ShieldCheckIcon,
+  WifiOffIcon,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -39,7 +47,7 @@ const capabilitiesCn = [
     icon: ShieldCheckIcon,
     title: "普通文件长期保存",
     description: "最终留下标准 Markdown 与本地附件，不把你的知识锁在专有格式里。",
-    items: ["本地优先，无需登录", "完整文件管理与源码模式", "模型自由选择，同步方案自主可控"],
+    items: ["本地优先，无需登录", "完整文件管理与源码模式", "Git、对象存储或自己的网盘"],
   },
 ]
 
@@ -67,7 +75,7 @@ const capabilitiesEn = [
     icon: ShieldCheckIcon,
     title: "Plain files for the long term",
     description: "Keep standard Markdown and local attachments without locking your knowledge into a proprietary format.",
-    items: ["Local first, no login required", "File management and source mode", "Choose your models and control your sync"],
+    items: ["Local first, no login required", "File management and source mode", "Git, object storage, or your cloud drive"],
   },
 ]
 
@@ -78,25 +86,21 @@ const casesEn = [
   ["Loose ideas", "Canvas and maps", "Make abstract thoughts visible"],
 ]
 
+const syncOptions = [
+  { name: "GitHub", icon: GithubIcon },
+  { name: "Gitee", icon: GitBranchIcon },
+  { name: "GitLab", icon: GitBranchIcon },
+  { name: "Gitea", icon: GitBranchIcon },
+  { name: "S3", icon: DatabaseIcon },
+  { name: "WebDAV", icon: ServerIcon },
+  { name: "cloudDrive", icon: CloudIcon },
+]
+
 export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
   const isEnglish = lang === "en"
   const text = (cnText: string, enText: string) => isEnglish ? enText : cnText
   const capabilities = isEnglish ? capabilitiesEn : capabilitiesCn
   const cases = isEnglish ? casesEn : casesCn
-  const privacyItems = isEnglish
-    ? [
-        ["Stored locally by default", "Capture, browse, and keep writing even without a network connection."],
-        ["Standard Markdown files", "Open them without NoteGen and keep them readable for the long term."],
-        ["You control where data goes", "Use your own models, image host, and Git, S3, or WebDAV sync."],
-        ["Completely free and open source", "No subscription, account, or paywall; external services may charge."],
-      ]
-    : [
-        ["默认保存在本地", "没有网络，也可以记录、浏览和继续写作。"],
-        ["标准 Markdown 文件", "不依赖 NoteGen 才能打开，适合真正长期保存。"],
-        ["数据去向由你掌控", "模型、图床与同步方案均由你配置，可使用自己的 Git、S3 或 WebDAV。"],
-        ["完全免费且开源", "无需订阅、无需登录、没有功能付费墙；第三方服务可能单独收费。"],
-      ]
-
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section id="top" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
@@ -181,38 +185,93 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
       </section>
 
       <section id="privacy" className="border-y bg-primary text-primary-foreground">
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:py-28">
-          <div className="flex flex-col gap-6">
-            <Badge variant="secondary" className="w-fit">
-              {text("数据所有权", "Data ownership")}
-            </Badge>
-            <h2 className="max-w-xl text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
+          <div className="flex max-w-4xl flex-col gap-6">
+            <Badge variant="secondary">{text("数据所有权", "Data ownership")}</Badge>
+            <h2 className="text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
               {text("你的笔记，始终在你手里。", "Your notes stay in your hands.")}
             </h2>
-            <p className="max-w-xl text-lg leading-8 text-primary-foreground/70">
+            <p className="max-w-3xl text-lg leading-8 text-primary-foreground/70">
               {text(
-                "笔记、记录、对话和设置默认保存在本机。在线模型、同步、图床与 MCP 只连接你主动选择的服务。",
-                "Notes, records, chats, and settings stay on your device by default. Online models, sync, image hosting, and MCP connect only to services you choose."
+                "NoteGen 默认只在本机读写标准 Markdown 与附件。需要跨设备时，再由你决定连接 Git、对象存储、私有服务或自己的网盘。",
+                "NoteGen reads and writes standard Markdown and attachments on your device by default. When you need multiple devices, you choose whether to connect Git, object storage, a private server, or your own cloud drive."
               )}
             </p>
           </div>
-          <Card className="bg-primary-foreground text-foreground">
-            <CardHeader>
-              <CardTitle>{text("清晰的数据边界", "Clear data boundaries")}</CardTitle>
-              <CardDescription>
-                {text("不靠一句“隐私优先”，而是让每一项都可以验证。", "Every privacy claim is concrete and verifiable.")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-5">
-              {privacyItems.map(([title, description], index) => (
-                <div key={title} className="flex gap-4">
-                  <Badge variant="outline">{String(index + 1).padStart(2, "0")}</Badge>
-                  <div className="flex flex-col gap-1">
-                    <h3 className="font-medium">{title}</h3>
-                    <p className="text-sm leading-6 text-muted-foreground">{description}</p>
-                  </div>
+
+          <Card className="mt-12 grid gap-0 overflow-hidden py-0 shadow-xl lg:grid-cols-[0.8fr_1.2fr]">
+            <CardHeader className="flex flex-col justify-between gap-10 border-b p-6 sm:p-8 lg:border-r lg:border-b-0 lg:p-10">
+              <div className="flex flex-col gap-6">
+                <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                  <ShieldCheckIcon className="size-6" />
                 </div>
-              ))}
+                <div className="flex flex-col gap-3">
+                  <CardDescription>NoteGen Workspace</CardDescription>
+                  <CardTitle className="text-2xl">
+                    {text("默认保存在本地", "Stored locally by default")}
+                  </CardTitle>
+                  <CardDescription className="max-w-md text-base leading-7">
+                    {text(
+                      "没有网络也能继续记录、浏览和写作。笔记始终是标准文件，不依赖 NoteGen 才能打开。",
+                      "Keep capturing, browsing, and writing without a network connection. Your notes stay as standard files readable without NoteGen."
+                    )}
+                  </CardDescription>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { icon: FileTextIcon, label: text("标准 Markdown", "Standard Markdown") },
+                  { icon: WifiOffIcon, label: text("离线可用", "Works offline") },
+                  { icon: KeyRoundIcon, label: text("无需登录", "No account") },
+                ].map((item) => (
+                  <Badge key={item.label} variant="outline" className="gap-2 px-3 py-1.5">
+                    <item.icon />
+                    {item.label}
+                  </Badge>
+                ))}
+              </div>
+            </CardHeader>
+
+            <CardContent className="flex flex-col gap-6 p-6 sm:p-8 lg:p-10">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                <div className="flex flex-col gap-2">
+                  <CardDescription>{text("需要时开启", "Connect when needed")}</CardDescription>
+                  <CardTitle className="text-2xl">
+                    {text("同步到你选择的位置", "Sync to a location you choose")}
+                  </CardTitle>
+                </div>
+                <a
+                  href={`/${lang}/docs/settings/sync`}
+                  className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
+                >
+                  {text("同步说明", "Sync guide")}
+                  <ArrowRightIcon data-icon="inline-end" />
+                </a>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {syncOptions.map((option) => (
+                  <Card
+                    key={option.name}
+                    className={cn(
+                      "min-h-28 gap-0 py-0 shadow-none",
+                      option.name === "cloudDrive" && "col-span-2"
+                    )}
+                  >
+                    <CardHeader className="flex h-full flex-col justify-between gap-6 p-4 sm:p-5">
+                      <div className="flex size-9 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+                        <option.icon className="size-4" />
+                      </div>
+                      <CardTitle className="text-sm leading-5">
+                        {option.name === "cloudDrive"
+                          ? text("网盘同步（OneDrive、iCloud Drive）", "Cloud-drive sync (OneDrive, iCloud Drive)")
+                          : option.name}
+                      </CardTitle>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
