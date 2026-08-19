@@ -65,67 +65,83 @@ import { Badge } from "@/components/ui/badge"
 import { CanvasThumbnail } from "@/components/home/canvas-thumbnail"
 import { cn } from "@/lib/utils"
 
-const records = [
+export type NoteGenReplicaRecord = {
+  kind: "audio" | "link" | "text" | "image"
+  type: string
+  title: string
+  content: string
+  time: string
+  imageCount?: number
+}
+
+const records: NoteGenReplicaRecord[] = [
   {
+    kind: "audio",
     type: "录音",
     title: "西湖边想走慢一点",
     content: "西湖边想走慢一点：曲院风荷、北山街和孤山",
     time: "刚刚",
-    icon: Mic,
   },
   {
+    kind: "link",
     type: "链接",
     title: "法喜寺预约与开放时间",
     content: "法喜寺预约、开放时间与出行说明",
     time: "12 分钟前",
-    icon: Link,
   },
   {
+    kind: "text",
     type: "文本",
     title: "晚餐想吃杭帮菜",
     content: "晚餐想吃杭帮菜，记得提前订座",
     time: "09:40",
-    icon: Type,
   },
   {
+    kind: "image",
     type: "图片",
     title: "天目里建筑与店铺地图",
     content: "天目里建筑与店铺地图",
     time: "昨天",
-    icon: ImageIcon,
   },
 ]
 
-const recordsEn = [
+const recordsEn: NoteGenReplicaRecord[] = [
   {
+    kind: "audio",
     type: "Audio",
     title: "Take it slow along the Seine",
     content: "A slow walk from Île Saint-Louis past the Louvre to the Tuileries",
     time: "Just now",
-    icon: Mic,
   },
   {
+    kind: "link",
     type: "Link",
     title: "Musée d’Orsay reservations and hours",
     content: "Reservation, opening hours, and travel information",
     time: "12 min ago",
-    icon: Link,
   },
   {
+    kind: "text",
     type: "Text",
     title: "A Paris bistro for dinner",
     content: "Remember to book a table in advance",
     time: "09:40",
-    icon: Type,
   },
   {
+    kind: "image",
     type: "Image",
     title: "Le Marais galleries and shops map",
     content: "Le Marais galleries and shops map",
     time: "Yesterday",
-    icon: ImageIcon,
   },
 ]
+
+const recordIcon = {
+  audio: Mic,
+  link: Link,
+  text: Type,
+  image: ImageIcon,
+}
 
 const recordTools = [
   CopySlash,
@@ -181,6 +197,8 @@ export function NoteGenDesktopReplica({
   panelLayout = "three",
   titleBarMode = "full",
   fill = false,
+  recordItems,
+  recordGroupLabel,
 }: {
   lang?: "cn" | "en"
   initialWorkspace?: Workspace
@@ -188,6 +206,8 @@ export function NoteGenDesktopReplica({
   panelLayout?: "three" | "left" | "center" | "right"
   titleBarMode?: "full" | "none" | "record-tools" | "writing-tools" | "agent-tools" | "canvas-tools"
   fill?: boolean
+  recordItems?: NoteGenReplicaRecord[]
+  recordGroupLabel?: string
 }) {
   const [workspace, setWorkspace] = useState<Workspace>(initialWorkspace)
 
@@ -223,7 +243,13 @@ export function NoteGenDesktopReplica({
           )}
         >
           {panelLayout === "three" || panelLayout === "left" ? (
-            <WorkspaceSidebar lang={lang} workspace={workspace} onWorkspaceChange={setWorkspace} />
+            <WorkspaceSidebar
+              lang={lang}
+              workspace={workspace}
+              onWorkspaceChange={setWorkspace}
+              recordItems={recordItems}
+              recordGroupLabel={recordGroupLabel}
+            />
           ) : null}
           {panelLayout === "three" || panelLayout === "center" ? (
             <>
@@ -353,10 +379,14 @@ function WorkspaceSidebar({
   lang,
   workspace,
   onWorkspaceChange,
+  recordItems,
+  recordGroupLabel,
 }: {
   lang: "cn" | "en"
   workspace: Workspace
   onWorkspaceChange: (workspace: Workspace) => void
+  recordItems?: NoteGenReplicaRecord[]
+  recordGroupLabel?: string
 }) {
   return (
     <section className="flex min-w-0 flex-col border-r">
@@ -370,14 +400,22 @@ function WorkspaceSidebar({
           <WritingSidebarContent lang={lang} />
         </div>
         <div className={cn("absolute inset-0 transition-opacity duration-150", workspace === "records" ? "opacity-100" : "pointer-events-none opacity-0")}>
-          <RecordsSidebarContent lang={lang} />
+          <RecordsSidebarContent
+            lang={lang}
+            recordItems={recordItems}
+            recordGroupLabel={recordGroupLabel}
+          />
         </div>
         <div className={cn("absolute inset-0 transition-opacity duration-150", workspace === "canvas" ? "opacity-100" : "pointer-events-none opacity-0")}>
           <CanvasSidebarContent lang={lang} />
         </div>
       </div>
 
-      <WorkspaceFooter lang={lang} workspace={workspace} />
+      <WorkspaceFooter
+        lang={lang}
+        workspace={workspace}
+        recordCount={recordItems?.length}
+      />
     </section>
   )
 }
@@ -404,8 +442,16 @@ function WorkspaceActions({ workspace }: { workspace: Workspace }) {
   )
 }
 
-function RecordsSidebarContent({ lang }: { lang: "cn" | "en" }) {
-  const visibleRecords = lang === "en" ? recordsEn : records
+function RecordsSidebarContent({
+  lang,
+  recordItems,
+  recordGroupLabel,
+}: {
+  lang: "cn" | "en"
+  recordItems?: NoteGenReplicaRecord[]
+  recordGroupLabel?: string
+}) {
+  const visibleRecords = recordItems ?? (lang === "en" ? recordsEn : records)
 
   return (
     <div className="min-h-0 flex-1 overflow-hidden">
@@ -414,9 +460,13 @@ function RecordsSidebarContent({ lang }: { lang: "cn" | "en" }) {
           <div className="flex min-w-0 items-center gap-2">
             <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
             <Tags className="size-3.5 shrink-0 text-muted-foreground" />
-            <span className="truncate">{lang === "en" ? "Paris trip" : "杭州旅行"}</span>
+            <span className="truncate">
+              {recordGroupLabel ?? (lang === "en" ? "Paris trip" : "杭州旅行")}
+            </span>
           </div>
-          <span className="text-[10px] font-normal text-muted-foreground">4</span>
+          <span className="text-[10px] font-normal text-muted-foreground">
+            {visibleRecords.length}
+          </span>
         </div>
         <div className="border-t border-border/60">
           {visibleRecords.map((record, index) => (
@@ -544,17 +594,26 @@ function CanvasSidebarContent({ lang }: { lang: "cn" | "en" }) {
   )
 }
 
-function WorkspaceFooter({ lang, workspace }: { lang: "cn" | "en"; workspace: Workspace }) {
+function WorkspaceFooter({
+  lang,
+  workspace,
+  recordCount,
+}: {
+  lang: "cn" | "en"
+  workspace: Workspace
+  recordCount?: number
+}) {
+  const visibleRecordCount = recordCount ?? 4
   const englishLabel = workspace === "writing"
     ? "Local workspace · 6 files"
     : workspace === "canvas"
       ? "4 canvases"
-      : "Showing 4 records"
+      : `Showing ${visibleRecordCount} records`
   const label = workspace === "writing"
       ? "本地工作区 · 6 个文件"
     : workspace === "canvas"
       ? "共 4 个画布"
-      : "当前显示 4 条记录"
+      : `当前显示 ${visibleRecordCount} 条记录`
 
   return (
     <footer className="flex h-6 shrink-0 items-center border-t bg-background px-2 text-[10px] text-muted-foreground">
@@ -567,10 +626,10 @@ function RecordItem({
   record,
   active,
 }: {
-  record: (typeof records)[number] | (typeof recordsEn)[number]
+  record: NoteGenReplicaRecord
   active?: boolean
 }) {
-  const Icon = record.icon
+  const Icon = recordIcon[record.kind]
 
   return (
     <div className={cn("border-b border-border/60 px-3 py-2.5", active && "bg-accent")}>
@@ -588,6 +647,18 @@ function RecordItem({
       </div>
       <p className="truncate font-medium">{record.title}</p>
       <p className="mt-1 truncate text-[10px] text-muted-foreground">{record.content}</p>
+      {record.imageCount ? (
+        <div className="mt-2 grid grid-cols-3 gap-1.5">
+          {Array.from({ length: record.imageCount }, (_, index) => (
+            <div
+              key={index}
+              className="flex h-12 items-center justify-center rounded-md border bg-background"
+            >
+              <ImageIcon className="size-4 text-muted-foreground" />
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

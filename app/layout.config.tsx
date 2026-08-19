@@ -48,6 +48,11 @@ export function homeOptions(locale: string): BaseLayoutProps {
         active: 'none',
       },
       {
+        text: lang === 'en' ? 'Web Clipper' : '网页剪藏',
+        url: `/${lang}/web-clipper/download`,
+        active: 'url',
+      },
+      {
         text: lang === 'en' ? 'Docs' : '文档',
         url: `/${lang}/docs`,
         active: 'nested-url',

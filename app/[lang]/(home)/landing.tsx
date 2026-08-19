@@ -30,6 +30,8 @@ import { Separator } from "@/components/ui/separator"
 import { NoteGenDemo } from "@/components/home/note-gen-demo"
 import { cn } from "@/lib/utils"
 
+import HomeFooter from "./footer"
+
 const capabilitiesCn = [
   {
     icon: BrainCircuitIcon,
@@ -326,30 +328,7 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
         </div>
       </section>
 
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div className="flex items-center gap-2 font-medium text-foreground">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-xs text-primary-foreground">N</span>
-            NOTEGEN.
-          </div>
-          <p>Capture first, organize later.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/codexu/note-gen" className="hover:text-foreground">GitHub</a>
-            <a href={`/${lang}/docs`} className="hover:text-foreground">
-              {text("文档", "Docs")}
-            </a>
-            <a href={`/${lang}/community`} className="hover:text-foreground">
-              {text("交流群", "Community")}
-            </a>
-            <a href={`/${lang}/business`} className="hover:text-foreground">
-              {text("商务合作", "Business")}
-            </a>
-            <a href={`/${lang}/donate`} className="hover:text-foreground">
-              {text("支持项目", "Support")}
-            </a>
-          </div>
-        </div>
-      </footer>
+      <HomeFooter lang={lang} />
     </main>
   )
 }

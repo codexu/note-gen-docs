@@ -1,0 +1,400 @@
+.scene {
+  isolation: isolate;
+}
+
+.selectionScene,
+.pageScene,
+.noteGenScene,
+.selectedText,
+.quickSaveBubble,
+.quickSaveLabel,
+.quickSavedLabel,
+.selectionCursor,
+.pluginIcon,
+.pluginPopup,
+.savePageAction,
+.savePageLabel,
+.pageSavedLabel,
+.pageCursor {
+  animation-duration: 15s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.selectionScene {
+  animation-name: selection-scene;
+  opacity: 0;
+}
+
+.pageScene {
+  animation-name: page-scene;
+  opacity: 0;
+}
+
+.noteGenScene {
+  animation-name: notegen-scene;
+  opacity: 0;
+}
+
+.selectedText {
+  animation-name: select-words;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding-inline: 0.08em;
+  background-image: linear-gradient(Highlight, Highlight);
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: 0 100%;
+}
+
+.quickSaveBubble {
+  animation-name: quick-save-bubble;
+  min-width: 9.5rem;
+  opacity: 0;
+  transform-origin: left top;
+}
+
+.quickSaveLabel {
+  animation-name: quick-save-label;
+}
+
+.quickSavedLabel {
+  position: absolute;
+  display: flex;
+  animation-name: quick-saved-label;
+  opacity: 0;
+}
+
+.selectionCursor {
+  animation-name: selection-cursor;
+  top: 52%;
+  left: 30%;
+  opacity: 0;
+  will-change: top, left, opacity, transform;
+}
+
+.pluginIcon {
+  animation-name: plugin-icon;
+  transform-origin: center;
+}
+
+.pluginPopup {
+  animation-name: plugin-popup;
+  opacity: 0;
+  transform-origin: right top;
+}
+
+.savePageAction {
+  animation-name: save-page-action;
+  position: relative;
+  transform-origin: center;
+}
+
+.savePageLabel {
+  animation-name: save-page-label;
+}
+
+.pageSavedLabel {
+  position: absolute;
+  display: flex;
+  animation-name: page-saved-label;
+  opacity: 0;
+}
+
+.pageCursor {
+  animation-name: page-cursor;
+  top: 14%;
+  left: 92%;
+  opacity: 0;
+  will-change: top, left, opacity, transform;
+}
+
+@keyframes selection-scene {
+  0%,
+  2% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  5%,
+  29% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  33%,
+  100% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes page-scene {
+  0%,
+  30% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  34%,
+  63% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  67%,
+  100% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes notegen-scene {
+  0%,
+  64% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  68%,
+  96% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes select-words {
+  0%,
+  8%,
+  100% {
+    background-size: 0 100%;
+    color: inherit;
+  }
+  15%,
+  30% {
+    background-size: 100% 100%;
+    color: HighlightText;
+  }
+}
+
+@keyframes quick-save-bubble {
+  0%,
+  14%,
+  32%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  17%,
+  29% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  24% {
+    opacity: 1;
+    transform: translateY(0) scale(0.96);
+  }
+}
+
+@keyframes quick-save-label {
+  0%,
+  23% {
+    opacity: 1;
+  }
+  25%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes quick-saved-label {
+  0%,
+  23% {
+    opacity: 0;
+  }
+  25%,
+  30% {
+    opacity: 1;
+  }
+  32%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes selection-cursor {
+  0%,
+  6%,
+  28%,
+  100% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+    top: 52%;
+    left: 30%;
+    transform: scale(1);
+  }
+  15% {
+    opacity: 1;
+    top: 52%;
+    left: 70%;
+    transform: scale(1);
+  }
+  21% {
+    opacity: 1;
+    top: 65%;
+    left: 55%;
+    transform: scale(1);
+  }
+  24% {
+    opacity: 1;
+    top: 65%;
+    left: 55%;
+    transform: scale(0.8);
+  }
+  26% {
+    opacity: 1;
+    top: 65%;
+    left: 55%;
+    transform: scale(1);
+  }
+}
+
+@keyframes plugin-icon {
+  0%,
+  36%,
+  44%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.84);
+  }
+}
+
+@keyframes plugin-popup {
+  0%,
+  40%,
+  66%,
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  44%,
+  63% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes save-page-action {
+  0%,
+  54%,
+  60%,
+  100% {
+    transform: scale(1);
+  }
+  57% {
+    transform: scale(0.96);
+  }
+}
+
+@keyframes save-page-label {
+  0%,
+  57% {
+    opacity: 1;
+  }
+  59%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes page-saved-label {
+  0%,
+  57% {
+    opacity: 0;
+  }
+  59%,
+  64% {
+    opacity: 1;
+  }
+  66%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes page-cursor {
+  0%,
+  34%,
+  62%,
+  100% {
+    opacity: 0;
+  }
+  36% {
+    opacity: 1;
+    top: 14%;
+    left: 92%;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 1;
+    top: 14%;
+    left: 92%;
+    transform: scale(0.8);
+  }
+  43% {
+    opacity: 1;
+    top: 14%;
+    left: 92%;
+    transform: scale(1);
+  }
+  54% {
+    opacity: 1;
+    top: 64%;
+    left: 62%;
+    transform: scale(1);
+  }
+  57% {
+    opacity: 1;
+    top: 64%;
+    left: 62%;
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    top: 64%;
+    left: 62%;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selectionScene,
+  .pageScene,
+  .selectedText,
+  .quickSaveBubble,
+  .quickSaveLabel,
+  .quickSavedLabel,
+  .selectionCursor,
+  .pluginIcon,
+  .pluginPopup,
+  .savePageAction,
+  .savePageLabel,
+  .pageSavedLabel,
+  .pageCursor {
+    animation: none;
+  }
+
+  .selectionScene,
+  .pageScene {
+    display: none;
+  }
+
+  .noteGenScene {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

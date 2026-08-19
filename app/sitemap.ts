@@ -5,6 +5,7 @@ import { siteConfig } from '@/lib/seo';
 const staticPaths = [
   '',
   '/download',
+  '/web-clipper/download',
   '/community',
   '/business',
   '/donate',
@@ -30,13 +31,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       {
         url: absoluteUrl(`/cn${pathname}`),
         changeFrequency: pathname === '' ? 'weekly' : 'monthly',
-        priority: pathname === '' ? 1 : pathname === '/download' ? 0.9 : 0.6,
+        priority: pathname === '' ? 1 : pathname === '/download' ? 0.9 : pathname === '/web-clipper/download' ? 0.8 : 0.6,
         alternates,
       },
       {
         url: absoluteUrl(`/en${pathname}`),
         changeFrequency: pathname === '' ? 'weekly' : 'monthly',
-        priority: pathname === '' ? 1 : pathname === '/download' ? 0.9 : 0.6,
+        priority: pathname === '' ? 1 : pathname === '/download' ? 0.9 : pathname === '/web-clipper/download' ? 0.8 : 0.6,
         alternates,
       },
     ] satisfies MetadataRoute.Sitemap;
