@@ -2,6 +2,7 @@ import { i18n } from '@/lib/i18n';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import Image from 'next/image';
 import { HeaderActions } from '@/components/github-star-link';
+import { isSelfHostedEnabled } from '@/lib/self-hosted';
 
 export function baseOptions(locale: string): BaseLayoutProps {
   const lang = locale === 'en' ? 'en' : 'cn';
@@ -52,11 +53,13 @@ export function homeOptions(locale: string): BaseLayoutProps {
         url: `/${lang}/web-clipper/download`,
         active: 'url',
       },
-      {
-        text: lang === 'en' ? 'Self-hosted' : '自托管',
-        url: `/${lang}/self-hosted`,
-        active: 'url',
-      },
+      ...(isSelfHostedEnabled
+        ? [{
+            text: lang === 'en' ? 'Self-hosted' : '自托管',
+            url: `/${lang}/self-hosted`,
+            active: 'url' as const,
+          }]
+        : []),
       {
         text: lang === 'en' ? 'Docs' : '文档',
         url: `/${lang}/docs`,

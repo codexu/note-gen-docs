@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { source } from '@/lib/source';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { baseOptions } from '@/app/layout.config';
+import { getVisibleDocsTree } from '@/lib/self-hosted';
 export default async function Layout({
   params,
   children,
@@ -11,7 +12,7 @@ export default async function Layout({
 }) {
   const { lang } = await params;
   return (
-    <DocsLayout {...baseOptions(lang)} tree={source.pageTree[lang]}>
+    <DocsLayout {...baseOptions(lang)} tree={getVisibleDocsTree(source.pageTree[lang])}>
       {children}
     </DocsLayout>
   );

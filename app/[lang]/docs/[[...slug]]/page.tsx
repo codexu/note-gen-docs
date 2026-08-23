@@ -14,6 +14,7 @@ import {
   normalizeLang,
   siteConfig,
 } from '@/lib/seo';
+import { isSelfHostedDocsPath, isSelfHostedEnabled } from '@/lib/self-hosted';
 
 export default async function Page({
   params,
@@ -21,6 +22,8 @@ export default async function Page({
   params: Promise<{ slug?: string[]; lang: string }>;
 }) {
   const { slug, lang } = await params;
+  if (!isSelfHostedEnabled && isSelfHostedDocsPath(slug)) notFound();
+
   const page = source.getPage(slug, lang);
   if (!page) notFound();
 
@@ -43,7 +46,11 @@ export default async function Page({
 }
 
 export async function generateStaticParams() {
-  return source.generateParams();
+  const params = source.generateParams();
+
+  return isSelfHostedEnabled
+    ? params
+    : params.filter(({ slug }) => !isSelfHostedDocsPath(slug));
 }
 
 export async function generateMetadata({
@@ -52,6 +59,8 @@ export async function generateMetadata({
   params: Promise<{ slug?: string[]; lang: string }>;
 }): Promise<Metadata> {
   const { slug, lang } = await params;
+  if (!isSelfHostedEnabled && isSelfHostedDocsPath(slug)) notFound();
+
   const page = source.getPage(slug, lang);
   if (!page) notFound();
   const language = normalizeLang(lang);

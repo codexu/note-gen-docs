@@ -24,7 +24,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { getPageAlternates, normalizeLang, siteConfig } from '@/lib/seo';
+import { isSelfHostedEnabled } from '@/lib/self-hosted';
 import { cn } from '@/lib/utils';
+import { notFound } from 'next/navigation';
 
 const repositoryUrl = 'https://github.com/codexu/note-gen-server';
 const issueUrl = `${repositoryUrl}/issues`;
@@ -175,6 +177,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
+  if (!isSelfHostedEnabled) notFound();
+
   const { lang } = await params;
   const language = normalizeLang(lang);
   const t = content[language];
@@ -199,8 +203,8 @@ export async function generateMetadata({
       description: t.meta.description,
     },
     robots: {
-      index: true,
-      follow: true,
+      index: false,
+      follow: false,
     },
   };
 }
@@ -210,6 +214,8 @@ export default async function SelfHostedPage({
 }: {
   params: Promise<{ lang: string }>;
 }) {
+  if (!isSelfHostedEnabled) notFound();
+
   const { lang } = await params;
   const language = normalizeLang(lang);
   const t = content[language];

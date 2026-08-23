@@ -1,13 +1,13 @@
 import type { MetadataRoute } from 'next';
 import { source } from '@/lib/source';
 import { siteConfig } from '@/lib/seo';
+import { isSelfHostedDocsUrl, isSelfHostedEnabled } from '@/lib/self-hosted';
 
 const staticPaths = [
   '',
   '/download',
   '/web-clipper/download',
   '/community',
-  '/self-hosted',
   '/business',
   '/donate',
 ] as const;
@@ -44,18 +44,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ] satisfies MetadataRoute.Sitemap;
   });
 
-  const docsEntries = source.getPages().map((page) => {
-    const pathname = page.url.replace(/^\/(?:cn|en)/, '');
+  const docsEntries = source.getPages()
+    .filter((page) => isSelfHostedEnabled || !isSelfHostedDocsUrl(page.url))
+    .map((page) => {
+      const pathname = page.url.replace(/^\/(?:cn|en)/, '');
 
-    return {
-      url: absoluteUrl(page.url),
-      changeFrequency: 'monthly',
-      priority: pathname === '/docs' ? 0.8 : 0.7,
-      alternates: {
-        languages: languageAlternates(pathname),
-      },
-    } satisfies MetadataRoute.Sitemap[number];
-  });
+      return {
+        url: absoluteUrl(page.url),
+        changeFrequency: 'monthly',
+        priority: pathname === '/docs' ? 0.8 : 0.7,
+        alternates: {
+          languages: languageAlternates(pathname),
+        },
+      } satisfies MetadataRoute.Sitemap[number];
+    });
 
   return [...staticEntries, ...docsEntries];
 }
