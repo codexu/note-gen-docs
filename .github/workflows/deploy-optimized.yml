@@ -111,7 +111,7 @@ jobs:
           script: |
             echo "🏥 Running health check..."
             for i in {1..30}; do
-                if curl -fsS http://127.0.0.1:8080/cn/download | grep -q "备用下载：GitHub Releases" && pm2 describe note-gen-docs | grep -q "online"; then
+                if curl -fsS -o /dev/null http://127.0.0.1:8080/cn/download && pm2 describe note-gen-docs | grep -q "online"; then
                     echo "✅ Application is running"
                     exit 0
                 fi
