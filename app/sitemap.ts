@@ -7,6 +7,7 @@ const staticPaths = [
   '/download',
   '/web-clipper/download',
   '/community',
+  '/self-hosted',
   '/business',
   '/donate',
 ] as const;

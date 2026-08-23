@@ -1,9 +1,11 @@
 {
   "title": "指南",
   "pages": [
+    "---开始使用---",
     "index",
     "privacy",
     "troubleshooting",
+    "self-hosted",
     "---功能介绍---",
     "preview/record",
     "preview/writing",

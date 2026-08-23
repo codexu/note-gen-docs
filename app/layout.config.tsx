@@ -53,6 +53,11 @@ export function homeOptions(locale: string): BaseLayoutProps {
         active: 'url',
       },
       {
+        text: lang === 'en' ? 'Self-hosted' : '自托管',
+        url: `/${lang}/self-hosted`,
+        active: 'url',
+      },
+      {
         text: lang === 'en' ? 'Docs' : '文档',
         url: `/${lang}/docs`,
         active: 'nested-url',

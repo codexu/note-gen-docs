@@ -1,0 +1,247 @@
+---
+title: 自托管部署
+description: 使用 Docker Compose 部署 NoteGen Server，并完成 HTTPS、实例初始化、客户端连接与日常维护。
+icon: Server
+---
+
+NoteGen Server 为 NoteGen 提供账号、设备关联、实时同步、团队协作和账号管理服务。本指南面向希望在自己的 Linux 服务器或受信局域网中运行实验实例的用户。
+
+> NoteGen Server 当前处于实验阶段，部署方式、配置和数据库结构仍可能变化。请始终保留 NoteGen 本地 Markdown，不要把实验实例作为重要数据的唯一副本。
+
+## 选择部署方式
+
+| 方式 | 适合场景 | 需要准备 |
+| --- | --- | --- |
+| Docker Compose（推荐） | 快速体验、个人或小型团队实例 | Docker Engine、Docker Compose v2 |
+| 从源码运行 | 阅读实现、调试协议和参与开发 | Node.js 22+、pnpm 10.20.0、PostgreSQL 17 |
+
+生产或长期运行的实验实例建议使用 Docker Compose。从源码运行主要用于开发，不建议直接用 `pnpm dev` 对外提供服务。
+
+## 使用 Docker Compose 部署
+
+默认 Compose 会启动 NoteGen Server 和 PostgreSQL 17，并使用两个独立的数据卷保存数据库与附件。服务默认只监听宿主机的 `127.0.0.1:3789`。
+
+官方镜像地址为 `ghcr.io/codexu/note-gen-server`，支持 `linux/amd64` 和 `linux/arm64`。当前实验版本使用 `edge` 标签，无需在服务器上安装 Node.js、pnpm 或自行编译源码。
+
+### 1. 准备服务器
+
+开始前确认：
+
+- 已安装 Docker Engine 和 Docker Compose v2；
+- 服务器可以访问 `ghcr.io`；
+- 远程访问时已经准备域名，并能将域名解析到服务器；
+- 防火墙只开放 SSH、HTTP 和 HTTPS，不要开放 PostgreSQL 端口。
+
+### 2. 下载部署配置
+
+```bash
+git clone https://github.com/codexu/note-gen-server.git
+cd note-gen-server
+cp .env.docker.example .env
+```
+
+仓库中的 `compose.yaml` 是部署拓扑，`.env` 保存当前实例的配置。不要把真实 `.env` 提交到 Git。
+
+### 3. 配置环境变量
+
+分别执行两次以下命令，生成两个不同的随机值：
+
+```bash
+openssl rand -hex 32
+```
+
+编辑 `.env`，至少确认以下项目：
+
+| 变量 | 填写方式 |
+| --- | --- |
+| `POSTGRES_PASSWORD` | 第一个随机值，仅供当前 PostgreSQL 实例使用 |
+| `AUTH_SECRET` | 第二个随机值；上线后不要随意更换 |
+| `PUBLIC_BASE_URL` | NoteGen 客户端实际访问的地址，不带路径和末尾斜杠 |
+| `SERVER_BIND_ADDRESS` | 保持 `127.0.0.1`，由反向代理提供公网入口 |
+| `NOTEGEN_SERVER_IMAGE` | 默认使用实验性的 `edge` 镜像；需要复现特定构建时改为 `sha-<commit>` 标签 |
+
+仅在本机测试时，可以使用：
+
+```dotenv
+PUBLIC_BASE_URL=http://127.0.0.1:3789
+```
+
+远程部署必须使用 HTTPS，例如：
+
+```dotenv
+PUBLIC_BASE_URL=https://sync.example.com
+```
+
+### 4. 启动服务
+
+```bash
+docker compose pull
+docker compose up -d
+docker compose ps
+```
+
+Compose 默认拉取：
+
+```text
+ghcr.io/codexu/note-gen-server:edge
+```
+
+首次启动会等待 PostgreSQL 就绪，并自动执行尚未应用的数据库迁移。两个服务都显示为 `healthy` 后，再检查就绪接口：
+
+```bash
+curl --fail http://127.0.0.1:3789/health/ready
+```
+
+命令成功且接口返回就绪状态，表示容器和数据库已经可以接受请求。如果服务未就绪，先查看[常见问题](#常见问题)。
+
+### 5. 配置 HTTPS
+
+远程访问必须在 NoteGen Server 前配置 Caddy、Nginx 或 Traefik。反向代理需要支持：
+
+- WebSocket Upgrade；
+- `Authorization`、`Range` 和 `X-Request-Id` 请求头；
+- 大于附件分片大小的请求体；
+- `/v1/sync/events` 的流式响应，不要进行响应缓冲。
+
+Caddy 最小配置示例：
+
+```text
+sync.example.com {
+  reverse_proxy 127.0.0.1:3789
+}
+```
+
+Caddy 会自动申请和续期 HTTPS 证书。确认浏览器能够通过 `https://sync.example.com` 打开账号页面后，再继续初始化。
+
+只有反向代理与容器位于受信网络中，并且公网无法绕过代理直连服务端端口时，才能将 `.env` 中的 `TRUST_PROXY` 设置为 `true`。
+
+### 6. 初始化实例
+
+在浏览器打开 `PUBLIC_BASE_URL`，按照安装向导：
+
+1. 设置实例名称；
+2. 创建首位管理员账号；
+3. 登录账号管理页面；
+4. 根据需要将注册策略设置为关闭、仅邀请或公开注册。
+
+公开注册会增加实例维护和滥用处理成本。个人实例建议保持关闭，需要其他用户时再使用限时邀请。
+
+### 7. 连接 NoteGen
+
+在 NoteGen 的同步设置中选择 NoteGen Server，填写与 `PUBLIC_BASE_URL` 完全一致的服务器地址，然后注册或登录。
+
+连接后建议按以下顺序验证：
+
+1. 在设备 A 新建一篇测试笔记；
+2. 确认设备 B 能收到该笔记；
+3. 让一台设备短暂离线，分别修改测试内容；
+4. 恢复网络，确认同步可以继续且本地 Markdown 仍然存在。
+
+其他 Git、S3、WebDAV 和云盘方案参见[同步配置](/cn/docs/settings/sync)。
+
+## 升级实例
+
+`edge` 镜像跟随当前开发版本，可能包含配置或数据库变化。升级前先阅读仓库说明，并对 PostgreSQL 与附件数据建立同一时间点的配套备份。
+
+```bash
+cd note-gen-server
+git pull --ff-only
+docker compose pull
+docker compose up -d
+docker compose ps
+```
+
+服务启动时会执行数据库迁移。升级后重新检查：
+
+```bash
+curl --fail http://127.0.0.1:3789/health/ready
+docker compose logs --tail=200 server
+```
+
+如果需要固定当前实验构建，请在 `.env` 中把 `NOTEGEN_SERVER_IMAGE` 从 `edge` 改为对应的 `sha-<commit>` 标签。正式版本发布后也可以固定版本标签。
+
+## 数据与备份
+
+默认部署的数据分为两部分：
+
+| 数据 | 默认位置 |
+| --- | --- |
+| 账号、设备、同步游标和对象版本 | Docker 的 `postgres_data` Volume |
+| 附件、Blob 与服务端生成的数据 | Docker 的 `notegen_data` Volume |
+
+备份必须同时覆盖 PostgreSQL 和 `notegen_data`，并在隔离环境验证恢复。只保存其中一部分不能视为完整备份。
+
+完整备份恢复工具仍在完善中。在工具稳定前，请根据自己的运行环境使用经过审计的外部备份方案，并继续保留每台设备上的本地 Markdown。
+
+停止容器但保留数据：
+
+```bash
+docker compose down
+```
+
+不要在仍需保留数据时执行 `docker compose down -v`，`-v` 会请求删除 Compose 管理的数据卷。
+
+## 日常维护
+
+查看容器状态与最近日志：
+
+```bash
+docker compose ps
+docker compose logs --tail=200 server
+docker compose logs --tail=200 postgres
+```
+
+持续查看服务端日志：
+
+```bash
+docker compose logs -f server
+```
+
+检查服务能力与健康状态：
+
+```bash
+curl --fail http://127.0.0.1:3789/health/ready
+curl --fail http://127.0.0.1:3789/v1/capabilities
+```
+
+## 从源码运行
+
+源码模式适合开发者调试和贡献代码。先安装 Node.js 22 或更高版本、pnpm 10.20.0 和 PostgreSQL 17，然后执行：
+
+```bash
+git clone https://github.com/codexu/note-gen-server.git
+cd note-gen-server
+createuser notegen
+createdb -O notegen notegen
+pnpm install
+cp .env.example .env
+pnpm dev
+```
+
+修改 `.env` 中的 `DATABASE_URL`、`AUTH_SECRET` 和 `PUBLIC_BASE_URL`。开发模式下 API 默认监听 `3789`，账号管理 Web 默认监听 `3790`。
+
+项目结构、修改边界和贡献检查参见 [NoteGen Server 仓库](https://github.com/codexu/note-gen-server)中的贡献指南。
+
+## 常见问题
+
+| 现象 | 检查与处理 |
+| --- | --- |
+| 镜像拉取失败 | 确认服务器可以访问 `ghcr.io`，并检查代理或 DNS 配置 |
+| PostgreSQL 一直不健康 | 查看 `docker compose logs --tail=200 postgres`，确认磁盘空间和 `POSTGRES_PASSWORD` |
+| Server 一直不健康 | 查看服务端日志，确认数据库已就绪且 `.env` 中必填项不为空 |
+| 浏览器可以打开，但客户端无法连接 | 确认客户端地址与 `PUBLIC_BASE_URL` 完全一致，并检查 HTTPS 证书 |
+| 实时同步没有触发 | 检查反向代理是否支持 WebSocket Upgrade |
+| 上传附件返回 413 | 提高反向代理的请求体大小限制 |
+| 重启后无法正常登录 | 确认没有更换 `AUTH_SECRET`，并检查服务器时间是否准确 |
+
+提交问题时，请附上操作系统与 CPU 架构、部署方式、镜像标签、反向代理类型、复现步骤和脱敏后的容器日志。不要公开 `.env`、Token、密码或恢复密钥。
+
+## 部署检查清单
+
+- `POSTGRES_PASSWORD` 和 `AUTH_SECRET` 使用不同的随机值；
+- `PUBLIC_BASE_URL` 与客户端实际地址一致；
+- 公网访问使用有效的 HTTPS 证书；
+- PostgreSQL 和服务内部端口没有直接暴露到公网；
+- 反向代理支持 WebSocket 和较大的附件请求；
+- PostgreSQL 与附件数据采用配套备份；
+- 本地 Markdown 仍然保留，并完成至少一次多设备同步验证。

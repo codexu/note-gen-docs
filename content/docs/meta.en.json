@@ -1,9 +1,11 @@
 {
   "title": "Guide",
   "pages": [
+    "---Getting Started---",
     "index",
     "privacy",
     "troubleshooting",
+    "self-hosted",
     "---Features---",
     "preview/record",
     "preview/writing",
