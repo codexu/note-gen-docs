@@ -46,9 +46,9 @@ export const revalidate = 300;
 const copy = {
   cn: {
     seo: {
-      title: "下载 NoteGen 网页剪藏 - Chrome 与 Edge",
+      title: "下载 NoteGen 网页剪藏 - Chrome、Edge 与 Firefox",
       description:
-        "下载 NoteGen 网页剪藏扩展，将网页选区、图片和链接快速保存到本地 NoteGen，支持 Chrome 与 Microsoft Edge。",
+        "下载 NoteGen 网页剪藏扩展，将网页选区、图片和链接快速保存到本地 NoteGen，支持 Chrome、Microsoft Edge 与 Firefox。",
     },
     eyebrow: "NoteGen 网页剪藏",
     title: "把网页，放进你的记录流。",
@@ -58,6 +58,9 @@ const copy = {
     },
     edge: {
       action: "下载 Edge 版",
+    },
+    firefox: {
+      action: "下载 Firefox 版",
     },
     requires: "需要 NoteGen v0.35.0 或更高版本",
     noteGenAction: "下载 NoteGen",
@@ -102,7 +105,7 @@ const copy = {
     workflow: {
       eyebrow: "插件安装攻略",
       title: "一分钟完成安装，开始第一次剪藏。",
-      description: "目前提供 Chrome 与 Edge 扩展包，按照下面的步骤手动加载即可使用。",
+      description: "目前提供 Chrome、Edge 与 Firefox 扩展包，按照下面的步骤手动加载即可使用。",
       steps: [
         {
           title: "下载并解压",
@@ -110,7 +113,7 @@ const copy = {
         },
         {
           title: "加载扩展",
-          description: "打开浏览器扩展管理页，开启“开发者模式”，然后选择“加载已解压的扩展程序”。",
+          description: "Chrome 或 Edge 开启“开发者模式”并加载已解压的扩展；Firefox 选择“临时载入附加组件”并打开 manifest.json。",
         },
         {
           title: "连接 NoteGen",
@@ -123,13 +126,15 @@ const copy = {
       ],
       chromeAddress: "Chrome：chrome://extensions",
       edgeAddress: "Edge：edge://extensions",
+      firefoxAddress: "Firefox：about:debugging#/runtime/this-firefox",
+      firefoxNote: "Firefox 临时扩展会在浏览器重启后移除；长期安装需要等待 Mozilla 签名版本。",
     },
   },
   en: {
     seo: {
-      title: "Download NoteGen Web Clipper for Chrome and Edge",
+      title: "Download NoteGen Web Clipper for Chrome, Edge, and Firefox",
       description:
-        "Download the NoteGen Web Clipper to save web selections, images, and links to local NoteGen from Chrome or Microsoft Edge.",
+        "Download the NoteGen Web Clipper to save web selections, images, and links to local NoteGen from Chrome, Microsoft Edge, or Firefox.",
     },
     eyebrow: "NoteGen Web Clipper",
     title: "Bring the web into your capture flow.",
@@ -139,6 +144,9 @@ const copy = {
     },
     edge: {
       action: "Download for Edge",
+    },
+    firefox: {
+      action: "Download for Firefox",
     },
     requires: "Requires NoteGen v0.35.0 or later",
     noteGenAction: "Download NoteGen",
@@ -183,7 +191,7 @@ const copy = {
     workflow: {
       eyebrow: "Installation guide",
       title: "Install in one minute and make your first clip.",
-      description: "Chrome and Edge packages are available now. Load the extension manually with the steps below.",
+      description: "Chrome, Edge, and Firefox packages are available now. Load the extension manually with the steps below.",
       steps: [
         {
           title: "Download and extract",
@@ -191,7 +199,7 @@ const copy = {
         },
         {
           title: "Load the extension",
-          description: "Open the browser extensions page, enable Developer mode, then choose Load unpacked.",
+          description: "In Chrome or Edge, enable Developer mode and load the unpacked folder. In Firefox, choose Load Temporary Add-on and open manifest.json.",
         },
         {
           title: "Connect NoteGen",
@@ -204,6 +212,8 @@ const copy = {
       ],
       chromeAddress: "Chrome: chrome://extensions",
       edgeAddress: "Edge: edge://extensions",
+      firefoxAddress: "Firefox: about:debugging#/runtime/this-firefox",
+      firefoxNote: "Firefox removes temporary add-ons after restart. Persistent installation requires a Mozilla-signed release.",
     },
   },
 } as const;
@@ -268,7 +278,7 @@ export default async function WebClipperDownloadPage({
               </p>
             </div>
             <div className="flex w-full flex-col gap-4">
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <DownloadButton
                   download={release?.downloads.chrome}
                   label={t.chrome.action}
@@ -276,6 +286,11 @@ export default async function WebClipperDownloadPage({
                 <DownloadButton
                   download={release?.downloads.edge}
                   label={t.edge.action}
+                  variant="outline"
+                />
+                <DownloadButton
+                  download={release?.downloads.firefox}
+                  label={t.firefox.action}
                   variant="outline"
                 />
               </div>
@@ -338,13 +353,19 @@ export default async function WebClipperDownloadPage({
                         <Badge variant="outline" className="font-mono font-normal">
                           {t.workflow.edgeAddress}
                         </Badge>
+                        <Badge variant="outline" className="font-mono font-normal">
+                          {t.workflow.firefoxAddress}
+                        </Badge>
+                        <p className="basis-full text-sm leading-6 text-muted-foreground">
+                          {t.workflow.firefoxNote}
+                        </p>
                       </div>
                     )}
                   </CardContent>
                 </Card>
               ))}
             </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <DownloadButton
                 download={release?.downloads.chrome}
                 label={t.chrome.action}
@@ -352,6 +373,11 @@ export default async function WebClipperDownloadPage({
               <DownloadButton
                 download={release?.downloads.edge}
                 label={t.edge.action}
+                variant="outline"
+              />
+              <DownloadButton
+                download={release?.downloads.firefox}
+                label={t.firefox.action}
                 variant="outline"
               />
             </div>

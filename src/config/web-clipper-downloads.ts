@@ -16,6 +16,7 @@ export type WebClipperRelease = {
   downloads: {
     chrome: WebClipperDownload;
     edge: WebClipperDownload;
+    firefox?: WebClipperDownload;
   };
 };
 
@@ -59,6 +60,10 @@ function parseRelease(value: unknown): WebClipperRelease {
     downloads: {
       chrome: parseDownload(downloads.chrome),
       edge: parseDownload(downloads.edge),
+      firefox:
+        downloads.firefox === undefined
+          ? undefined
+          : parseDownload(downloads.firefox),
     },
   };
 }
