@@ -5,6 +5,27 @@ import { Download, Github, Book, HeartHandshake } from 'lucide-react';
 import SectionWrap from './section-wrap';
 import Image from 'next/image';
 
+const productShowcaseImage = '/notegen-product-showcase.png';
+
+export function NoteGenProductShowcase({
+  className = '',
+  priority = false,
+}: {
+  className?: string;
+  priority?: boolean;
+}) {
+  return (
+    <Image
+      src={productShowcaseImage}
+      alt="NoteGen"
+      width={2586}
+      height={1684}
+      className={className}
+      priority={priority}
+    />
+  );
+}
+
 // 格式化数字显示函数
 function formatNumber(num: number): string {
   if (num >= 1000) {
@@ -79,13 +100,7 @@ export default function HomeHero({ githubStats }: HomeHeroProps) {
           </Button>
         </div>
       </div>
-      <Image
-        src="https://s2.loli.net/2025/12/22/jlpEP2c6ogwHhIA.png"
-        alt="NoteGen"
-        width={1280}
-        height={720}
-        className="w-full lg:w-[640px] object-contain"
-      />
+      <NoteGenProductShowcase className="w-full lg:w-[640px] object-contain" priority />
     </SectionWrap>
   );
 }

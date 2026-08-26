@@ -21,7 +21,7 @@ Use Docker Compose for production-like or long-running experiments. Source mode 
 
 The default Compose stack starts NoteGen Server and PostgreSQL 17. Two separate volumes store the database and attachments. The service listens only on `127.0.0.1:3789` on the host by default.
 
-The official image is `ghcr.io/codexu/note-gen-server` and supports `linux/amd64` and `linux/arm64`. The current experimental build uses the `edge` tag, so the server does not need Node.js, pnpm, or a local source build.
+The official image is `ghcr.io/codexu/note-gen-server` and supports `linux/amd64` and `linux/arm64`. Compose defaults to the `latest` image published from the release branch, so the server does not need Node.js, pnpm, or a local source build.
 
 ### 1. Prepare the server
 
@@ -58,7 +58,7 @@ Edit `.env` and verify at least these values:
 | `AUTH_SECRET` | The second random value; do not casually rotate it after launch |
 | `PUBLIC_BASE_URL` | The exact address used by NoteGen clients, without a path or trailing slash |
 | `SERVER_BIND_ADDRESS` | Keep `127.0.0.1` and expose the service through a reverse proxy |
-| `NOTEGEN_SERVER_IMAGE` | Defaults to experimental `edge`; use a `sha-<commit>` tag to reproduce a specific build |
+| `NOTEGEN_SERVER_IMAGE` | Defaults to `latest`; pin a full version such as `0.1.0` for reproducible deployments |
 
 For a local-only trial:
 
@@ -83,7 +83,7 @@ docker compose ps
 By default, Compose pulls:
 
 ```text
-ghcr.io/codexu/note-gen-server:edge
+ghcr.io/codexu/note-gen-server:latest
 ```
 
 On first startup, the server waits for PostgreSQL and applies pending database migrations. Once both services report `healthy`, check readiness:
@@ -141,7 +141,7 @@ See [Sync](/en/docs/settings/sync) for Git, S3, WebDAV, and cloud-drive options.
 
 ## Upgrade the instance
 
-The `edge` image follows active development and may include configuration or database changes. Before upgrading, review repository notes and create a consistent backup of PostgreSQL and attachment data.
+The `latest` image follows releases from the release branch and may still include configuration or database changes. Before upgrading, review repository notes and create a consistent backup of PostgreSQL and attachment data.
 
 ```bash
 cd note-gen-server
@@ -158,7 +158,7 @@ curl --fail http://127.0.0.1:3789/health/ready
 docker compose logs --tail=200 server
 ```
 
-To pin the current experimental build, replace `edge` in `NOTEGEN_SERVER_IMAGE` with its `sha-<commit>` tag. Version tags can be used after a formal release is published.
+To pin the current version, replace `latest` in `NOTEGEN_SERVER_IMAGE` with a full version tag such as `ghcr.io/codexu/note-gen-server:0.1.0`. A `sha-<commit>` tag can also reproduce a specific build for troubleshooting.
 
 ## Data and backups
 

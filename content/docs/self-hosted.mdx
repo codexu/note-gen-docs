@@ -21,7 +21,7 @@ NoteGen Server 为 NoteGen 提供账号、设备关联、实时同步、团队�
 
 默认 Compose 会启动 NoteGen Server 和 PostgreSQL 17，并使用两个独立的数据卷保存数据库与附件。服务默认只监听宿主机的 `127.0.0.1:3789`。
 
-官方镜像地址为 `ghcr.io/codexu/note-gen-server`，支持 `linux/amd64` 和 `linux/arm64`。当前实验版本使用 `edge` 标签，无需在服务器上安装 Node.js、pnpm 或自行编译源码。
+官方镜像地址为 `ghcr.io/codexu/note-gen-server`，支持 `linux/amd64` 和 `linux/arm64`。Compose 默认使用 release 分支发布的 `latest` 标签，无需在服务器上安装 Node.js、pnpm 或自行编译源码。
 
 ### 1. 准备服务器
 
@@ -58,7 +58,7 @@ openssl rand -hex 32
 | `AUTH_SECRET` | 第二个随机值；上线后不要随意更换 |
 | `PUBLIC_BASE_URL` | NoteGen 客户端实际访问的地址，不带路径和末尾斜杠 |
 | `SERVER_BIND_ADDRESS` | 保持 `127.0.0.1`，由反向代理提供公网入口 |
-| `NOTEGEN_SERVER_IMAGE` | 默认使用实验性的 `edge` 镜像；需要复现特定构建时改为 `sha-<commit>` 标签 |
+| `NOTEGEN_SERVER_IMAGE` | 默认使用 `latest`；需要稳定复现时固定完整版本标签，例如 `0.1.0` |
 
 仅在本机测试时，可以使用：
 
@@ -83,7 +83,7 @@ docker compose ps
 Compose 默认拉取：
 
 ```text
-ghcr.io/codexu/note-gen-server:edge
+ghcr.io/codexu/note-gen-server:latest
 ```
 
 首次启动会等待 PostgreSQL 就绪，并自动执行尚未应用的数据库迁移。两个服务都显示为 `healthy` 后，再检查就绪接口：
@@ -141,7 +141,7 @@ Caddy 会自动申请和续期 HTTPS 证书。确认浏览器能够通过 `https
 
 ## 升级实例
 
-`edge` 镜像跟随当前开发版本，可能包含配置或数据库变化。升级前先阅读仓库说明，并对 PostgreSQL 与附件数据建立同一时间点的配套备份。
+`latest` 镜像跟随 release 分支的最新发布，仍可能包含配置或数据库变化。升级前先阅读仓库说明，并对 PostgreSQL 与附件数据建立同一时间点的配套备份。
 
 ```bash
 cd note-gen-server
@@ -158,7 +158,7 @@ curl --fail http://127.0.0.1:3789/health/ready
 docker compose logs --tail=200 server
 ```
 
-如果需要固定当前实验构建，请在 `.env` 中把 `NOTEGEN_SERVER_IMAGE` 从 `edge` 改为对应的 `sha-<commit>` 标签。正式版本发布后也可以固定版本标签。
+如果需要固定当前版本，请在 `.env` 中把 `NOTEGEN_SERVER_IMAGE` 从 `latest` 改为完整版本标签，例如 `ghcr.io/codexu/note-gen-server:0.1.0`。排查特定构建时也可以使用 `sha-<commit>` 标签。
 
 ## 数据与备份
 

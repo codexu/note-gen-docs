@@ -27,6 +27,7 @@ import { getPageAlternates, normalizeLang, siteConfig } from '@/lib/seo';
 import { isSelfHostedEnabled } from '@/lib/self-hosted';
 import { cn } from '@/lib/utils';
 import { notFound } from 'next/navigation';
+import { MarkdownSyncDemo } from '@/components/self-hosted/markdown-sync-demo';
 
 const repositoryUrl = 'https://github.com/codexu/note-gen-server';
 const issueUrl = `${repositoryUrl}/issues`;
@@ -74,7 +75,7 @@ const content = {
         ['NoteGen Server', '同步 API、WebSocket、认证和账号管理 Web 同源运行。'],
         ['PostgreSQL 17', '保存账号、设备、同步游标、对象版本和实例配置。'],
         ['持久化数据卷', 'PostgreSQL 与附件数据独立于容器生命周期保存。'],
-        ['GHCR 镜像', 'edge 跟随主开发分支，版本标签用于固定实验版本。'],
+        ['GHCR 镜像', 'latest 跟随 release 分支发布，完整版本标签用于稳定复现。'],
       ],
     },
     feedback: {
@@ -126,7 +127,7 @@ const content = {
         ['NoteGen Server', 'Sync API, WebSocket, authentication, and the account portal run on one origin.'],
         ['PostgreSQL 17', 'Stores accounts, devices, sync cursors, object versions, and instance configuration.'],
         ['Persistent volumes', 'Database and attachment data remain outside the container lifecycle.'],
-        ['GHCR image', 'edge follows the main development branch; version tags pin experimental releases.'],
+        ['GHCR image', 'latest follows releases from the release branch; full version tags provide reproducible deployments.'],
       ],
     },
     feedback: {
@@ -202,10 +203,6 @@ export async function generateMetadata({
       title: t.meta.title,
       description: t.meta.description,
     },
-    robots: {
-      index: false,
-      follow: false,
-    },
   };
 }
 
@@ -252,12 +249,16 @@ export default async function SelfHostedPage({
           </div>
         </div>
 
-        <Card className="max-w-5xl">
+        <MarkdownSyncDemo lang={language} />
+
+        <Card className="max-w-5xl border-amber-500/40 bg-amber-500/10">
           <CardHeader>
-            <CardTitle>{t.notice.title}</CardTitle>
-            <CardDescription>{t.notice.description}</CardDescription>
+            <CardTitle className="text-amber-900 dark:text-amber-200">{t.notice.title}</CardTitle>
+            <CardDescription className="text-amber-950/70 dark:text-amber-100/70">
+              {t.notice.description}
+            </CardDescription>
             <CardAction>
-              <Badge variant="secondary">
+              <Badge className="border-amber-500/40 bg-amber-500/15 text-amber-900 hover:bg-amber-500/20 dark:text-amber-200" variant="outline">
                 <CircleAlertIcon data-icon="inline-start" />
                 Preview
               </Badge>

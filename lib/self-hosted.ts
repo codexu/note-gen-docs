@@ -1,6 +1,6 @@
 import type { Node, Root } from 'fumadocs-core/page-tree';
 
-export const isSelfHostedEnabled = process.env.NODE_ENV === 'development';
+export const isSelfHostedEnabled = true;
 
 export function isSelfHostedDocsPath(slugs?: string[]) {
   return slugs?.[0] === 'self-hosted';
