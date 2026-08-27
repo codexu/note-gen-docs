@@ -1,15 +1,12 @@
 "use client"
 
 import {
-  CalendarDays,
   CheckSquare,
-  Cloud,
   CopySlash,
   EllipsisVertical,
   FilePlus,
   FolderPlus,
   ImagePlus,
-  Languages,
   Link,
   MessageSquareDashed,
   MessageSquarePlus,
@@ -22,7 +19,6 @@ import {
   ScanText,
   Search,
   Settings,
-  SquarePen,
   Undo2,
 } from "lucide-react"
 
@@ -79,36 +75,31 @@ export function NoteGenWindowTitleBar({
         </div>
       ) : null}
 
-      <div className="flex shrink-0 items-center gap-0.5 px-2">
+      {mode !== "full" ? <div className="flex shrink-0 items-center gap-0.5 px-2">
         {titleTools.map((Icon, index) => (
           <NoteGenReplicaIconButton key={index} icon={Icon} label={toolLabel} />
         ))}
-      </div>
+      </div> : null}
 
       {mode === "full" ? (
         <>
-          <div className="mx-auto flex h-6 w-[34%] min-w-44 max-w-md items-center justify-center gap-2 rounded-sm border text-[10px] text-muted-foreground">
-            <Search className="size-3.5" strokeWidth={1.7} />
-            <span className="truncate">
-              {lang === "en" ? "Search notes, records, and canvases" : "搜索笔记、记录和画布"}
-            </span>
+          <div className="flex-1" aria-hidden="true" />
+          <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-0.5 rounded-md border bg-background p-0.5 shadow-xs">
+            {recordTools.map((Icon, index) => <NoteGenReplicaIconButton key={index} icon={Icon} active={index === 0} label={toolLabel} className="size-7" />)}
           </div>
-
           <div className="flex shrink-0 items-center gap-0.5 px-2">
             <NoteGenReplicaIconButton icon={PanelLeft} label={lang === "en" ? "Left sidebar" : "左侧栏"} />
-            <NoteGenReplicaIconButton icon={SquarePen} label={lang === "en" ? "New note" : "新建笔记"} />
             <NoteGenReplicaIconButton icon={PanelRight} label={lang === "en" ? "Right sidebar" : "右侧栏"} />
-            <NoteGenReplicaIconButton icon={CalendarDays} label={lang === "en" ? "Calendar" : "日历"} />
-            <NoteGenReplicaIconButton icon={Cloud} label={lang === "en" ? "Sync" : "同步"} />
             <NoteGenReplicaIconButton icon={Pin} label={lang === "en" ? "Pin window" : "窗口置顶"} />
             <NoteGenReplicaIconButton
-              icon={view === "settings" ? SquarePen : Settings}
+              icon={Settings}
               active={view === "settings"}
               label={view === "settings"
-                ? (lang === "en" ? "Back to workspace" : "返回工作区")
+                ? (lang === "en" ? "Settings open" : "设置已打开")
                 : (lang === "en" ? "Settings" : "设置")}
               onClick={() => onViewChange?.(view === "settings" ? "workspace" : "settings")}
             />
+            <span className="relative ml-1 flex size-7 items-center justify-center rounded-md border text-[8px] text-muted-foreground">AI<span className="absolute right-0.5 top-0.5 size-1.5 rounded-full bg-emerald-500 ring-1 ring-background" /></span>
           </div>
         </>
       ) : (

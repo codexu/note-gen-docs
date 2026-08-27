@@ -21,6 +21,18 @@ import {
 
 import {
   NoteGenDesktopReplica,
+  NoteGenAgentPanel,
+  NoteGenActivityHeatmap,
+  NoteGenAppShell,
+  NoteGenCanvasWorkspace,
+  NoteGenConfirmationDialog,
+  NoteGenDialogBackdrop,
+  NoteGenEditorWorkspace,
+  NoteGenGlobalSearch,
+  NoteGenImageViewer,
+  NoteGenMobileReplica,
+  NoteGenRecordingOverlay,
+  NoteGenRecordWorkspace,
   NoteGenReplicaFrame,
   NoteGenReplicaIconButton,
   NoteGenReplicaMenuGroup,
@@ -30,9 +42,11 @@ import {
   NoteGenSettingSegmentedControl,
   NoteGenSettingSelect,
   NoteGenSettingsPage,
-  NoteGenSettingsReplica,
+  NoteGenSettingsDialogReplica,
   NoteGenSettingsSection,
   NoteGenSettingSwitch,
+  NoteGenSyncStatus,
+  NoteGenUpdatePrompt,
   NoteGenWindowTitleBar,
   NoteGenWorkspaceSwitcher,
   type NoteGenReplicaLanguage,
@@ -65,6 +79,9 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
   const navigation = [
     ["desktop", text("完整应用", "Desktop app")],
     ["chrome", text("窗口与工具栏", "Chrome and toolbars")],
+    ["workspaces", text("核心工作区", "Core workspaces")],
+    ["mobile", text("移动端", "Mobile")],
+    ["overlays", text("弹窗与状态", "Overlays and states")],
     ["settings-primitives", text("设置组件", "Settings primitives")],
     ["settings", text("完整设置页", "Settings page")],
   ]
@@ -186,8 +203,51 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
         </GallerySection>
 
         <GallerySection
+          id="workspaces"
+          eyebrow="03 · Workspace replicas"
+          title={text("记录、写作、Agent 与画布", "Capture, writing, Agent, and canvas")}
+          description={text("每个工作区都由更小的列表、工具栏、内容区和状态组件组合而成。", "Each workspace is composed from smaller lists, toolbars, content areas, and state components.")}
+        >
+          <div className="grid gap-6">
+            <ComponentCard title="NoteGenRecordWorkspace" description={text("记录列表与详情", "Capture list and detail")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenRecordWorkspace lang={lang} /></div></ComponentCard>
+            <ComponentCard title="NoteGenEditorWorkspace" description={text("文件树、标签页与 Markdown 编辑器", "File tree, tabs, and Markdown editor")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenEditorWorkspace lang={lang} /></div></ComponentCard>
+            <div className="grid gap-6 xl:grid-cols-2">
+              <ComponentCard title="NoteGenAgentPanel" description={text("消息、思考过程、工具调用与上下文", "Messages, reasoning, tool calls, and context")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenAgentPanel lang={lang} /></div></ComponentCard>
+              <ComponentCard title="NoteGenCanvasWorkspace" description={text("画布项目、节点、连线和缩放工具", "Canvas projects, nodes, edges, and zoom tools")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenCanvasWorkspace lang={lang} /></div></ComponentCard>
+            </div>
+            <ComponentCard title="NoteGenAppShell" description={text("当前桌面外壳：平台窗口控制、记录工具与状态栏", "Current desktop shell with platform controls, capture toolbar, and status bar")}><NoteGenAppShell lang={lang}><div className="grid h-full grid-cols-[28%_42%_30%]"><div className="border-r"><NoteGenRecordWorkspace lang={lang} /></div><div className="border-r"><NoteGenEditorWorkspace lang={lang} /></div><NoteGenAgentPanel lang={lang} /></div></NoteGenAppShell></ComponentCard>
+          </div>
+        </GallerySection>
+
+        <GallerySection
+          id="mobile"
+          eyebrow="04 · Mobile replicas"
+          title={text("移动端核心页面", "Core mobile screens")}
+          description={text("移动端使用独立的手机框架、状态栏、页面标题和底部导航，可按 screen 属性直接切换展示。", "Mobile uses a dedicated device frame, status bar, headers, and dock. Select a screen through a single prop.")}
+        >
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
+            {(["capture", "chat", "writing", "canvas", "settings"] as const).map((screen) => <ComponentCard key={screen} title={`Mobile · ${screen}`} description={text("代码实时渲染", "Rendered live from code")}><NoteGenMobileReplica lang={lang} screen={screen} /></ComponentCard>)}
+          </div>
+        </GallerySection>
+
+        <GallerySection
+          id="overlays"
+          eyebrow="05 · Dialogs and states"
+          title={text("全局弹窗、录音与同步状态", "Global dialogs, recording, and sync states")}
+          description={text("用于文档说明搜索、录音、同步、冲突、图片预览和关闭确认等瞬时界面。", "Transient UI for documenting search, recording, sync, conflicts, image viewing, and close confirmation.")}
+        >
+          <div className="grid gap-6 lg:grid-cols-2">
+            <ComponentCard title="NoteGenGlobalSearch" description={text("全局搜索面板", "Global search palette")}><NoteGenDialogBackdrop><NoteGenGlobalSearch lang={lang} /></NoteGenDialogBackdrop></ComponentCard>
+            <ComponentCard title="NoteGenRecordingOverlay" description={text("悬浮录音状态", "Floating recording state")}><NoteGenDialogBackdrop><NoteGenRecordingOverlay lang={lang} /></NoteGenDialogBackdrop></ComponentCard>
+            <ComponentCard title="NoteGenSyncStatus" description={text("同步完成与冲突状态", "Sync and conflict states")}><div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-xl border bg-muted/25 p-4"><NoteGenSyncStatus lang={lang} /><NoteGenSyncStatus lang={lang} state="conflict" /></div></ComponentCard>
+            <ComponentCard title="ImageViewer · Confirmation" description={text("图片预览与关闭确认", "Image viewer and close confirmation")}><NoteGenDialogBackdrop className="min-h-72"><NoteGenImageViewer lang={lang} /><div className="absolute bottom-4 right-4 z-20 w-64"><NoteGenConfirmationDialog lang={lang} /></div></NoteGenDialogBackdrop></ComponentCard>
+            <ComponentCard title="Update · Activity" description={text("更新提示与写作活动", "Update prompt and writing activity")}><div className="grid min-h-72 gap-3 rounded-xl border bg-muted/25 p-4 sm:grid-cols-2"><NoteGenUpdatePrompt lang={lang} /><NoteGenActivityHeatmap lang={lang} /></div></ComponentCard>
+          </div>
+        </GallerySection>
+
+        <GallerySection
           id="settings-primitives"
-          eyebrow="03 · Settings primitives"
+          eyebrow="06 · Settings primitives"
           title={text("从一个控件到完整设置分组", "From one control to a complete settings section")}
           description={text(
             "设置页的页面标题、分组、设置项和操作控件都可以单独导入，用真实组件还原任意设置文档。",
@@ -258,16 +318,14 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
 
         <GallerySection
           id="settings"
-          eyebrow="04 · NoteGenSettingsReplica"
+          eyebrow="07 · NoteGenSettingsReplica"
           title={text("完整设置页", "Complete settings page")}
           description={text(
             "搜索左侧设置项，切换导航，并操作常规设置中的主题与开关。这个完整场景也可以直接放进文档页面。",
             "Search the sidebar, switch sections, and interact with theme and behavior controls. This complete scene can also be embedded directly in documentation."
           )}
         >
-          <div className="h-[720px] overflow-hidden rounded-2xl border bg-background shadow-xl">
-            <NoteGenSettingsReplica lang={lang} />
-          </div>
+          <NoteGenSettingsDialogReplica lang={lang} className="h-[760px]" />
         </GallerySection>
       </div>
 
