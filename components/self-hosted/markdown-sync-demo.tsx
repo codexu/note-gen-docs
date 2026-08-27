@@ -121,6 +121,19 @@ export function MarkdownSyncDemo({ lang }: { lang: DemoLanguage }) {
           <h4 className="mt-[8%] border-t pt-[5%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileNextDay}</h4>
         </div>
       </div>
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[6%] bg-gradient-to-b from-transparent via-background/65 to-background"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-0 z-20 w-[2.5%] bg-gradient-to-r from-background to-transparent"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 right-0 z-20 w-[2.5%] bg-gradient-to-l from-background to-transparent"
+      />
     </div>
   );
 }
