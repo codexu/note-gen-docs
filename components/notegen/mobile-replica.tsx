@@ -1,32 +1,10 @@
 import type { ReactNode } from "react"
 import {
-  CheckSquare,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Cloud,
-  EllipsisVertical,
-  FileCog,
-  FilePlus2,
-  Filter,
-  Highlighter,
-  History,
-  LayoutList,
-  MessageSquare,
-  MessageSquareDashed,
-  MessageSquarePlus,
-  Palette,
-  PenTool,
-  Plus,
-  RefreshCw,
-  Search,
-  SearchCode,
-  Send,
-  Settings,
-  Sparkles,
-  SquarePen,
-  Trash2,
-  User,
+  BatteryFull, Bot, Bold, CheckSquare, ChevronDown, ChevronRight, Cloud, Code2,
+  EllipsisVertical, FilePlus2, Filter, Highlighter, History, Italic, Lightbulb,
+  MessageSquare, MessageSquareDashed, MessageSquarePlus, Palette, Plus, Redo2,
+  RefreshCw, Search, Send, Settings, ShieldQuestion, SquarePen, Strikethrough,
+  Trash2, Underline, Undo2, User, WandSparkles, Wifi,
 } from "lucide-react"
 
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
@@ -34,25 +12,28 @@ import { cn } from "@/lib/utils"
 
 export type NoteGenMobileScreen = "capture" | "chat" | "writing" | "canvas" | "settings"
 
-const MOBILE_LOGICAL_WIDTH = 390
-const MOBILE_LOGICAL_HEIGHT = 862.5
+const MOBILE_WIDTH = 402
+const MOBILE_HEIGHT = 874
+const MOBILE_SCALE = 0.6617
 
-function MobileIconButton({ children, className }: { children: ReactNode; className?: string }) {
-  return <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground", className)}>{children}</span>
+function IconButton({ children }: { children: ReactNode }) {
+  return <span className="flex size-11 shrink-0 items-center justify-center text-[#24272b]">{children}</span>
 }
 
-function MobileAvatarButton() {
-  return <MobileIconButton className="relative rounded-full text-foreground"><span className="flex size-8 items-center justify-center rounded-full bg-muted"><User className="size-[18px]" /></span></MobileIconButton>
+function Avatar() {
+  return (
+    <span className="relative flex size-11 items-center justify-center">
+      <span className="flex size-7 items-center justify-center rounded-full border border-[#d9dadd] text-[#74777c]"><User className="size-4" /></span>
+      <i className="absolute right-[7px] top-[6px] size-2 rounded-full border border-white bg-[#ff5c65]" />
+    </span>
+  )
 }
 
 export function NoteGenMobileFrame({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("relative mx-auto h-[585px] w-[270px] shrink-0 overflow-hidden rounded-[2.2rem] border-[5px] border-foreground bg-background shadow-2xl", className)}>
-      <div className="absolute left-1/2 top-2 z-30 h-5 w-24 -translate-x-1/2 rounded-full bg-foreground" />
-      <div
-        className="absolute left-0 top-0 origin-top-left bg-background text-base"
-        style={{ width: MOBILE_LOGICAL_WIDTH, height: MOBILE_LOGICAL_HEIGHT, transform: "scale(0.6666667)" }}
-      >
+    <div className={cn("relative mx-auto h-[590px] w-[276px] shrink-0 overflow-hidden rounded-[2.65rem] border-[6px] border-[#090909] bg-white shadow-[0_22px_50px_rgba(0,0,0,.20)]", className)}>
+      <div className="absolute left-1/2 top-[10px] z-40 h-[25px] w-[84px] -translate-x-1/2 rounded-full bg-black" />
+      <div className="absolute left-0 top-0 origin-top-left overflow-hidden bg-white text-[#17191c]" style={{ width: MOBILE_WIDTH, height: MOBILE_HEIGHT, transform: `scale(${MOBILE_SCALE})` }}>
         {children}
       </div>
     </div>
@@ -61,45 +42,35 @@ export function NoteGenMobileFrame({ children, className }: { children: ReactNod
 
 export function NoteGenMobileStatusBar() {
   return (
-    <div className="flex h-11 shrink-0 items-center justify-between px-6 pt-1 text-xs font-semibold">
-      <span>9:41</span>
-      <span className="flex items-end gap-1" aria-hidden>
-        <span className="flex items-end gap-0.5"><i className="h-1 w-0.5 rounded-full bg-foreground" /><i className="h-1.5 w-0.5 rounded-full bg-foreground" /><i className="h-2 w-0.5 rounded-full bg-foreground" /><i className="h-2.5 w-0.5 rounded-full bg-foreground" /></span>
-        <i className="size-2.5 rounded-full border-2 border-foreground" />
-        <i className="h-2.5 w-4 rounded-[3px] border border-foreground after:ml-[1px] after:block after:h-1.5 after:w-2.5 after:rounded-[1px] after:bg-foreground" />
+    <div className="relative flex h-[59px] shrink-0 items-center justify-between px-[49px] pt-2 text-[16px] font-semibold tracking-[-.3px]">
+      <span>12:00</span>
+      <span className="absolute left-1/2 top-[13px] h-[37px] w-[126px] -translate-x-1/2 rounded-full bg-black" />
+      <span className="flex items-center gap-[7px]" aria-hidden>
+        <span className="flex items-end gap-[2px]"><i className="size-[3px] rounded-full bg-[#c9cbd0]" /><i className="size-[3px] rounded-full bg-[#c9cbd0]" /><i className="size-[3px] rounded-full bg-[#c9cbd0]" /></span>
+        <Wifi className="size-[17px] stroke-[2.5]" /><BatteryFull className="h-[16px] w-[25px] stroke-[2.2]" />
       </span>
     </div>
   )
 }
 
-export function NoteGenMobileHeader({ title, trailing }: { title: string; trailing?: ReactNode }) {
-  return <header className="flex h-14 min-h-14 items-center border-b bg-background px-2"><h2 className="px-2 text-sm font-medium">{title}</h2><div className="ml-auto flex items-center">{trailing ?? <MobileIconButton><Search className="size-[18px]" /></MobileIconButton>}</div></header>
-}
-
 export function NoteGenMobileDock({ screen = "capture", lang = "cn" }: { screen?: NoteGenMobileScreen; lang?: NoteGenReplicaLanguage }) {
-  const activeScreen = screen === "settings" ? "chat" : screen
+  const active = screen === "settings" ? "chat" : screen
   const items = [
-    { id: "chat", icon: MessageSquare, label: lang === "en" ? "Chat" : "对话" },
-    { id: "writing", icon: SquarePen, label: lang === "en" ? "Write" : "写作" },
-    { id: "quick", icon: Plus, label: lang === "en" ? "Quick" : "快记" },
-    { id: "capture", icon: Highlighter, label: lang === "en" ? "Records" : "记录" },
-    { id: "canvas", icon: Palette, label: lang === "en" ? "Canvas" : "画布" },
-  ]
-
+    ["chat", MessageSquare, lang === "en" ? "Chat" : "对话"],
+    ["writing", SquarePen, lang === "en" ? "Write" : "写作"],
+    ["quick", Plus, ""],
+    ["capture", Highlighter, lang === "en" ? "Records" : "记录"],
+    ["canvas", Palette, lang === "en" ? "Canvas" : "画布"],
+  ] as const
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-24 items-end bg-gradient-to-t from-background via-background/95 to-transparent px-3 pb-3">
-      <nav
-        className="pointer-events-auto grid h-14 w-full items-center gap-1 rounded-[1.35rem] border border-border/60 bg-background/70 backdrop-blur-xl"
-        style={{ gridTemplateColumns: items.map((item) => item.id === activeScreen ? "80px" : "67px").join(" ") }}
-      >
-        {items.map((item) => {
-          const active = activeScreen === item.id
+    <div className="absolute inset-x-0 bottom-0 z-30 h-[90px] bg-white px-3">
+      <nav className="flex h-14 w-full items-center justify-between rounded-[22px] border border-[#e9e9eb] bg-white px-1">
+        {items.map(([id, ItemIcon, label]) => {
+          const selected = active === id
           return (
-            <span key={item.id} aria-current={active ? "page" : undefined} className="flex h-12 min-w-0 items-center justify-center rounded-2xl px-0.5">
-              <span className={cn("flex h-10 min-w-8 max-w-full items-center justify-center rounded-2xl px-2 text-muted-foreground", active && "gap-1.5 bg-muted px-2.5 text-foreground shadow-sm")}>
-                <item.icon className="size-5 shrink-0" />
-                {active ? <strong className="truncate text-xs font-medium leading-none">{item.label}</strong> : null}
-              </span>
+            <span key={id} className={cn("flex h-11 min-w-11 items-center justify-center rounded-[18px] text-[#686b70]", selected && "min-w-[76px] gap-2 bg-[#f5f5f6] px-3 text-[#202226]")}>
+              <ItemIcon className="size-5 shrink-0 stroke-[1.8]" />
+              {selected && label ? <b className="whitespace-nowrap text-[14px] font-medium">{label}</b> : null}
             </span>
           )
         })}
@@ -108,144 +79,123 @@ export function NoteGenMobileDock({ screen = "capture", lang = "cn" }: { screen?
   )
 }
 
-export function NoteGenMobileCapture({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  const records = [
-    { type: lang === "en" ? "Text" : "文本", time: "10:24", body: lang === "en" ? "Capture first and organize only when needed." : "先记录，只在需要时整理。" },
-    { type: lang === "en" ? "Recording" : "录音", time: "09:48", body: lang === "en" ? "Product meeting memo · 01:42" : "产品会议速记 · 01:42" },
-    { type: lang === "en" ? "Image" : "图片", time: lang === "en" ? "Yesterday" : "昨天", body: lang === "en" ? "Interface references" : "界面参考" },
-  ]
+function StandardHeader({ children }: { children: ReactNode }) {
+  return <header className="flex h-14 shrink-0 items-center border-b border-[#e7e7e8] px-2">{children}</header>
+}
 
+function RecordCard({ type, time, body, large, purple }: { type: string; time: string; body: string; large?: boolean; purple?: boolean }) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex h-14 min-h-14 items-center border-b bg-background px-2">
-        <MobileAvatarButton />
-        <span className="flex h-11 min-w-0 items-center px-2 text-sm font-medium">{lang === "en" ? "All records" : "全部记录"}<ChevronDown className="ml-1 size-4 shrink-0 text-muted-foreground" /></span>
-        <div className="ml-auto flex items-center">
-          <MobileIconButton><Filter className="size-[18px]" /></MobileIconButton>
-          <MobileIconButton><CheckSquare className="size-[18px]" /></MobileIconButton>
-          <MobileIconButton><Trash2 className="size-[18px]" /></MobileIconButton>
-        </div>
-      </header>
-      <div className="min-h-0 flex-1 overflow-hidden px-3 py-2 pb-24">
-        <p className="mb-2 text-xs font-medium text-muted-foreground">{lang === "en" ? "TODAY" : "今天"}</p>
-        <div className="flex flex-col gap-2">
-          {records.map((record) => (
-            <article key={record.type} className="rounded-xl border bg-background px-3 py-3">
-              <div className="flex items-start gap-2">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2"><span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px]">{record.type}</span><time className="ml-auto text-xs text-muted-foreground">{record.time}</time></div>
-                  <p className="mt-2 line-clamp-2 text-sm leading-5">{record.body}</p>
-                </div>
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground"><EllipsisVertical className="size-4" /></span>
-              </div>
-            </article>
-          ))}
-        </div>
+    <article className={cn("relative rounded-[14px] border border-[#dedfe2] bg-white px-3 py-3", large ? "h-[103px]" : "min-h-[94px]")}>
+      <div className="flex items-center">
+        <span className={cn("rounded-md border px-2 py-[2px] text-[11px]", purple ? "border-[#efc8ef] bg-[#fae4fb] text-[#a43ca6]" : "border-[#cce99c] bg-[#eeffd4] text-[#69962b]")}>{type}</span>
+        <time className="ml-auto mr-8 text-[12px] text-[#85888e]">{time}</time>
+        <EllipsisVertical className="absolute right-3 top-5 size-[18px]" />
+      </div>
+      <p className={cn("mt-2 text-[15px] leading-[21px]", large && "flex h-14 items-center justify-center text-[#7b7e84]")}>{body}</p>
+    </article>
+  )
+}
+
+export function NoteGenMobileCapture({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
+  const rows = lang === "en" ? [
+    ["Text", "22:25", "I’m starting to fix a few small issues now. No lint, build, test, or actual testing. You only need to change code..."],
+    ["Text", "22:25", "1 I’m starting to fix a few small issues now. No lint, build, test, or actual testing. You only need to change code..."],
+    ["Text", "12:51", "[SYNC-E2E-RECORD-PC] 2026-08-03 dual-ended recording sync test"],
+  ] : [
+    ["文本", "22:25", "用户附件 现在开始修复一些小问题，不用 lint、build、测试、实际测试。你只需要改代码，在..."],
+    ["文本", "22:25", "1 用户附件 现在开始修复一些小问题，不用 lint、build、测试、实际测试。你只需要改代码，在..."],
+    ["文本", "12:51", "[SYNC-E2E-RECORD-PC] 2026-08-03 双端记录同步测试"],
+  ]
+  return (
+    <div className="relative min-h-0 flex-1">
+      <StandardHeader><Avatar /><span className="flex items-center gap-1 pl-1 text-[15px] font-medium">{lang === "en" ? "Release prep" : "发布准备"}<ChevronDown className="size-4 text-[#85888d]" /></span><span className="ml-auto flex"><IconButton><Filter className="size-[19px]" /></IconButton><IconButton><CheckSquare className="size-[19px]" /></IconButton><IconButton><Trash2 className="size-[19px]" /></IconButton></span></StandardHeader>
+      <div className="h-[729px] overflow-hidden px-3 pb-24 pt-2">
+        <p className="mb-2 text-[13px] text-[#777a80]">2026-08-03</p>
+        <div className="space-y-2">{rows.map(([type, time, body], index) => <RecordCard key={index} type={type} time={time} body={body} />)}</div>
+        <p className="mb-2 mt-4 text-[13px] text-[#777a80]">2026-07-29</p>
+        <RecordCard type={lang === "en" ? "Excerpt" : "摘图"} time="18:44" body={lang === "en" ? "Product feedback board" : "产品反馈看板"} large purple />
+        <div className="mt-2"><RecordCard type={lang === "en" ? "Excerpt" : "摘图"} time="18:44" body={lang === "en" ? "Product feedback board" : "产品反馈看板"} large purple /></div>
       </div>
     </div>
   )
 }
 
 export function NoteGenMobileChat({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
+  const prompts = lang === "en" ? ["Help me write a note", "Summarize this content", "Brainstorm some ideas"] : ["帮我写一篇笔记", "帮我总结这段内容", "帮我头脑风暴一些想法"]
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col">
-      <header className="flex h-14 min-h-14 items-center gap-2 border-b bg-background px-2">
-        <MobileAvatarButton />
-        <div className="ml-auto flex items-center">
-          <MobileIconButton><Search className="size-[18px]" /></MobileIconButton>
-          <MobileIconButton><History className="size-[18px]" /></MobileIconButton>
-          <MobileIconButton><MessageSquareDashed className="size-[18px]" /></MobileIconButton>
-          <MobileIconButton><MessageSquarePlus className="size-[18px]" /></MobileIconButton>
-        </div>
-      </header>
-      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-hidden px-4 py-5 pb-52">
-        <div className="flex w-full justify-end"><div className="max-w-[85%] rounded-lg border px-3 py-2 text-sm leading-6">{lang === "en" ? "Summarize today’s captures." : "整理一下今天的记录。"}</div></div>
-        <div className="min-w-0 text-sm leading-6">
-          <div className="mb-2 flex items-center gap-2 font-medium"><Sparkles className="size-4" />{lang === "en" ? "Today’s summary" : "今日摘要"}</div>
-          <p>{lang === "en" ? "You recorded three product ideas, one meeting memo, and two interface references." : "你记录了三个产品想法、一条会议速记和两组界面参考。"}</p>
-        </div>
-      </div>
-      <div className="absolute inset-x-1 bottom-14 z-10 pb-1">
-        <div className="mx-2 flex min-h-[104px] flex-col gap-1 rounded-[1.35rem] border border-border/60 bg-background/70 p-1.5 backdrop-blur-xl">
-          <p className="min-h-10 p-2 text-sm text-muted-foreground">{lang === "en" ? "Message NoteGen…" : "给 NoteGen 发送消息……"}</p>
-          <div className="flex items-center">
-            <span className="flex size-10 items-center justify-center rounded-full text-muted-foreground"><Plus className="size-5" /></span>
-            <span className="ml-auto flex size-8 items-center justify-center rounded-full border border-border/50 bg-muted text-foreground"><Send className="size-4" /></span>
-          </div>
-        </div>
+    <div className="relative min-h-0 flex-1 bg-[linear-gradient(#f4f4f5_1px,transparent_1px),linear-gradient(90deg,#f4f4f5_1px,transparent_1px)] [background-size:40px_40px]">
+      <StandardHeader><Avatar /><span className="ml-auto flex"><IconButton><Search className="size-[19px]" /></IconButton><IconButton><History className="size-[19px]" /></IconButton><IconButton><MessageSquareDashed className="size-[19px]" /></IconButton><IconButton><MessageSquarePlus className="size-[19px]" /></IconButton></span></StandardHeader>
+      <section className="mx-auto mt-[139px] w-[326px]">
+        <h1 className="flex items-center justify-center gap-2 text-[21px] font-semibold"><MessageSquare className="size-[22px]" />{lang === "en" ? "Start a conversation with AI" : "开始与 AI 对话"}</h1>
+        <p className="mt-3 text-center text-[15px] text-[#87898e]">{lang === "en" ? "Use Chat or Agent mode to interact with AI" : "使用 Chat 或 Agent 模式与 AI 互动"}</p>
+        <p className="mb-2 mt-7 text-[13px] text-[#8b8d92]">{lang === "en" ? "Quick start" : "快速开始"}</p>
+        <div className="space-y-2">{prompts.map((prompt, index) => <div key={prompt} className="flex h-[44px] items-center rounded-[10px] border border-[#dedfe2] bg-[#fafafa] px-4 text-[14px]">{index === 0 ? <SquarePen className="mr-3 size-4 text-[#777a80]" /> : index === 1 ? <MessageSquare className="mr-3 size-4 text-[#777a80]" /> : <Lightbulb className="mr-3 size-4 text-[#777a80]" />}<b className="font-medium">{prompt}</b><ChevronRight className="ml-auto size-4 text-[#777a80]" /></div>)}</div>
+      </section>
+      <div className="absolute inset-x-3 bottom-[101px] h-[102px] rounded-[21px] border border-[#e6e6e8] bg-white p-3">
+        <p className="text-[14px] text-[#97999e]">{lang === "en" ? "Ask a question or organize notes into an article..." : "你可以提问或将记录整理为文章..."}</p>
+        <div className="mt-[24px] flex items-center"><Plus className="size-5 text-[#7a7d82]" /><Bot className="ml-7 size-5" /><ShieldQuestion className="ml-auto mr-6 size-[18px] text-[#74777d]" /><span className="flex size-10 items-center justify-center rounded-full bg-[#fafafa]"><Send className="size-[17px] text-[#8f9297]" /></span></div>
       </div>
     </div>
   )
+}
+
+function WritingToolbar() {
+  const tools = [Undo2, Redo2, WandSparkles, Bold, Highlighter, Italic, Underline, Strikethrough, Code2]
+  return <div className="flex h-[46px] shrink-0 items-center justify-between border-y border-[#e7e7e8] px-3">{tools.map((Tool, index) => <span key={index} className="flex size-9 items-center justify-center text-[#777a80]"><Tool className="size-[17px]" /></span>)}<span className="text-[21px] text-[#777a80]">〞</span></div>
+}
+
+function FeedbackBoard() {
+  return <div className="mt-8 h-[205px] bg-[#fbfbfb] p-2"><b className="text-[12px]">用户反馈</b><div className="mt-1 grid grid-cols-3 gap-2">{Array.from({ length: 6 }, (_, i) => <div key={i} className="h-[72px] border border-[#ececef] bg-white p-1"><div className="h-2 w-9 rounded bg-[#d9dce2]" /><div className="mt-2 h-1.5 w-full rounded bg-[#eff0f2]" /><div className="mt-1 h-1.5 w-3/4 rounded bg-[#eff0f2]" /><div className="mt-3 flex gap-1"><i className="size-2 rounded-full bg-[#a9bfd7]" /><i className="size-2 rounded-full bg-[#e5b8c2]" /><i className="size-2 rounded-full bg-[#b7d7bd]" /></div></div>)}</div></div>
 }
 
 export function NoteGenMobileWriting({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex h-14 min-h-14 items-center gap-2 border-b bg-background px-2 text-sm">
-        <div className="flex min-w-0 flex-1 items-center gap-1">
-          <MobileIconButton className="text-foreground"><ChevronLeft className="size-[18px]" /></MobileIconButton>
-          <span className="min-w-0 flex-1 truncate font-medium">{lang === "en" ? "Design principles.md" : "设计原则.md"}</span>
-        </div>
-        <div className="flex items-center"><MobileIconButton><SearchCode className="size-[18px]" /></MobileIconButton><MobileIconButton><LayoutList className="size-[18px]" /></MobileIconButton></div>
-      </header>
-      <article className="min-h-0 flex-1 overflow-hidden px-4 py-6 pb-24 text-base leading-7">
-        <h1 className="mb-4 mt-8 text-[2em] font-bold leading-tight">{lang === "en" ? "Design for calm writing" : "为安静写作而设计"}</h1>
-        <p>{lang === "en" ? "A good workspace reduces interruption and lets ideas stay visible." : "一个好的工作区，会减少打扰，让想法始终保持可见。"}</p>
-        <h2 className="mb-2 mt-4 text-[1.5em] font-semibold leading-tight">{lang === "en" ? "Capture first" : "先记录"}</h2>
-        <p className="text-muted-foreground">{lang === "en" ? "Structure can wait until it becomes useful." : "结构可以等到真正有用时再出现。"}</p>
+    <div className="relative min-h-0 flex-1">
+      <WritingToolbar />
+      <article className="h-[635px] overflow-hidden px-4 pt-[65px] text-[16px] leading-[27px]">
+        <h1 className="text-[31px] font-bold leading-tight">{lang === "en" ? "User feedback summary" : "用户反馈整理"}</h1>
+        <h2 className="mb-4 mt-9 text-[23px] font-bold">{lang === "en" ? "Research overview" : "调研概览"}</h2>
+        <p>{lang === "en" ? "This round collected 12 interview records, 28 community feedback items and 9 app store suggestions." : "本轮共整理 12 份访谈记录、28 条社区反馈和 9 条应用内建议。"}</p>
+        <FeedbackBoard />
+        <div className="mt-8 grid grid-cols-[1.2fr_.8fr_1fr] border border-[#d9dadd] text-[15px]"><b className="border-r border-[#d9dadd] p-3">需求</b><b className="border-r border-[#d9dadd] p-3">提及人数</b><b className="p-3">典型反馈</b><span className="border-r border-t border-[#d9dadd] p-3">更快捕捉碎片</span><span className="border-r border-t border-[#d9dadd] p-3">10</span><span className="border-t border-[#d9dadd] p-3">灵感出现时不想</span></div>
       </article>
+      <div className="absolute inset-x-0 bottom-[90px] flex h-[28px] items-center px-4 text-[12px] text-[#878a90]"><span>Ｔ 353 字符</span><span className="ml-auto">◉ 所见即所得　 ◷ 历史</span></div>
     </div>
   )
+}
+
+const canvasPaths = [
+  "M28 55 C62 15,90 95,35 87 C82 45,110 108,68 31 M55 14 C90 26,93 65,115 80",
+  "M25 43 C70 72,112 17,65 91 M36 24 L103 80 M96 15 L42 96 M27 70 C59 25,83 89,120 50",
+  "M38 20 C18 62,62 52,30 89 M47 30 L73 92 M58 14 C88 56,110 44,118 84 M40 72 C77 28,84 99,132 59",
+  "M40 20 C20 80,63 77,88 79 M111 17 C104 51,103 58,80 67 M57 82 C90 93,116 80,130 76",
+  "M48 20 L35 50 L70 46 L54 75 L108 94 M72 19 L85 65 M47 67 L98 31",
+]
+
+function CanvasCard({ index, lang }: { index: number; lang: NoteGenReplicaLanguage }) {
+  return <article className="relative h-[171px] overflow-hidden rounded-[14px] border border-[#dedfe2] bg-white"><div className="h-[136px] border-b border-[#dedfe2] bg-[#fdfdfd]"><svg viewBox="0 0 160 110" className="h-full w-full"><path d={canvasPaths[index % canvasPaths.length]} fill="none" stroke={index < 3 ? "#f1d877" : "#7c7f84"} strokeWidth="1.4" strokeLinecap="round" /><path d={canvasPaths[(index + 2) % canvasPaths.length]} fill="none" stroke="#d5a846" strokeWidth=".7" opacity=".65" /></svg></div><b className="block truncate px-3 py-2 text-[13px] font-medium">{index === 5 ? (lang === "en" ? "Timeline" : "时间线") : (lang === "en" ? "Blank canvas" : "空白画布")}</b><span className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-lg bg-[#f4f4f5]"><EllipsisVertical className="size-4" /></span></article>
 }
 
 export function NoteGenMobileCanvas({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  const projects = [lang === "en" ? "Product map" : "产品地图", lang === "en" ? "Research" : "调研资料", lang === "en" ? "Launch plan" : "发布计划"]
-  return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex h-14 min-h-14 items-center gap-2 border-b bg-background px-2"><MobileAvatarButton /><div className="ml-auto flex items-center"><MobileIconButton><FilePlus2 className="size-5" /></MobileIconButton><MobileIconButton><EllipsisVertical className="size-5" /></MobileIconButton></div></header>
-      <div className="grid min-h-0 flex-1 grid-cols-2 content-start gap-3 overflow-hidden p-3 pb-24">
-        {projects.map((title) => (
-          <article key={title} className="relative overflow-hidden rounded-xl border bg-card">
-            <div className="relative aspect-[4/3] border-b bg-muted/20 bg-[radial-gradient(circle_at_center,var(--border)_1px,transparent_1px)] [background-size:12px_12px]">
-              <span className="absolute left-4 top-5 h-8 w-14 rounded-md border bg-background" /><span className="absolute bottom-4 right-4 h-10 w-16 rounded-md border bg-muted" />
-            </div>
-            <h3 className="truncate px-2.5 py-2 text-xs font-medium">{title}</h3>
-            <span className="absolute right-1.5 top-1.5 flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground"><EllipsisVertical className="size-4" /></span>
-          </article>
-        ))}
-      </div>
-    </div>
-  )
+  return <div className="relative min-h-0 flex-1"><StandardHeader><Avatar /><span className="ml-auto flex"><IconButton><FilePlus2 className="size-[20px]" /></IconButton><IconButton><EllipsisVertical className="size-[20px]" /></IconButton></span></StandardHeader><div className="grid h-[728px] grid-cols-2 content-start gap-3 overflow-hidden p-3 pb-24">{Array.from({ length: 8 }, (_, index) => <CanvasCard key={index} index={index} lang={lang} />)}</div></div>
+}
+
+function StatCard({ title, subtitle }: { title: string; subtitle: string }) {
+  return <div className="h-[109px] rounded-[21px] border border-[#e7e7e8] bg-white p-4"><p className="text-[12px] text-[#8b8e93]">{title}</p><b className="mt-2 block text-[25px] font-medium">0</b><p className="mt-1 text-[12px] text-[#8b8e93]">{subtitle}</p></div>
 }
 
 export function NoteGenMobileSettings({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  const settings = [[Settings, lang === "en" ? "General Settings" : "常规设置"], [PenTool, lang === "en" ? "Record Settings" : "记录设置"], [FileCog, lang === "en" ? "Editor Settings" : "编辑器设置"]] as const
-  const levels = Array.from({ length: 112 }, (_, index) => ((index * 7 + Math.floor(index / 9)) % 11 < 4 ? 0 : (index * 3) % 4))
-
+  const activeCells = new Set([18, 26, 34, 35, 50, 58, 66, 67, 74, 75, 76, 82, 83, 89, 90, 91, 98])
   return (
-    <div className="min-h-0 flex-1 overflow-hidden px-3 py-4 pb-24">
-      <div className="flex flex-col gap-4">
-        <section className="rounded-[1.35rem] border border-amber-200/70 bg-background/70 p-4 backdrop-blur-xl">
-          <div className="flex items-start gap-3">
-            <span className="flex size-14 shrink-0 items-center justify-center rounded-full border border-amber-200/80 bg-amber-100 text-amber-700"><Cloud className="size-5" /></span>
-            <div className="min-w-0 flex-1"><p className="truncate text-base font-semibold">{lang === "en" ? "Sync platform" : "同步平台"}</p><div className="mt-2 flex flex-wrap items-center gap-2"><span className="rounded-full border border-amber-200 bg-amber-100/80 px-2.5 py-0.5 text-xs text-amber-700">{lang === "en" ? "Local only" : "仅本地"}</span><span className="rounded-full border border-amber-200 bg-amber-100/80 px-2.5 py-0.5 text-xs font-medium text-amber-700">{lang === "en" ? "Unconfigured" : "未配置"}</span></div></div>
-          </div>
-        </section>
-        <section className="rounded-[1.35rem] border border-border/60 bg-background/70 p-4 backdrop-blur-xl">
-          <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="text-base font-semibold">{lang === "en" ? "Activity" : "写作活动"}</h2><p className="mt-1 text-xs text-muted-foreground">{lang === "en" ? "The last 16 weeks" : "最近 16 周"}</p></div><MobileIconButton><RefreshCw className="size-4" /></MobileIconButton></div>
-          <div className="grid grid-flow-col grid-rows-7 gap-1">{levels.map((level, index) => <span key={index} className={cn("aspect-square rounded-[3px]", level === 0 ? "bg-muted" : level === 1 ? "bg-primary/20" : level === 2 ? "bg-primary/45" : "bg-primary/75")} />)}</div>
-          <p className="mt-3 text-xs leading-5 text-muted-foreground">{lang === "en" ? "Tap a day to view its records, writing, chats, and canvas activity." : "点击日期可查看当天的记录、写作、对话和画布活动。"}</p>
-        </section>
-        <section className="grid grid-cols-2 gap-3">
-          <div className="rounded-[1.35rem] border border-border/60 bg-background/70 p-4"><p className="text-xs text-muted-foreground">{lang === "en" ? "This week" : "本周活动"}</p><p className="mt-2 text-2xl font-semibold">12</p><p className="mt-1 text-xs text-muted-foreground">{lang === "en" ? "active days" : "个活跃日"}</p></div>
-          <div className="rounded-[1.35rem] border border-border/60 bg-background/70 p-4"><p className="text-xs text-muted-foreground">{lang === "en" ? "Current streak" : "连续记录"}</p><p className="mt-2 text-2xl font-semibold">5</p><p className="mt-1 text-xs text-muted-foreground">{lang === "en" ? "days in a row" : "天连续活跃"}</p></div>
-        </section>
-        <section className="flex flex-col gap-3 px-1">
-          <div className="px-1"><h2 className="text-base font-semibold">{lang === "en" ? "Settings" : "设置"}</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">{lang === "en" ? "Manage NoteGen on this device." : "管理这台设备上的 NoteGen。"}</p></div>
-          <div className="flex h-10 items-center gap-2 rounded-lg border px-3 text-sm text-muted-foreground"><Search className="size-4" />{lang === "en" ? "Search settings..." : "搜索设置..."}</div>
-          <div>{settings.map(([Icon, label]) => <div key={label} className="flex min-h-11 items-center rounded-xl px-1"><span className="flex size-9 items-center justify-center"><Icon className="size-4" /></span><span className="text-sm">{label}</span><ChevronRight className="ml-auto size-4 text-muted-foreground" /></div>)}</div>
-        </section>
-      </div>
+    <div className="relative min-h-0 flex-1 overflow-hidden px-3 pt-5">
+      <section className="h-[90px] rounded-[21px] border border-[#e7e5dd] bg-white p-4"><div className="flex items-center gap-3"><span className="flex size-14 items-center justify-center rounded-full border border-[#f1dfa7] bg-[#fff7d5] text-[#c87812]"><Cloud className="size-5" /></span><div><h2 className="text-[18px] font-semibold">{lang === "en" ? "Sync platform" : "同步平台"}</h2><div className="mt-1 flex gap-2"><span className="rounded-full border border-[#ece5d3] px-3 py-[2px] text-[12px]">{lang === "en" ? "Local" : "本地存储"}</span><span className="rounded-full border border-[#f4d891] bg-[#fff3c9] px-3 py-[2px] text-[12px] text-[#c47a17]">{lang === "en" ? "Not configured" : "未配置"}</span></div></div></div></section>
+      <section className="mt-4 h-[274px] rounded-[21px] border border-[#e7e7e8] bg-white p-4">
+        <div className="flex items-center"><div><h2 className="text-[17px] font-semibold">{lang === "en" ? "Activity" : "活跃度"}</h2><p className="mt-1 text-[12px] text-[#8b8e93]">{lang === "en" ? "Last 16 weeks" : "最近 16 周"}</p></div><RefreshCw className="ml-auto mr-1 size-[17px]" /></div>
+        <div className="mt-4 grid grid-flow-col grid-rows-7 gap-[4px]">{Array.from({ length: 112 }, (_, index) => { const level = activeCells.has(index) ? (index % 4) + 1 : 0; return <i key={index} className={cn("size-[18px] rounded-[4px]", level === 0 ? "bg-[#f2f3f4]" : level === 1 ? "bg-[#cff7e8]" : level === 2 ? "bg-[#88ebc6]" : level === 3 ? "bg-[#31c991]" : "bg-[#078357]")} /> })}</div>
+        <p className="mt-4 text-[12px] text-[#8b8e93]">{lang === "en" ? "Tap a day to view its activity timeline." : "点击热力图中的日期，查看当天的活动时间轴。"}</p>
+      </section>
+      <section className="mt-4 grid grid-cols-2 gap-3"><StatCard title={lang === "en" ? "This week" : "本周活跃"} subtitle={lang === "en" ? "Weekly activity" : "本周累计活动次数"} /><StatCard title={lang === "en" ? "Streak" : "连续活跃"} subtitle={lang === "en" ? "Consecutive days" : "连续活跃天数"} /></section>
+      <section className="mt-5 px-2"><h2 className="text-[17px] font-semibold">{lang === "en" ? "Settings" : "设置"}</h2><p className="mt-1 text-[12px] text-[#8b8e93]">{lang === "en" ? "Manage feature settings here." : "直接在这里进入各项功能设置。"}</p><div className="mt-3 flex h-[33px] items-center rounded-[10px] border border-[#dedfe2] px-3 text-[14px] text-[#96999e]"><Search className="mr-2 size-4" />{lang === "en" ? "Search settings..." : "搜索设置..."}</div><p className="mt-5 text-[12px] text-[#8b8e93]">{lang === "en" ? "Basic settings" : "基础设置"}</p><div className="mt-1 flex h-11 items-center text-[14px]"><Settings className="mr-3 size-[17px]" />{lang === "en" ? "General settings" : "常规设置"}<ChevronRight className="ml-auto size-4 text-[#8b8e93]" /></div></section>
     </div>
   )
 }
@@ -253,7 +203,7 @@ export function NoteGenMobileSettings({ lang = "cn" }: { lang?: NoteGenReplicaLa
 export function NoteGenMobileReplica({ lang = "cn", screen = "capture" }: { lang?: NoteGenReplicaLanguage; screen?: NoteGenMobileScreen }) {
   return (
     <NoteGenMobileFrame>
-      <div className="relative flex h-full min-h-0 flex-col">
+      <div className="relative flex h-full min-h-0 flex-col bg-white">
         <NoteGenMobileStatusBar />
         {screen === "capture" ? <NoteGenMobileCapture lang={lang} /> : screen === "chat" ? <NoteGenMobileChat lang={lang} /> : screen === "writing" ? <NoteGenMobileWriting lang={lang} /> : screen === "canvas" ? <NoteGenMobileCanvas lang={lang} /> : <NoteGenMobileSettings lang={lang} />}
         <NoteGenMobileDock screen={screen} lang={lang} />
