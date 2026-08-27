@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import {
   CalendarDays,
   Cloud,
@@ -129,7 +129,9 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
           )}
         >
           <div className="mx-auto w-full max-w-6xl">
-            <NoteGenDesktopReplica lang={lang} autoCycle={false} />
+            <DesktopScaledPreview baseWidth={1152}>
+              <NoteGenDesktopReplica lang={lang} autoCycle={false} />
+            </DesktopScaledPreview>
           </div>
         </GallerySection>
 
@@ -143,7 +145,7 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
           )}
         >
           <div className="grid gap-4 lg:grid-cols-2">
-            <ComponentCard title="NoteGenWindowTitleBar" description={text("完整窗口标题栏", "Full window title bar")}>
+            <ComponentCard desktopWidth={560} title="NoteGenWindowTitleBar" description={text("完整窗口标题栏", "Full window title bar")}>
               <div className="overflow-hidden rounded-lg border bg-background">
                 <NoteGenWindowTitleBar lang={lang} />
                 <div className="flex h-24 items-center justify-center text-xs text-muted-foreground">
@@ -152,14 +154,14 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
               </div>
             </ComponentCard>
 
-            <ComponentCard title="NoteGenWorkspaceSwitcher" description={text("可交互的工作区入口", "Interactive workspace navigation")}>
+            <ComponentCard desktopWidth={560} title="NoteGenWorkspaceSwitcher" description={text("可交互的工作区入口", "Interactive workspace navigation")}>
               <div className="flex min-h-32 items-center justify-center rounded-lg border bg-background">
                 <NoteGenWorkspaceSwitcher lang={lang} value={workspace} onValueChange={setWorkspace} />
               </div>
             </ComponentCard>
 
             {titleBarModes.map(([mode, cnLabel, enLabel]) => (
-              <ComponentCard key={mode} title={`NoteGenWindowTitleBar · ${mode}`} description={lang === "en" ? enLabel : cnLabel}>
+              <ComponentCard desktopWidth={560} key={mode} title={`NoteGenWindowTitleBar · ${mode}`} description={lang === "en" ? enLabel : cnLabel}>
                 <div className="overflow-hidden rounded-lg border bg-background">
                   <NoteGenWindowTitleBar lang={lang} mode={mode} />
                   <div className="h-12" />
@@ -167,7 +169,7 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
               </ComponentCard>
             ))}
 
-            <ComponentCard title="NoteGenReplicaToolbar" description={text("任意组合的工具按钮", "Freely composable tool buttons")}>
+            <ComponentCard desktopWidth={560} title="NoteGenReplicaToolbar" description={text("任意组合的工具按钮", "Freely composable tool buttons")}>
               <div className="overflow-hidden rounded-lg border bg-background">
                 <NoteGenReplicaToolbar label={text("示例工具栏", "Example toolbar")}>
                   <NoteGenReplicaIconButton icon={FilePlus} label={text("新建文件", "New file")} />
@@ -182,7 +184,7 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
               </div>
             </ComponentCard>
 
-            <ComponentCard title="Frame · Panel · MenuGroup" description={text("用于自定义文档场景的结构原语", "Structural primitives for custom documentation scenes")}>
+            <ComponentCard desktopWidth={560} title="Frame · Panel · MenuGroup" description={text("用于自定义文档场景的结构原语", "Structural primitives for custom documentation scenes")}>
               <NoteGenReplicaFrame fill className="h-28 shadow-none">
                 <div className="grid h-full grid-cols-[38%_1fr]">
                   <NoteGenReplicaPanel className="border-r bg-sidebar p-2">
@@ -209,13 +211,13 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
           description={text("每个工作区都由更小的列表、工具栏、内容区和状态组件组合而成。", "Each workspace is composed from smaller lists, toolbars, content areas, and state components.")}
         >
           <div className="grid gap-6">
-            <ComponentCard title="NoteGenRecordWorkspace" description={text("记录列表与详情", "Capture list and detail")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenRecordWorkspace lang={lang} /></div></ComponentCard>
-            <ComponentCard title="NoteGenEditorWorkspace" description={text("文件树、标签页与 Markdown 编辑器", "File tree, tabs, and Markdown editor")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenEditorWorkspace lang={lang} /></div></ComponentCard>
+            <ComponentCard desktopWidth={1152} title="NoteGenRecordWorkspace" description={text("记录列表与详情", "Capture list and detail")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenRecordWorkspace lang={lang} /></div></ComponentCard>
+            <ComponentCard desktopWidth={1152} title="NoteGenEditorWorkspace" description={text("文件树、标签页与 Markdown 编辑器", "File tree, tabs, and Markdown editor")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenEditorWorkspace lang={lang} /></div></ComponentCard>
             <div className="grid gap-6 xl:grid-cols-2">
-              <ComponentCard title="NoteGenAgentPanel" description={text("消息、思考过程、工具调用与上下文", "Messages, reasoning, tool calls, and context")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenAgentPanel lang={lang} /></div></ComponentCard>
-              <ComponentCard title="NoteGenCanvasWorkspace" description={text("画布项目、节点、连线和缩放工具", "Canvas projects, nodes, edges, and zoom tools")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenCanvasWorkspace lang={lang} /></div></ComponentCard>
+              <ComponentCard desktopWidth={552} title="NoteGenAgentPanel" description={text("消息、思考过程、工具调用与上下文", "Messages, reasoning, tool calls, and context")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenAgentPanel lang={lang} /></div></ComponentCard>
+              <ComponentCard desktopWidth={552} title="NoteGenCanvasWorkspace" description={text("画布项目、节点、连线和缩放工具", "Canvas projects, nodes, edges, and zoom tools")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenCanvasWorkspace lang={lang} /></div></ComponentCard>
             </div>
-            <ComponentCard title="NoteGenAppShell" description={text("当前桌面外壳：平台窗口控制、记录工具与状态栏", "Current desktop shell with platform controls, capture toolbar, and status bar")}><NoteGenAppShell lang={lang}><div className="grid h-full grid-cols-[28%_42%_30%]"><div className="border-r"><NoteGenRecordWorkspace lang={lang} /></div><div className="border-r"><NoteGenEditorWorkspace lang={lang} /></div><NoteGenAgentPanel lang={lang} /></div></NoteGenAppShell></ComponentCard>
+            <ComponentCard desktopWidth={1152} title="NoteGenAppShell" description={text("当前桌面外壳：平台窗口控制、记录工具与状态栏", "Current desktop shell with platform controls, capture toolbar, and status bar")}><NoteGenAppShell lang={lang}><div className="grid h-full grid-cols-[28%_42%_30%]"><div className="border-r"><NoteGenRecordWorkspace lang={lang} /></div><div className="border-r"><NoteGenEditorWorkspace lang={lang} /></div><NoteGenAgentPanel lang={lang} /></div></NoteGenAppShell></ComponentCard>
           </div>
         </GallerySection>
 
@@ -237,11 +239,11 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
           description={text("用于文档说明搜索、录音、同步、冲突、图片预览和关闭确认等瞬时界面。", "Transient UI for documenting search, recording, sync, conflicts, image viewing, and close confirmation.")}
         >
           <div className="grid gap-6 lg:grid-cols-2">
-            <ComponentCard title="NoteGenGlobalSearch" description={text("全局搜索面板", "Global search palette")}><NoteGenDialogBackdrop><NoteGenGlobalSearch lang={lang} /></NoteGenDialogBackdrop></ComponentCard>
-            <ComponentCard title="NoteGenRecordingOverlay" description={text("录音对话框", "Recording dialog")}><NoteGenDialogBackdrop><NoteGenRecordingOverlay lang={lang} /></NoteGenDialogBackdrop></ComponentCard>
-            <ComponentCard title="NoteGenSyncStatus" description={text("同步完成与冲突状态", "Sync and conflict states")}><div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-xl border bg-muted/25 p-4"><NoteGenSyncStatus lang={lang} /><NoteGenSyncStatus lang={lang} state="conflict" /></div></ComponentCard>
-            <ComponentCard title="ImageViewer · Confirmation" description={text("图片预览与关闭确认", "Image viewer and close confirmation")}><NoteGenDialogBackdrop className="min-h-72"><NoteGenImageViewer lang={lang} /><div className="absolute bottom-4 right-4 z-20 w-64"><NoteGenConfirmationDialog lang={lang} /></div></NoteGenDialogBackdrop></ComponentCard>
-            <ComponentCard title="Update · Activity" description={text("更新提示与写作活动", "Update prompt and writing activity")}><div className="grid min-h-72 gap-3 rounded-xl border bg-muted/25 p-4 sm:grid-cols-2"><NoteGenUpdatePrompt lang={lang} /><NoteGenActivityHeatmap lang={lang} /></div></ComponentCard>
+            <ComponentCard desktopWidth={552} title="NoteGenGlobalSearch" description={text("全局搜索面板", "Global search palette")}><NoteGenDialogBackdrop><NoteGenGlobalSearch lang={lang} /></NoteGenDialogBackdrop></ComponentCard>
+            <ComponentCard desktopWidth={552} title="NoteGenRecordingOverlay" description={text("录音对话框", "Recording dialog")}><NoteGenDialogBackdrop><NoteGenRecordingOverlay lang={lang} /></NoteGenDialogBackdrop></ComponentCard>
+            <ComponentCard desktopWidth={552} title="NoteGenSyncStatus" description={text("同步完成与冲突状态", "Sync and conflict states")}><div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-xl border bg-muted/25 p-4"><NoteGenSyncStatus lang={lang} /><NoteGenSyncStatus lang={lang} state="conflict" /></div></ComponentCard>
+            <ComponentCard desktopWidth={552} title="ImageViewer · Confirmation" description={text("图片预览与关闭确认", "Image viewer and close confirmation")}><NoteGenDialogBackdrop className="min-h-72"><NoteGenImageViewer lang={lang} /><div className="absolute bottom-4 right-4 z-20 w-64"><NoteGenConfirmationDialog lang={lang} /></div></NoteGenDialogBackdrop></ComponentCard>
+            <ComponentCard desktopWidth={552} title="Update · Activity" description={text("更新提示与写作活动", "Update prompt and writing activity")}><div className="grid min-h-72 grid-cols-2 gap-3 rounded-xl border bg-muted/25 p-4"><NoteGenUpdatePrompt lang={lang} /><NoteGenActivityHeatmap lang={lang} /></div></ComponentCard>
           </div>
         </GallerySection>
 
@@ -255,7 +257,7 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
           )}
         >
           <div className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-            <ComponentCard title={text("独立控件", "Individual controls")} description="Switch · Select · SegmentedControl">
+            <ComponentCard desktopWidth={448} title={text("独立控件", "Individual controls")} description="Switch · Select · SegmentedControl">
               <div className="flex min-h-56 flex-col items-start justify-center gap-6 rounded-lg border bg-background p-6">
                 <div className="flex w-full items-center justify-between gap-4">
                   <span className="text-sm text-muted-foreground">NoteGenSettingSwitch</span>
@@ -283,7 +285,7 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
               </div>
             </ComponentCard>
 
-            <ComponentCard title="SettingsPage · SettingsSection · SettingRow" description={text("可嵌入文档的完整设置片段", "A complete settings fragment for documentation")}>
+            <ComponentCard desktopWidth={680} title="SettingsPage · SettingsSection · SettingRow" description={text("可嵌入文档的完整设置片段", "A complete settings fragment for documentation")}>
               <div className="h-[420px] overflow-hidden rounded-lg border bg-background text-[11px]">
                 <NoteGenSettingsPage
                   icon={Settings}
@@ -325,7 +327,9 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
             "Search the sidebar, switch sections, and interact with theme and behavior controls. This complete scene can also be embedded directly in documentation."
           )}
         >
-          <NoteGenSettingsDialogReplica lang={lang} className="h-[760px]" />
+          <DesktopScaledPreview baseWidth={1152}>
+            <NoteGenSettingsDialogReplica lang={lang} className="h-[760px]" />
+          </DesktopScaledPreview>
         </GallerySection>
       </div>
 
@@ -368,10 +372,12 @@ function ComponentCard({
   title,
   description,
   children,
+  desktopWidth,
 }: {
   title: string
   description: string
   children: ReactNode
+  desktopWidth?: number
 }) {
   return (
     <Card className="overflow-hidden">
@@ -379,7 +385,60 @@ function ComponentCard({
         <CardTitle className="font-mono text-sm">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent>
+        {desktopWidth ? <DesktopScaledPreview baseWidth={desktopWidth}>{children}</DesktopScaledPreview> : children}
+      </CardContent>
     </Card>
+  )
+}
+
+function DesktopScaledPreview({
+  baseWidth,
+  children,
+}: {
+  baseWidth: number
+  children: ReactNode
+}) {
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const [layout, setLayout] = useState({ scale: 1, height: 0, left: 0 })
+
+  useEffect(() => {
+    const viewport = viewportRef.current
+    const canvas = canvasRef.current
+    if (!viewport || !canvas) return
+
+    const updateLayout = () => {
+      const scale = Math.min(1, viewport.clientWidth / baseWidth)
+      const scaledWidth = baseWidth * scale
+      setLayout({
+        scale,
+        height: canvas.offsetHeight * scale,
+        left: Math.max(0, (viewport.clientWidth - scaledWidth) / 2),
+      })
+    }
+
+    updateLayout()
+    const observer = new ResizeObserver(updateLayout)
+    observer.observe(viewport)
+    observer.observe(canvas)
+    return () => observer.disconnect()
+  }, [baseWidth])
+
+  return (
+    <div
+      ref={viewportRef}
+      className="relative w-full overflow-hidden"
+      style={layout.height ? { height: layout.height } : undefined}
+      data-notegen-desktop-preview
+    >
+      <div
+        ref={canvasRef}
+        className="absolute top-0 origin-top-left"
+        style={{ width: baseWidth, left: layout.left, transform: `scale(${layout.scale})` }}
+      >
+        {children}
+      </div>
+    </div>
   )
 }
