@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { Bot, FileText, Home, Image, Mic, MoreHorizontal, Plus, Search, Send, Settings, Sparkles } from "lucide-react"
+import { BookOpen, Bot, Brain, ChevronRight, DatabaseBackup, Drama, FileCog, FileText, FolderOpen, Globe2, Home, Image, ImageUp, LayoutTemplate, Mic, MoreHorizontal, Palette, PenTool, Plus, Puzzle, ScanText, Search, Send, Settings, Sparkles, Volume2 } from "lucide-react"
 
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
 import { cn } from "@/lib/utils"
@@ -40,8 +40,12 @@ export function NoteGenMobileCanvas({ lang = "cn" }: { lang?: NoteGenReplicaLang
 }
 
 export function NoteGenMobileSettings({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  const rows = [lang === "en" ? "General" : "常规设置", lang === "en" ? "Capture" : "记录", lang === "en" ? "Editor" : "编辑器", lang === "en" ? "Model providers" : "模型服务", lang === "en" ? "Sync" : "同步", lang === "en" ? "About NoteGen" : "关于 NoteGen"]
-  return <div className="flex min-h-0 flex-1 flex-col"><NoteGenMobileHeader title={lang === "en" ? "Settings" : "设置"} /><div className="p-4"><div className="mb-4 flex items-center gap-3 rounded-xl border p-3"><span className="flex size-10 items-center justify-center rounded-xl bg-foreground text-background"><Sparkles className="size-5" /></span><div><div className="text-xs font-semibold">NoteGen</div><div className="text-[8px] text-muted-foreground">v0.22.0</div></div></div><div className="overflow-hidden rounded-xl border">{rows.map((row, index) => <div key={row} className={cn("flex h-10 items-center px-3 text-[9px]", index > 0 && "border-t")}><span>{row}</span><span className="ml-auto text-muted-foreground">›</span></div>)}</div></div></div>
+  const groups = [
+    { label: lang === "en" ? "Basic" : "基础设置", items: [[Settings, lang === "en" ? "General Settings" : "常规设置"], [PenTool, lang === "en" ? "Record Settings" : "记录设置"], [FileCog, lang === "en" ? "Editor Settings" : "编辑器设置"], [Palette, lang === "en" ? "Canvas Settings" : "画布设置"], [ScanText, lang === "en" ? "Image Recognition" : "图像识别"], [Volume2, lang === "en" ? "Audio Settings" : "语音设置"]] },
+    { label: lang === "en" ? "AI & Extensions" : "AI 与扩展", items: [[Bot, lang === "en" ? "Model Services" : "模型服务"], [Globe2, lang === "en" ? "Web Search" : "网络搜索"], [BookOpen, lang === "en" ? "Knowledge Base" : "知识库"], [Brain, lang === "en" ? "Memory Management" : "记忆管理"], [Drama, lang === "en" ? "Prompt" : "提示词"], [Puzzle, "MCP"], [Sparkles, lang === "en" ? "Skills" : "技能"], [LayoutTemplate, lang === "en" ? "Template" : "整理模板"]] },
+    { label: lang === "en" ? "Data & Storage" : "数据与存储", items: [[DatabaseBackup, lang === "en" ? "Sync" : "同步配置"], [ImageUp, lang === "en" ? "Image Storage" : "图片存储"], [FolderOpen, lang === "en" ? "File Settings" : "文件管理"]] },
+  ] as const
+  return <div className="flex min-h-0 flex-1 flex-col"><NoteGenMobileHeader title={lang === "en" ? "Me" : "我的"} /><div className="min-h-0 flex-1 overflow-hidden p-4"><div className="mb-3 flex items-center gap-3 rounded-xl border p-3"><span className="flex size-10 items-center justify-center rounded-xl bg-foreground text-background"><Sparkles className="size-5" /></span><div><div className="text-xs font-semibold">NoteGen</div><div className="text-[8px] text-muted-foreground">v0.22.0 · {lang === "en" ? "Up to date" : "已是最新版本"}</div></div></div><div className="mb-3 flex h-8 items-center gap-2 rounded-lg border px-2 text-muted-foreground"><Search className="size-3.5" /><span>{lang === "en" ? "Search settings..." : "搜索设置..."}</span></div><div className="flex flex-col">{groups.map((group) => <section key={group.label}><h3 className="pb-1 pt-3 text-[8px] font-medium text-muted-foreground first:pt-0">{group.label}</h3>{group.items.map(([Icon, label]) => <div key={label} className="flex h-8 items-center gap-2 rounded-lg px-1 text-[9px]"><Icon className="size-3.5 text-muted-foreground" /><span>{label}</span><ChevronRight className="ml-auto size-3 text-muted-foreground" /></div>)}</section>)}</div></div></div>
 }
 
 export function NoteGenMobileReplica({ lang = "cn", screen = "capture" }: { lang?: NoteGenReplicaLanguage; screen?: NoteGenMobileScreen }) {
