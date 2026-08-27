@@ -76,64 +76,53 @@ export function MarkdownSyncDemo({ lang }: { lang: DemoLanguage }) {
   const desktopText = Array.from(copy.sentence).slice(0, desktopCount).join("");
 
   return (
-    <div className="relative mx-auto w-full max-w-6xl overflow-visible bg-background">
-      <NoteGenProductShowcase
-        className="block h-auto w-full object-contain"
-        priority
-      />
+    <div className="mx-auto w-full max-w-6xl px-6 pb-6 md:px-8 md:pb-8 lg:px-12 lg:pb-12">
+      <div className="relative w-full overflow-visible bg-background">
+        <NoteGenProductShowcase
+          className="block h-auto w-full object-contain"
+          priority
+        />
 
-      <div className="absolute bottom-[11%] left-[30.6%] top-[53.5%] w-[31.5%] overflow-hidden bg-background pr-[2%]">
-        <h4 className="mb-[2.2%] text-[clamp(6px,0.9vw,13px)] font-semibold">{copy.section}</h4>
-        <p className="min-h-[1.5em] text-[clamp(5px,0.72vw,10px)] leading-relaxed text-muted-foreground">
-          {desktopText}
-          {desktopCount > 0 && desktopCount < sentenceLength ? <RemoteCursor label={copy.remoteDevice} /> : null}
-        </p>
-        <div className="mt-[6%] flex flex-col gap-[3%] text-[clamp(4px,0.57vw,8px)] leading-relaxed text-muted-foreground">
-          {copy.mobileSchedule.map(([time, item, description]) => (
-            <div key={time}>
-              <p className="font-semibold text-foreground"><span>{time}</span>　{item}</p>
-              <p className="mt-[1.5%]">{description}</p>
-            </div>
-          ))}
-        </div>
-        <h4 className="mt-[5%] border-t pt-[3%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileNextDay}</h4>
-      </div>
-
-      <div className="absolute bottom-[9.7%] left-[77.2%] top-[35.1%] w-[19.7%] overflow-hidden bg-background px-[1.5%] py-[2.4%]">
-        <div className="flex h-full flex-col">
-          <h3 className="text-[clamp(7px,1.05vw,15px)] font-bold tracking-tight">{copy.mobileTitle}</h3>
-          <p className="mt-[6%] text-[clamp(5px,0.65vw,9px)] leading-relaxed text-muted-foreground">{copy.mobileIntro}</p>
-          <h4 className="mt-[8%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileOverview}</h4>
-          <ul className="mt-[3%] flex list-disc flex-col gap-1 pl-[7%] text-[clamp(5px,0.6vw,8px)] leading-relaxed text-muted-foreground">
-            {copy.mobilePoints.map((point) => <li key={point}>{point}</li>)}
-          </ul>
-          <h4 className="mt-[10%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileSection}</h4>
-          <p className="mt-[4%] min-h-[3em] text-[clamp(5px,0.65vw,9px)] leading-relaxed text-muted-foreground">
-            {mobileText}
-            {mobileCount > 0 && mobileCount < sentenceLength ? <LocalCaret /> : null}
+        <div className="absolute bottom-[11%] left-[30.6%] top-[53.5%] w-[31.5%] overflow-hidden bg-background pr-[2%]">
+          <h4 className="mb-[2.2%] text-[clamp(6px,0.9vw,13px)] font-semibold">{copy.section}</h4>
+          <p className="min-h-[1.5em] text-[clamp(5px,0.72vw,10px)] leading-relaxed text-muted-foreground">
+            {desktopText}
+            {desktopCount > 0 && desktopCount < sentenceLength ? <RemoteCursor label={copy.remoteDevice} /> : null}
           </p>
-          <h4 className="mt-[8%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileDay}</h4>
-          <div className="mt-[3%] flex flex-col gap-1.5 text-[clamp(4px,0.55vw,8px)] leading-relaxed text-muted-foreground">
-            {copy.mobileSchedule.map(([time, item]) => (
-              <p key={time}><span className="font-semibold text-foreground">{time}</span>　{item}</p>
+          <div className="mt-[6%] flex flex-col gap-[3%] text-[clamp(4px,0.57vw,8px)] leading-relaxed text-muted-foreground">
+            {copy.mobileSchedule.map(([time, item, description]) => (
+              <div key={time}>
+                <p className="font-semibold text-foreground"><span>{time}</span>　{item}</p>
+                <p className="mt-[1.5%]">{description}</p>
+              </div>
             ))}
           </div>
-          <h4 className="mt-[8%] border-t pt-[5%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileNextDay}</h4>
+          <h4 className="mt-[5%] border-t pt-[3%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileNextDay}</h4>
+        </div>
+
+        <div className="absolute bottom-[9.7%] left-[77.2%] top-[35.1%] w-[19.7%] overflow-hidden bg-background px-[1.5%] py-[2.4%]">
+          <div className="flex h-full flex-col">
+            <h3 className="text-[clamp(7px,1.05vw,15px)] font-bold tracking-tight">{copy.mobileTitle}</h3>
+            <p className="mt-[6%] text-[clamp(5px,0.65vw,9px)] leading-relaxed text-muted-foreground">{copy.mobileIntro}</p>
+            <h4 className="mt-[8%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileOverview}</h4>
+            <ul className="mt-[3%] flex list-disc flex-col gap-1 pl-[7%] text-[clamp(5px,0.6vw,8px)] leading-relaxed text-muted-foreground">
+              {copy.mobilePoints.map((point) => <li key={point}>{point}</li>)}
+            </ul>
+            <h4 className="mt-[10%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileSection}</h4>
+            <p className="mt-[4%] min-h-[3em] text-[clamp(5px,0.65vw,9px)] leading-relaxed text-muted-foreground">
+              {mobileText}
+              {mobileCount > 0 && mobileCount < sentenceLength ? <LocalCaret /> : null}
+            </p>
+            <h4 className="mt-[8%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileDay}</h4>
+            <div className="mt-[3%] flex flex-col gap-1.5 text-[clamp(4px,0.55vw,8px)] leading-relaxed text-muted-foreground">
+              {copy.mobileSchedule.map(([time, item]) => (
+                <p key={time}><span className="font-semibold text-foreground">{time}</span>　{item}</p>
+              ))}
+            </div>
+            <h4 className="mt-[8%] border-t pt-[5%] text-[clamp(5px,0.72vw,10px)] font-semibold">{copy.mobileNextDay}</h4>
+          </div>
         </div>
       </div>
-
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[6%] bg-gradient-to-b from-transparent via-background/65 to-background"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-0 z-20 w-[2.5%] bg-gradient-to-r from-background to-transparent"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 z-20 w-[2.5%] bg-gradient-to-l from-background to-transparent"
-      />
     </div>
   );
 }
