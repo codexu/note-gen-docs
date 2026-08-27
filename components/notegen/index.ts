@@ -1,0 +1,6 @@
+export * from "@/components/notegen/types"
+export * from "@/components/notegen/replica-primitives"
+export * from "@/components/notegen/window-title-bar"
+export * from "@/components/notegen/workspace-switcher"
+export * from "@/components/notegen/settings-replica"
+export * from "@/components/home/notegen-desktop-replica"

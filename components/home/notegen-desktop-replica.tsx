@@ -2,7 +2,6 @@
 
 import { memo, useEffect, useState } from "react"
 import {
-  CalendarDays,
   Check,
   CheckSquare,
   ChevronDown,
@@ -10,7 +9,6 @@ import {
   Cloud,
   Code2,
   Copy,
-  CopySlash,
   Download,
   Database,
   EllipsisVertical,
@@ -23,7 +21,6 @@ import {
   FolderOpen,
   FolderPlus,
   Grid3X3,
-  Highlighter,
   ImageIcon,
   ImagePlus,
   Languages,
@@ -34,17 +31,13 @@ import {
   MessageSquareDashed,
   MessageSquarePlus,
   Mic,
-  PanelLeft,
-  PanelRight,
   Palette,
-  Pin,
   Plus,
   Redo2,
   RefreshCw,
   ScanText,
   Search,
   Send,
-  Settings,
   ShieldQuestion,
   Sparkles,
   SquarePen,
@@ -63,6 +56,11 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { CanvasThumbnail } from "@/components/home/canvas-thumbnail"
+import { NoteGenReplicaFrame } from "@/components/notegen/replica-primitives"
+import { NoteGenSettingsReplica } from "@/components/notegen/settings-replica"
+import type { NoteGenReplicaView } from "@/components/notegen/types"
+import { NoteGenWindowTitleBar, type NoteGenTitleBarMode } from "@/components/notegen/window-title-bar"
+import { NoteGenWorkspaceSwitcher, type NoteGenWorkspace } from "@/components/notegen/workspace-switcher"
 import { cn } from "@/lib/utils"
 
 export type NoteGenReplicaRecord = {
@@ -143,16 +141,6 @@ const recordIcon = {
   image: ImageIcon,
 }
 
-const recordTools = [
-  CopySlash,
-  Mic,
-  ScanText,
-  ImagePlus,
-  Link,
-  FilePlus,
-  CheckSquare,
-]
-
 const recordBadgeTone = {
   录音: "border-rose-300/80 bg-rose-100 text-rose-900 dark:border-rose-900/80 dark:bg-rose-950 dark:text-rose-200",
   链接: "border-blue-300/80 bg-blue-100 text-blue-900 dark:border-blue-900/80 dark:bg-blue-950 dark:text-blue-200",
@@ -190,9 +178,12 @@ const MemoizedEditor = memo(Editor)
 const MemoizedEnglishEditor = memo(EnglishEditor)
 const MemoizedAgentPanel = memo(AgentPanel)
 
+const workspaceCycle: Workspace[] = ["writing", "records", "canvas"]
+
 export function NoteGenDesktopReplica({
   lang = "cn",
   initialWorkspace = "records",
+  initialView = "workspace",
   autoCycle = true,
   panelLayout = "three",
   titleBarMode = "full",
@@ -202,22 +193,24 @@ export function NoteGenDesktopReplica({
 }: {
   lang?: "cn" | "en"
   initialWorkspace?: Workspace
+  initialView?: NoteGenReplicaView
   autoCycle?: boolean
   panelLayout?: "three" | "left" | "center" | "right"
-  titleBarMode?: "full" | "none" | "record-tools" | "writing-tools" | "agent-tools" | "canvas-tools"
+  titleBarMode?: NoteGenTitleBarMode | "none"
   fill?: boolean
   recordItems?: NoteGenReplicaRecord[]
   recordGroupLabel?: string
 }) {
   const [workspace, setWorkspace] = useState<Workspace>(initialWorkspace)
+  const [view, setView] = useState<NoteGenReplicaView>(initialView)
 
   useEffect(() => {
     if (!autoCycle) return
 
     const timer = window.setTimeout(() => {
       setWorkspace((current) => {
-        const currentIndex = workspaceTabs.findIndex((tab) => tab.id === current)
-        return workspaceTabs[(currentIndex + 1) % workspaceTabs.length].id
+        const currentIndex = workspaceCycle.indexOf(current)
+        return workspaceCycle[(currentIndex + 1) % workspaceCycle.length]
       })
     }, 3000)
 
@@ -225,16 +218,22 @@ export function NoteGenDesktopReplica({
   }, [autoCycle, workspace])
 
   return (
-    <div
+    <NoteGenReplicaFrame
       data-testid="notegen-desktop-replica"
-      className={cn(
-        "w-full overflow-hidden rounded-xl border bg-background text-[9px] leading-normal shadow-xl sm:text-[10px] lg:text-xs",
-        fill ? "h-full" : "aspect-[16/10]"
-      )}
+      fill={fill}
     >
-      {titleBarMode !== "none" ? <DesktopTitleBar lang={lang} mode={titleBarMode} /> : null}
+      {titleBarMode !== "none" ? (
+        <NoteGenWindowTitleBar
+          lang={lang}
+          mode={titleBarMode}
+          view={view}
+          onViewChange={setView}
+        />
+      ) : null}
       <div className={cn("overflow-hidden", titleBarMode === "none" ? "h-full" : "h-[calc(100%-36px)]")}>
-        <div
+        {view === "settings" ? (
+          <NoteGenSettingsReplica lang={lang} onClose={() => setView("workspace")} />
+        ) : <div
           className={cn(
             "grid min-w-0 origin-top-left",
             panelLayout === "three"
@@ -259,81 +258,13 @@ export function NoteGenDesktopReplica({
             </>
           ) : null}
           {panelLayout === "three" || panelLayout === "right" ? <MemoizedAgentPanel lang={lang} /> : null}
-        </div>
+        </div>}
       </div>
-    </div>
+    </NoteGenReplicaFrame>
   )
 }
 
-function DesktopTitleBar({
-  lang,
-  mode,
-}: {
-  lang: "cn" | "en"
-  mode: "full" | "record-tools" | "writing-tools" | "agent-tools" | "canvas-tools"
-}) {
-  const compactTools = mode === "writing-tools"
-    ? [Undo2, Redo2, FilePlus, FolderPlus]
-    : mode === "agent-tools"
-      ? [Search, MessageSquareDashed, MessageSquarePlus]
-      : mode === "canvas-tools"
-        ? [Undo2, Redo2, Palette, EllipsisVertical]
-        : recordTools
-  const titleTools = mode === "full" ? recordTools : compactTools
-
-  return (
-    <header className={cn("relative flex h-9 items-center border-b bg-background", mode === "full" ? "pl-[72px]" : "pl-2")}>
-      {mode === "full" ? (
-        <div className="absolute left-3 top-1/2 flex -translate-y-1/2 gap-2">
-          <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-          <span className="size-2.5 rounded-full bg-[#febc2e]" />
-          <span className="size-2.5 rounded-full bg-[#28c840]" />
-        </div>
-      ) : null}
-
-      <div className="flex shrink-0 items-center gap-0.5 px-2">
-        {titleTools.map((Icon, index) => (
-          <IconButton key={index} icon={Icon} />
-        ))}
-      </div>
-
-      {mode === "full" ? (
-        <>
-          <div className="mx-auto flex h-6 w-[34%] min-w-44 max-w-md items-center justify-center gap-2 rounded-sm border text-[10px] text-muted-foreground">
-            <Search className="size-3.5" strokeWidth={1.7} />
-            <span className="truncate">{lang === "en" ? "Search notes, records, and canvases" : "搜索笔记、记录和画布"}</span>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-0.5 px-2">
-            <IconButton icon={PanelLeft} />
-            <IconButton icon={SquarePen} />
-            <IconButton icon={PanelRight} />
-            <IconButton icon={CalendarDays} />
-            <IconButton icon={Cloud} />
-            <IconButton icon={Pin} />
-            <IconButton icon={Settings} />
-          </div>
-        </>
-      ) : (
-        <div className="flex-1" aria-hidden="true" />
-      )}
-    </header>
-  )
-}
-
-type Workspace = "writing" | "records" | "canvas"
-
-const workspaceTabs = [
-  { id: "writing", label: "写作", icon: Files },
-  { id: "records", label: "记录", icon: Highlighter },
-  { id: "canvas", label: "画布", icon: Palette },
-] satisfies Array<{ id: Workspace; label: string; icon: typeof Files }>
-
-const workspaceTabsEn = [
-  { id: "writing", label: "Writing", icon: Files },
-  { id: "records", label: "Records", icon: Highlighter },
-  { id: "canvas", label: "Canvas", icon: Palette },
-] satisfies Array<{ id: Workspace; label: string; icon: typeof Files }>
+type Workspace = NoteGenWorkspace
 
 function WorkspaceTabs({
   lang,
@@ -345,33 +276,7 @@ function WorkspaceTabs({
   onWorkspaceChange: (workspace: Workspace) => void
 }) {
   return (
-    <div
-      aria-label={lang === "en" ? "Switch workspace" : "切换工作区"}
-      className="flex flex-wrap items-center gap-0.5 rounded-xl border bg-background p-0.5"
-    >
-      {(lang === "en" ? workspaceTabsEn : workspaceTabs).map(({ id, label, icon: Icon }) => {
-        const active = workspace === id
-
-        return (
-          <button
-            key={id}
-            type="button"
-            onClick={() => onWorkspaceChange(id)}
-            aria-pressed={active}
-            aria-label={label}
-            className={cn(
-              "relative flex h-7 cursor-pointer items-center justify-center rounded-lg text-sm font-medium transition-colors duration-150 ease-out",
-              active
-                ? "gap-1.5 bg-muted px-3 text-primary"
-                : "px-1.5 text-muted-foreground opacity-70 hover:bg-muted hover:text-foreground"
-            )}
-          >
-            <Icon className="size-4 shrink-0" />
-            {active ? <span className="whitespace-nowrap text-[10px]">{label}</span> : null}
-          </button>
-        )
-      })}
-    </div>
+    <NoteGenWorkspaceSwitcher lang={lang} value={workspace} onValueChange={onWorkspaceChange} />
   )
 }
 
