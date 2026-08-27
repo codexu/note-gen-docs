@@ -70,12 +70,6 @@ export function homeOptions(locale: string): BaseLayoutProps {
         text: lang === 'en' ? 'More' : '更多',
         items: [
           {
-            text: lang === 'en' ? 'Component Lab (Test)' : '组件实验室（测试）',
-            description: lang === 'en' ? 'Preview composable NoteGen interface replicas' : '预览可组合的 NoteGen 界面复刻组件',
-            url: `/${lang}/components`,
-            active: 'url',
-          },
-          {
             text: lang === 'en' ? 'Community' : '交流群',
             description: lang === 'en' ? 'Join the NoteGen community' : '加入 NoteGen 用户交流群',
             url: `/${lang}/community`,
