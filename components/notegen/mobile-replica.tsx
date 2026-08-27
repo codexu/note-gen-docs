@@ -1,8 +1,8 @@
 import type { ReactNode } from "react"
 import {
   BatteryFull, Bot, Bold, CheckSquare, ChevronDown, ChevronRight, Cloud, Code2,
-  EllipsisVertical, FilePlus2, Filter, Highlighter, History, Italic, Lightbulb,
-  MessageSquare, MessageSquareDashed, MessageSquarePlus, Palette, Plus, Redo2,
+  EllipsisVertical, FilePlus2, FileText, Filter, Highlighter, History, Italic, Lightbulb,
+  MessageCircle, MessageSquare, MessageSquareDashed, MessageSquarePlus, Palette, Plus, Redo2,
   RefreshCw, Search, Send, Settings, ShieldQuestion, SquarePen, Strikethrough,
   Trash2, Underline, Undo2, User, WandSparkles, Wifi,
 } from "lucide-react"
@@ -14,7 +14,7 @@ export type NoteGenMobileScreen = "capture" | "chat" | "writing" | "canvas" | "s
 
 const MOBILE_WIDTH = 402
 const MOBILE_HEIGHT = 874
-const MOBILE_SCALE = 0.6617
+const MOBILE_SCALE = 0.65672
 
 function IconButton({ children }: { children: ReactNode }) {
   return <span className="flex size-11 shrink-0 items-center justify-center text-[#24272b]">{children}</span>
@@ -31,10 +31,15 @@ function Avatar() {
 
 export function NoteGenMobileFrame({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("relative mx-auto h-[590px] w-[276px] shrink-0 overflow-hidden rounded-[2.65rem] border-[6px] border-[#090909] bg-white shadow-[0_22px_50px_rgba(0,0,0,.20)]", className)}>
-      <div className="absolute left-1/2 top-[10px] z-40 h-[25px] w-[84px] -translate-x-1/2 rounded-full bg-black" />
-      <div className="absolute left-0 top-0 origin-top-left overflow-hidden bg-white text-[#17191c]" style={{ width: MOBILE_WIDTH, height: MOBILE_HEIGHT, transform: `scale(${MOBILE_SCALE})` }}>
-        {children}
+    <div className={cn("relative mx-auto h-[594px] w-[294px] shrink-0", className)}>
+      <i className="absolute left-0 top-[102px] h-[20px] w-[7px] rounded-l-[3px] bg-[#202124]" />
+      <i className="absolute left-0 top-[140px] h-[43px] w-[7px] rounded-l-[3px] bg-[#202124]" />
+      <i className="absolute left-0 top-[194px] h-[43px] w-[7px] rounded-l-[3px] bg-[#202124]" />
+      <i className="absolute right-0 top-[169px] h-[66px] w-[7px] rounded-r-[3px] bg-[#202124]" />
+      <div className="absolute inset-y-0 left-[5px] z-10 h-[594px] w-[284px] overflow-hidden rounded-[36px] border-[10px] border-[#090909] bg-white shadow-[0_22px_50px_rgba(0,0,0,.20)]">
+        <div className="absolute left-0 top-0 origin-top-left overflow-hidden bg-white text-[#17191c]" style={{ width: MOBILE_WIDTH, height: MOBILE_HEIGHT, transform: `scale(${MOBILE_SCALE})` }}>
+          {children}
+        </div>
       </div>
     </div>
   )
@@ -126,10 +131,10 @@ export function NoteGenMobileChat({ lang = "cn" }: { lang?: NoteGenReplicaLangua
     <div className="relative min-h-0 flex-1 bg-[linear-gradient(#f4f4f5_1px,transparent_1px),linear-gradient(90deg,#f4f4f5_1px,transparent_1px)] [background-size:40px_40px]">
       <StandardHeader><Avatar /><span className="ml-auto flex"><IconButton><Search className="size-[19px]" /></IconButton><IconButton><History className="size-[19px]" /></IconButton><IconButton><MessageSquareDashed className="size-[19px]" /></IconButton><IconButton><MessageSquarePlus className="size-[19px]" /></IconButton></span></StandardHeader>
       <section className="mx-auto mt-[139px] w-[326px]">
-        <h1 className="flex items-center justify-center gap-2 text-[21px] font-semibold"><MessageSquare className="size-[22px]" />{lang === "en" ? "Start a conversation with AI" : "开始与 AI 对话"}</h1>
+        <h1 className="flex items-center justify-center gap-2 text-[21px] font-semibold"><MessageCircle className="size-[22px]" />{lang === "en" ? "Start a conversation with AI" : "开始与 AI 对话"}</h1>
         <p className="mt-3 text-center text-[15px] text-[#87898e]">{lang === "en" ? "Use Chat or Agent mode to interact with AI" : "使用 Chat 或 Agent 模式与 AI 互动"}</p>
         <p className="mb-2 mt-7 text-[13px] text-[#8b8d92]">{lang === "en" ? "Quick start" : "快速开始"}</p>
-        <div className="space-y-2">{prompts.map((prompt, index) => <div key={prompt} className="flex h-[44px] items-center rounded-[10px] border border-[#dedfe2] bg-[#fafafa] px-4 text-[14px]">{index === 0 ? <SquarePen className="mr-3 size-4 text-[#777a80]" /> : index === 1 ? <MessageSquare className="mr-3 size-4 text-[#777a80]" /> : <Lightbulb className="mr-3 size-4 text-[#777a80]" />}<b className="font-medium">{prompt}</b><ChevronRight className="ml-auto size-4 text-[#777a80]" /></div>)}</div>
+        <div className="space-y-2">{prompts.map((prompt, index) => <div key={prompt} className="flex h-[44px] items-center rounded-[10px] border border-[#dedfe2] bg-[#fafafa] px-4 text-[14px]">{index === 0 ? <SquarePen className="mr-3 size-4 text-[#777a80]" /> : index === 1 ? <FileText className="mr-3 size-4 text-[#777a80]" /> : <Lightbulb className="mr-3 size-4 text-[#777a80]" />}<b className="font-medium">{prompt}</b><ChevronRight className="ml-auto size-4 text-[#777a80]" /></div>)}</div>
       </section>
       <div className="absolute inset-x-3 bottom-[101px] h-[102px] rounded-[21px] border border-[#e6e6e8] bg-white p-3">
         <p className="text-[14px] text-[#97999e]">{lang === "en" ? "Ask a question or organize notes into an article..." : "你可以提问或将记录整理为文章..."}</p>
@@ -152,7 +157,7 @@ export function NoteGenMobileWriting({ lang = "cn" }: { lang?: NoteGenReplicaLan
   return (
     <div className="relative min-h-0 flex-1">
       <WritingToolbar />
-      <article className="h-[635px] overflow-hidden px-4 pt-[65px] text-[16px] leading-[27px]">
+      <article className="h-[635px] overflow-hidden px-4 pt-[79px] text-[16px] leading-[27px]">
         <h1 className="text-[31px] font-bold leading-tight">{lang === "en" ? "User feedback summary" : "用户反馈整理"}</h1>
         <h2 className="mb-4 mt-9 text-[23px] font-bold">{lang === "en" ? "Research overview" : "调研概览"}</h2>
         <p>{lang === "en" ? "This round collected 12 interview records, 28 community feedback items and 9 app store suggestions." : "本轮共整理 12 份访谈记录、28 条社区反馈和 9 条应用内建议。"}</p>
@@ -173,7 +178,14 @@ const canvasPaths = [
 ]
 
 function CanvasCard({ index, lang }: { index: number; lang: NoteGenReplicaLanguage }) {
-  return <article className="relative h-[171px] overflow-hidden rounded-[14px] border border-[#dedfe2] bg-white"><div className="h-[136px] border-b border-[#dedfe2] bg-[#fdfdfd]"><svg viewBox="0 0 160 110" className="h-full w-full"><path d={canvasPaths[index % canvasPaths.length]} fill="none" stroke={index < 3 ? "#f1d877" : "#7c7f84"} strokeWidth="1.4" strokeLinecap="round" /><path d={canvasPaths[(index + 2) % canvasPaths.length]} fill="none" stroke="#d5a846" strokeWidth=".7" opacity=".65" /></svg></div><b className="block truncate px-3 py-2 text-[13px] font-medium">{index === 5 ? (lang === "en" ? "Timeline" : "时间线") : (lang === "en" ? "Blank canvas" : "空白画布")}</b><span className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-lg bg-[#f4f4f5]"><EllipsisVertical className="size-4" /></span></article>
+  return <article className="relative h-[171px] overflow-hidden rounded-[14px] border border-[#dedfe2] bg-white"><div className="h-[136px] border-b border-[#dedfe2] bg-[#fdfdfd]"><CanvasArtwork index={index} /></div><b className="block truncate px-3 py-2 text-[13px] font-medium">{index === 5 ? (lang === "en" ? "Timeline" : "时间线") : (lang === "en" ? "Blank canvas" : "空白画布")}</b><span className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-lg bg-[#f4f4f5]"><EllipsisVertical className="size-4" /></span></article>
+}
+
+function CanvasArtwork({ index }: { index: number }) {
+  if (index === 5) return <div className="flex h-full items-center justify-center gap-2"><i className="h-px w-3 bg-[#d9dadd]" /><span className="h-5 w-10 rounded-full border border-[#dedfe2] bg-white" /><i className="h-px w-3 bg-[#d9dadd]" /><span className="h-5 w-10 rounded-full border border-[#dedfe2] bg-white" /><i className="h-px w-3 bg-[#d9dadd]" /></div>
+  if (index === 6) return <div className="relative h-full"><span className="absolute left-5 top-[58px] h-5 w-12 border border-[#dedfe2] bg-white" /><span className="absolute left-[82px] top-7 h-5 w-12 border border-[#dedfe2] bg-white" /><span className="absolute left-[82px] top-[58px] h-5 w-12 border border-[#dedfe2] bg-white" /><span className="absolute left-[82px] top-[89px] h-5 w-12 border border-[#dedfe2] bg-white" /><i className="absolute left-[66px] top-[39px] h-[61px] w-px bg-[#dedfe2]" /><i className="absolute left-[66px] top-[67px] h-px w-4 bg-[#dedfe2]" /></div>
+  if (index === 7) return <div className="grid h-full grid-cols-3 gap-2 p-4"><div className="border border-[#e4e5e7] bg-[#fafafa] p-2"><i className="block h-2 w-8 bg-[#dfe1e4]" /></div><div className="border border-[#e4e5e7] bg-[#fafafa] p-2"><i className="block h-2 w-8 bg-[#dfe1e4]" /></div><div className="border border-[#e4e5e7] bg-[#fafafa] p-2"><i className="block h-2 w-8 bg-[#dfe1e4]" /></div></div>
+  return <svg viewBox="0 0 160 110" className="h-full w-full"><path d={canvasPaths[index % canvasPaths.length]} fill="none" stroke={index === 1 ? "#d8a05d" : index < 3 ? "#f1d877" : "#7c7f84"} strokeWidth="1.4" strokeLinecap="round" /><path d={canvasPaths[(index + 2) % canvasPaths.length]} fill="none" stroke="#d5a846" strokeWidth=".7" opacity=".65" /></svg>
 }
 
 export function NoteGenMobileCanvas({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
@@ -187,7 +199,7 @@ function StatCard({ title, subtitle }: { title: string; subtitle: string }) {
 export function NoteGenMobileSettings({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
   const activeCells = new Set([18, 26, 34, 35, 50, 58, 66, 67, 74, 75, 76, 82, 83, 89, 90, 91, 98])
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden px-3 pt-5">
+    <div className="relative min-h-0 flex-1 overflow-hidden px-3 pt-9">
       <section className="h-[90px] rounded-[21px] border border-[#e7e5dd] bg-white p-4"><div className="flex items-center gap-3"><span className="flex size-14 items-center justify-center rounded-full border border-[#f1dfa7] bg-[#fff7d5] text-[#c87812]"><Cloud className="size-5" /></span><div><h2 className="text-[18px] font-semibold">{lang === "en" ? "Sync platform" : "同步平台"}</h2><div className="mt-1 flex gap-2"><span className="rounded-full border border-[#ece5d3] px-3 py-[2px] text-[12px]">{lang === "en" ? "Local" : "本地存储"}</span><span className="rounded-full border border-[#f4d891] bg-[#fff3c9] px-3 py-[2px] text-[12px] text-[#c47a17]">{lang === "en" ? "Not configured" : "未配置"}</span></div></div></div></section>
       <section className="mt-4 h-[274px] rounded-[21px] border border-[#e7e7e8] bg-white p-4">
         <div className="flex items-center"><div><h2 className="text-[17px] font-semibold">{lang === "en" ? "Activity" : "活跃度"}</h2><p className="mt-1 text-[12px] text-[#8b8e93]">{lang === "en" ? "Last 16 weeks" : "最近 16 周"}</p></div><RefreshCw className="ml-auto mr-1 size-[17px]" /></div>
