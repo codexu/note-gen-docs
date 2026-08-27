@@ -327,8 +327,8 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
             "Search the sidebar, switch sections, and interact with theme and behavior controls. This complete scene can also be embedded directly in documentation."
           )}
         >
-          <DesktopScaledPreview baseWidth={1152}>
-            <NoteGenSettingsDialogReplica lang={lang} className="h-[760px]" />
+          <DesktopScaledPreview baseWidth={1600}>
+            <NoteGenSettingsDialogReplica lang={lang} className="h-[900px]" />
           </DesktopScaledPreview>
         </GallerySection>
       </div>

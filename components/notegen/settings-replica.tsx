@@ -5,25 +5,30 @@ import {
   AppWindow,
   AlertTriangle,
   ArchiveRestore,
+  Bookmark,
   Book,
   BotMessageSquare,
   Brain,
   Check,
   CheckCircle2,
   ChevronDown,
+  Database,
   DatabaseBackup,
   Drama,
+  Download,
   ExternalLink,
   FileCog,
+  Folder,
   FolderOpen,
+  FolderX,
   Globe2,
   ImageUp,
   Keyboard,
   Languages,
   LayoutTemplate,
   Moon,
+  Network,
   Palette,
-  PanelTopClose,
   PenTool,
   Puzzle,
   Rocket,
@@ -34,6 +39,8 @@ import {
   Store,
   Sun,
   SunMoon,
+  Type,
+  Upload,
   Volume2,
   WandSparkles,
   X,
@@ -231,7 +238,7 @@ export function NoteGenSettingsSection({
         <h3 className="text-base font-semibold">{title}</h3>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       </header>
-      <div className="flex flex-col gap-2">{children}</div>
+      <div className="flex flex-col gap-3">{children}</div>
     </section>
   )
 }
@@ -253,7 +260,7 @@ export function NoteGenSettingRow({
     <div
       aria-disabled={disabled || undefined}
       className={cn(
-        "flex min-h-16 w-full flex-wrap items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 text-sm",
+        "flex w-full flex-wrap items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 text-sm",
         disabled && "opacity-50"
       )}
     >
@@ -362,15 +369,14 @@ export function NoteGenSettingSegmentedControl({
 
 function GeneralSettingsReplica({ lang }: { lang: NoteGenReplicaLanguage }) {
   const [theme, setTheme] = useState("system")
-  const [autostart, setAutostart] = useState(true)
-  const [startHidden, setStartHidden] = useState(false)
+  const [autostart, setAutostart] = useState(false)
   const text = (cnText: string, enText: string) => lang === "en" ? enText : cnText
 
   return (
     <NoteGenSettingsPage
       icon={Settings}
       title={text("常规设置", "General")}
-      description={text("配置应用的基本设置，包括界面主题、语言等选项。", "Configure app behavior, appearance, language, and display preferences.")}
+      description={text("在这里，你可以配置应用的基本设置，包括界面主题、语言等选项。", "Configure basic application settings, including theme and language.")}
     >
       <NoteGenSettingsSection
         title={text("应用行为", "App behavior")}
@@ -380,20 +386,13 @@ function GeneralSettingsReplica({ lang }: { lang: NoteGenReplicaLanguage }) {
           icon={AppWindow}
           title={text("关闭窗口时", "When closing the window")}
           description={text("选择点击窗口关闭按钮后执行的操作", "Choose the action performed by the window close button.")}
-          action={<NoteGenSettingSelect label={text("关闭窗口时", "Close behavior")} value={text("最小化到托盘", "Minimize to tray")} />}
+          action={<NoteGenSettingSelect className="w-[200px]" label={text("关闭窗口时", "Close behavior")} value={text("最小化到托盘", "Minimize to tray")} />}
         />
         <NoteGenSettingRow
           icon={Rocket}
           title={text("开机启动", "Launch at startup")}
           description={text("登录系统后自动启动 NoteGen", "Start NoteGen automatically after signing in.")}
           action={<NoteGenSettingSwitch label={text("开机启动", "Launch at startup")} checked={autostart} onCheckedChange={setAutostart} />}
-        />
-        <NoteGenSettingRow
-          icon={PanelTopClose}
-          title={text("自启后隐藏主窗口", "Hide window after launch")}
-          description={text("仅通过开机启动时隐藏窗口，并在系统托盘中保持运行", "Keep NoteGen running in the tray when launched at startup.")}
-          disabled={!autostart}
-          action={<NoteGenSettingSwitch label={text("自启后隐藏主窗口", "Hide window after launch")} checked={startHidden} disabled={!autostart} onCheckedChange={setStartHidden} />}
         />
       </NoteGenSettingsSection>
 
@@ -422,22 +421,102 @@ function GeneralSettingsReplica({ lang }: { lang: NoteGenReplicaLanguage }) {
           icon={Languages}
           title={text("语言", "Language")}
           description={text("选择应用的显示语言", "Choose the app display language.")}
-          action={<NoteGenSettingSelect label={text("语言", "Language")} value={lang === "en" ? "English" : "中文"} />}
+          action={<NoteGenSettingSelect className="w-[180px]" label={text("语言", "Language")} value={lang === "en" ? "English" : "中文"} />}
         />
+        <NoteGenSettingRow
+          icon={Type}
+          title={text("应用字体", "App font")}
+          description={text("桌面端可选择系统字体；移动端使用系统允许的通用字体族", "Choose a system font on desktop; mobile uses supported generic font families.")}
+          action={<NoteGenSettingSelect className="w-[220px]" label={text("应用字体", "App font")} value={text("跟随系统", "System default")} />}
+        />
+        <NoteGenSettingRow
+          icon={Palette}
+          title={text("自定义主题颜色", "Custom theme colors")}
+          description={text("自定义应用的主题颜色，包括背景色、前景色、边框色等", "Customize background, foreground, border, and other theme colors.")}
+          action={<NoteGenSettingButton>{text("编辑颜色", "Edit colors")}</NoteGenSettingButton>}
+        />
+      </NoteGenSettingsSection>
+
+      <NoteGenSettingsSection
+        title={text("阅读与缩放", "Reading and scale")}
+        description={text("分别调整界面、正文和列表的显示尺寸", "Adjust interface, content, and list sizes independently.")}
+      >
         <NoteGenSettingRow
           icon={ZoomIn}
           title={text("界面缩放", "Interface scale")}
           description={text("调整应用界面的整体缩放比例", "Adjust the overall scale of the app interface.")}
-          action={
-            <div className="flex w-36 flex-col gap-1.5">
-              <div className="flex justify-between text-[8px] text-muted-foreground"><span>75%</span><span className="font-medium text-foreground">100%</span><span>150%</span></div>
-              <div className="relative h-1 rounded-full bg-input"><span className="absolute left-0 top-0 h-1 w-1/3 rounded-full bg-primary" /><span className="absolute left-1/3 top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-background shadow-sm" /></div>
-            </div>
-          }
+          action={<NoteGenScaleControl />}
+        />
+        <NoteGenSettingRow
+          icon={Type}
+          title={text("正文缩放", "Content scale")}
+          description={text("调整编辑器和对话中 Markdown 内容的文字大小", "Adjust Markdown text in the editor and chat.")}
+          action={<NoteGenScaleControl />}
+        />
+        <NoteGenSettingRow
+          icon={Folder}
+          title={text("文件管理器文字大小", "File manager text size")}
+          description={text("调整文件管理器中文件和文件夹列表的文字大小", "Adjust text size in file and folder lists.")}
+          action={<NoteGenSettingSelect className="w-[160px]" label={text("文件管理器文字大小", "File manager text size")} value="14px" />}
+        />
+        <NoteGenSettingRow
+          icon={Bookmark}
+          title={text("记录文字大小", "Capture text size")}
+          description={text("调整记录列表中记录项的文字大小", "Adjust text size in the capture list.")}
+          action={<NoteGenSettingSelect className="w-[160px]" label={text("记录文字大小", "Capture text size")} value="14px" />}
+        />
+      </NoteGenSettingsSection>
+
+      <NoteGenSettingsSection
+        title={text("高级设置", "Advanced settings")}
+        description={text("配置网络代理、数据管理和配置文件等高级选项。部分操作可能影响现有数据，请谨慎修改。", "Configure proxy, data management, and configuration files. Some changes may affect existing data.")}
+      >
+        <NoteGenSettingRow
+          icon={Network}
+          title={text("网络代理", "Network proxy")}
+          description={text("代理，用于解决网络问题，配置后建议重启应用。", "Configure a proxy for network issues; restart the app after changing it.")}
+          action={<span className="flex h-8 w-[280px] items-center rounded-lg border border-input px-2.5 text-sm text-muted-foreground">{text("请输入代理地址", "Enter proxy address")}</span>}
+        />
+        <NoteGenSettingRow
+          icon={FileCog}
+          title={text("配置文件管理", "Configuration files")}
+          description={text("配置文件导入与导出，导入配置文件将覆盖当前配置，并且重启后生效。", "Import or export configuration files. Imported settings take effect after restart.")}
+          action={<div className="flex gap-2"><NoteGenSettingButton icon={Upload}>{text("导入", "Import")}</NoteGenSettingButton><NoteGenSettingButton icon={Download}>{text("导出", "Export")}</NoteGenSettingButton></div>}
+        />
+      </NoteGenSettingsSection>
+
+      <NoteGenSettingsSection
+        title={text("危险操作", "Danger zone")}
+        description={text("以下操作会永久删除本地内容，执行前请确认已完成备份。", "The following actions permanently delete local content. Make sure you have a backup.")}
+      >
+        <NoteGenSettingRow
+          icon={Database}
+          title={text("清理数据", "Clear data")}
+          description={text("清理数据信息，包括系统配置信息、数据库（包含记录）。", "Delete settings and the local database, including captures.")}
+          action={<NoteGenSettingButton destructive>{text("清理", "Clear")}</NoteGenSettingButton>}
+        />
+        <NoteGenSettingRow
+          icon={FolderX}
+          title={text("清理文件", "Clear files")}
+          description={text("清理文件，包括图片、文章。", "Delete local images and articles.")}
+          action={<NoteGenSettingButton destructive>{text("清理", "Clear")}</NoteGenSettingButton>}
         />
       </NoteGenSettingsSection>
     </NoteGenSettingsPage>
   )
+}
+
+function NoteGenScaleControl() {
+  return (
+    <div className="flex w-[180px] flex-col gap-3">
+      <div className="flex items-center justify-between text-xs text-muted-foreground"><span>75%</span><span className="font-medium text-foreground">100%</span><span>150%</span></div>
+      <div className="relative h-1 rounded-full bg-input"><span className="absolute inset-y-0 left-0 w-1/3 rounded-full bg-primary" /><span className="absolute left-1/3 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-background shadow-sm" /></div>
+    </div>
+  )
+}
+
+function NoteGenSettingButton({ children, icon: Icon, destructive = false }: { children: ReactNode; icon?: NoteGenReplicaIcon; destructive?: boolean }) {
+  return <span className={cn("inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium", destructive ? "border-destructive bg-destructive text-destructive-foreground" : "border-input bg-background")}>{Icon ? <Icon className="size-3.5" /> : null}{children}</span>
 }
 
 function GenericSettingsReplica({
@@ -524,6 +603,8 @@ function NoteGenSettingsDataSection({ section, lang, icon: Icon }: { section: No
 }
 
 function NoteGenSettingsContentReplica({ lang, section }: { lang: NoteGenReplicaLanguage; section: NoteGenSettingSectionId }) {
+  if (section === "general") return <GeneralSettingsReplica lang={lang} />
+
   const page = noteGenSettingsPages[section]
   const navigation = navigationItems.find((item) => item.id === section) ?? navigationItems[0]
   const PageIcon = navigation.icon
