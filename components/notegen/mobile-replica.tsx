@@ -1,16 +1,19 @@
 import type { ReactNode } from "react"
 import {
-  BatteryFull, Bot, Bold, CheckSquare, ChevronDown, ChevronRight, Cloud, Code2,
-  EllipsisVertical, FilePlus2, FileText, Filter, Highlighter, History, Italic, Lightbulb,
-  MessageCircle, MessageSquare, MessageSquareDashed, MessageSquarePlus, Palette, Plus, Quote, Redo2,
-  RefreshCw, Search, Send, Settings, ShieldQuestion, SquarePen, Strikethrough,
-  Trash2, Underline, Undo2, User, WandSparkles, Wifi,
+  ArrowLeft, BatteryFull, Book, Bot, BotMessageSquare, Bold, Brain, CheckSquare,
+  ChevronDown, ChevronRight, Cloud, Code2, DatabaseBackup, Drama, EllipsisVertical,
+  FileCog, FilePlus2, FileText, Filter, FolderOpen, Globe2, Highlighter, History,
+  ImageUp, Italic, Languages, LayoutTemplate, Lightbulb, MessageCircle, MessageSquare,
+  MessageSquareDashed, MessageSquarePlus, Moon, Paintbrush, Palette, PenTool, Plus,
+  Puzzle, Quote, Redo2, RefreshCw, ScanText, Search, Send, Settings, ShieldQuestion,
+  Sparkles, SquarePen, Store, Strikethrough, Trash2, Type, Underline, Undo2, User,
+  Volume2, WandSparkles, Wifi,
 } from "lucide-react"
 
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
 import { cn } from "@/lib/utils"
 
-export type NoteGenMobileScreen = "capture" | "chat" | "writing" | "canvas" | "settings"
+export type NoteGenMobileScreen = "capture" | "chat" | "writing" | "canvas" | "me" | "settings" | "settings-general"
 
 const MOBILE_WIDTH = 402
 const MOBILE_HEIGHT = 874
@@ -59,7 +62,7 @@ export function NoteGenMobileStatusBar() {
 }
 
 export function NoteGenMobileDock({ screen = "capture", lang = "cn" }: { screen?: NoteGenMobileScreen; lang?: NoteGenReplicaLanguage }) {
-  const active = screen === "settings" ? "chat" : screen
+  const active = screen === "me" ? "chat" : screen
   const items = [
     ["chat", MessageSquare, lang === "en" ? "Chat" : "对话"],
     ["writing", SquarePen, lang === "en" ? "Write" : "写作"],
@@ -200,7 +203,7 @@ function StatCard({ title, subtitle }: { title: string; subtitle: string }) {
   return <div className="h-[109px] rounded-[22px] border border-[#e7e7e8] bg-white p-4"><p className="text-xs text-[#8b8e93]">{title}</p><b className="mt-2 block text-2xl font-semibold">0</b><p className="mt-1 text-xs text-[#8b8e93]">{subtitle}</p></div>
 }
 
-export function NoteGenMobileSettings({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
+export function NoteGenMobileMe({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
   const activeCells = new Set([18, 26, 34, 35, 50, 58, 66, 67, 74, 75, 76, 82, 83, 89, 90, 91, 98])
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden px-3 pt-9">
@@ -216,13 +219,91 @@ export function NoteGenMobileSettings({ lang = "cn" }: { lang?: NoteGenReplicaLa
   )
 }
 
+function MobileSettingsHeader({ title, lang }: { title: string; lang: NoteGenReplicaLanguage }) {
+  return <header className="flex h-14 shrink-0 items-center border-b border-[#e7e7e8] bg-white px-2"><span className="flex size-11 items-center justify-center"><ArrowLeft className="size-[18px]" /></span><h1 className="min-w-0 flex-1 truncate pr-11 text-center text-base font-semibold">{title}</h1><span className="sr-only">{lang === "en" ? "Back" : "返回"}</span></header>
+}
+
+const settingsGroups = [
+  {
+    key: "basic",
+    cn: "基础设置",
+    en: "Basic settings",
+    items: [
+      [Settings, "常规设置", "General settings"],
+      [PenTool, "记录设置", "Record settings"],
+      [FileCog, "编辑器设置", "Editor settings"],
+      [Palette, "画布设置", "Canvas settings"],
+      [ScanText, "图片记录", "Image capture"],
+      [Volume2, "音频设置", "Audio settings"],
+    ],
+  },
+  {
+    key: "extensions",
+    cn: "AI 与扩展",
+    en: "AI & extensions",
+    items: [
+      [BotMessageSquare, "AI 服务", "AI services"],
+      [Globe2, "联网搜索", "Web search"],
+      [Book, "知识库", "Knowledge base"],
+      [Brain, "记忆", "Memories"],
+      [Drama, "提示词", "Prompts"],
+      [Puzzle, "MCP", "MCP"],
+      [Sparkles, "技能", "Skills"],
+      [LayoutTemplate, "模板", "Templates"],
+    ],
+  },
+  {
+    key: "data",
+    cn: "数据与存储",
+    en: "Data & storage",
+    items: [
+      [DatabaseBackup, "同步", "Sync"],
+      [ImageUp, "图床", "Image hosting"],
+      [FolderOpen, "文件", "Files"],
+    ],
+  },
+] as const
+
+export function NoteGenMobileSettings({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
+      <MobileSettingsHeader title={lang === "en" ? "Settings" : "设置"} lang={lang} />
+      <div className="min-h-0 flex-1 overflow-hidden p-3">
+        <p className="text-sm leading-relaxed text-[#83868c]">{lang === "en" ? "Open each section to manage NoteGen on this device." : "直接在这里进入各项功能设置。"}</p>
+        <div className="mt-5 flex h-9 items-center rounded-[10px] border border-[#dedfe2] px-3 text-sm text-[#96999e]"><Search className="mr-2 size-4" />{lang === "en" ? "Search settings..." : "搜索设置..."}</div>
+        <div className="mt-5">
+          {settingsGroups.map((group) => <div key={group.key} className="pb-1 pt-5 first:pt-0"><h2 className="mb-1 px-1 text-xs font-medium text-[#85888e]">{lang === "en" ? group.en : group.cn}</h2>{group.items.map(([ItemIcon, cnLabel, enLabel]) => <div key={cnLabel} className="flex h-11 items-center rounded-xl px-1"><span className="flex size-9 items-center justify-center"><ItemIcon className="size-4" /></span><span className="text-sm">{lang === "en" ? enLabel : cnLabel}</span><ChevronRight className="ml-auto size-4 text-[#85888e]" /></div>)}</div>)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function GeneralSettingItem({ icon: ItemIcon, title, description, value }: { icon: typeof Moon; title: string; description: string; value: string }) {
+  return <div className="flex min-h-[67px] items-center rounded-xl border border-[#dedfe2] bg-white p-3"><span className="mr-3 flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#f4f4f5]"><ItemIcon className="size-4" /></span><div className="min-w-0 flex-1"><h3 className="text-sm font-medium">{title}</h3><p className="mt-1 truncate text-xs text-[#85888e]">{description}</p></div><span className="ml-2 flex shrink-0 items-center gap-1 text-xs text-[#666a70]">{value}<ChevronRight className="size-4 text-[#85888e]" /></span></div>
+}
+
+export function NoteGenMobileGeneralSettings({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
+  const isEn = lang === "en"
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
+      <MobileSettingsHeader title={isEn ? "General settings" : "常规设置"} lang={lang} />
+      <div className="min-h-0 flex-1 overflow-hidden p-3">
+        <p className="text-sm leading-relaxed text-[#83868c]">{isEn ? "Configure the app theme, display language, fonts and reading size." : "在这里，你可以配置应用的基本设置，包括界面主题、语言等选项。"}</p>
+        <section className="mt-6"><h2 className="text-base font-semibold">{isEn ? "Appearance & language" : "外观与语言"}</h2><p className="mt-1 text-sm text-[#83868c]">{isEn ? "Adjust theme, language and global font" : "调整应用主题、显示语言和全局字体"}</p><div className="mt-3 space-y-3"><GeneralSettingItem icon={Moon} title={isEn ? "Theme" : "主题"} description={isEn ? "Choose the app appearance" : "选择应用的外观主题"} value={isEn ? "System" : "跟随系统"} /><GeneralSettingItem icon={Languages} title={isEn ? "Language" : "语言"} description={isEn ? "Choose the display language" : "选择应用的显示语言"} value={isEn ? "English" : "简体中文"} /><GeneralSettingItem icon={Type} title={isEn ? "App font" : "应用字体"} description={isEn ? "Use a generic system font" : "移动端使用系统允许的通用字体族"} value={isEn ? "System" : "跟随系统"} /><GeneralSettingItem icon={Paintbrush} title={isEn ? "Custom theme colors" : "自定义主题颜色"} description={isEn ? "Customize the app color palette" : "自定义应用的主题颜色"} value={isEn ? "Edit" : "编辑"} /></div></section>
+        <section className="mt-6"><h2 className="text-base font-semibold">{isEn ? "Reading & scale" : "阅读与缩放"}</h2><p className="mt-1 text-sm text-[#83868c]">{isEn ? "Adjust Markdown content text size" : "分别调整界面、正文和列表的显示尺寸"}</p><div className="mt-3"><GeneralSettingItem icon={Store} title={isEn ? "Content scale" : "正文缩放"} description={isEn ? "Editor and chat Markdown text" : "调整编辑器和对话中 Markdown 内容的文字大小"} value="100%" /></div></section>
+      </div>
+    </div>
+  )
+}
+
 export function NoteGenMobileReplica({ lang = "cn", screen = "capture" }: { lang?: NoteGenReplicaLanguage; screen?: NoteGenMobileScreen }) {
   return (
     <NoteGenMobileFrame>
       <div className="relative flex h-full min-h-0 flex-col bg-white">
         <NoteGenMobileStatusBar />
-        {screen === "capture" ? <NoteGenMobileCapture lang={lang} /> : screen === "chat" ? <NoteGenMobileChat lang={lang} /> : screen === "writing" ? <NoteGenMobileWriting lang={lang} /> : screen === "canvas" ? <NoteGenMobileCanvas lang={lang} /> : <NoteGenMobileSettings lang={lang} />}
-        <NoteGenMobileDock screen={screen} lang={lang} />
+        {screen === "capture" ? <NoteGenMobileCapture lang={lang} /> : screen === "chat" ? <NoteGenMobileChat lang={lang} /> : screen === "writing" ? <NoteGenMobileWriting lang={lang} /> : screen === "canvas" ? <NoteGenMobileCanvas lang={lang} /> : screen === "me" ? <NoteGenMobileMe lang={lang} /> : screen === "settings" ? <NoteGenMobileSettings lang={lang} /> : <NoteGenMobileGeneralSettings lang={lang} />}
+        {screen === "settings" || screen === "settings-general" ? null : <NoteGenMobileDock screen={screen} lang={lang} />}
       </div>
     </NoteGenMobileFrame>
   )

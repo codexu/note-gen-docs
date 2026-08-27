@@ -226,7 +226,7 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
           description={text("移动端使用独立的手机框架、状态栏、页面标题和底部导航，可按 screen 属性直接切换展示。", "Mobile uses a dedicated device frame, status bar, headers, and dock. Select a screen through a single prop.")}
         >
           <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {(["capture", "chat", "writing", "canvas", "settings"] as const).map((screen) => <ComponentCard key={screen} title={`Mobile · ${screen}`} description={text("代码实时渲染", "Rendered live from code")}><NoteGenMobileReplica lang={lang} screen={screen} /></ComponentCard>)}
+            {(["capture", "chat", "writing", "canvas", "me", "settings", "settings-general"] as const).map((screen) => <ComponentCard key={screen} title={`Mobile · ${screen}`} description={text("代码实时渲染", "Rendered live from code")}><NoteGenMobileReplica lang={lang} screen={screen} /></ComponentCard>)}
           </div>
         </GallerySection>
 
