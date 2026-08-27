@@ -63,5 +63,5 @@ export function NoteGenEditorFooter({ lang = "cn" }: { lang?: NoteGenReplicaLang
 }
 
 export function NoteGenEditorWorkspace({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="grid h-full min-h-0 grid-cols-[30%_70%]"><NoteGenFileSidebar lang={lang} /><section className="flex min-h-0 flex-col border-l bg-background"><NoteGenEditorTabs lang={lang} /><NoteGenEditorToolbar /><div className="min-h-0 flex-1 overflow-hidden"><NoteGenDocumentPage lang={lang} /></div><NoteGenEditorFooter lang={lang} /></section></div>
+  return <div className="grid h-full min-h-0 grid-cols-[30%_70%]"><NoteGenFileSidebar lang={lang} /><section className="flex min-h-0 flex-col border-l bg-background"><NoteGenEditorTabs lang={lang} /><div className="min-h-0 flex-1 overflow-hidden"><NoteGenDocumentPage lang={lang} /></div><NoteGenEditorFooter lang={lang} /></section></div>
 }

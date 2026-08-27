@@ -238,7 +238,7 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
         >
           <div className="grid gap-6 lg:grid-cols-2">
             <ComponentCard title="NoteGenGlobalSearch" description={text("全局搜索面板", "Global search palette")}><NoteGenDialogBackdrop><NoteGenGlobalSearch lang={lang} /></NoteGenDialogBackdrop></ComponentCard>
-            <ComponentCard title="NoteGenRecordingOverlay" description={text("悬浮录音状态", "Floating recording state")}><NoteGenDialogBackdrop><NoteGenRecordingOverlay lang={lang} /></NoteGenDialogBackdrop></ComponentCard>
+            <ComponentCard title="NoteGenRecordingOverlay" description={text("录音对话框", "Recording dialog")}><NoteGenDialogBackdrop><NoteGenRecordingOverlay lang={lang} /></NoteGenDialogBackdrop></ComponentCard>
             <ComponentCard title="NoteGenSyncStatus" description={text("同步完成与冲突状态", "Sync and conflict states")}><div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-xl border bg-muted/25 p-4"><NoteGenSyncStatus lang={lang} /><NoteGenSyncStatus lang={lang} state="conflict" /></div></ComponentCard>
             <ComponentCard title="ImageViewer · Confirmation" description={text("图片预览与关闭确认", "Image viewer and close confirmation")}><NoteGenDialogBackdrop className="min-h-72"><NoteGenImageViewer lang={lang} /><div className="absolute bottom-4 right-4 z-20 w-64"><NoteGenConfirmationDialog lang={lang} /></div></NoteGenDialogBackdrop></ComponentCard>
             <ComponentCard title="Update · Activity" description={text("更新提示与写作活动", "Update prompt and writing activity")}><div className="grid min-h-72 gap-3 rounded-xl border bg-muted/25 p-4 sm:grid-cols-2"><NoteGenUpdatePrompt lang={lang} /><NoteGenActivityHeatmap lang={lang} /></div></ComponentCard>

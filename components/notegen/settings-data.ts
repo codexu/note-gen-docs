@@ -68,7 +68,7 @@ export const noteGenSettingsPages: Record<NoteGenSettingSectionId, NoteGenSettin
     cnDescription: "查看 NoteGen 的版本、更新与开源信息。",
     enDescription: "View NoteGen version, updates, and open-source information.",
     sections: [
-      { cn: "NoteGen", en: "NoteGen", presentation: "cards", rows: [row("NoteGen", "NoteGen", "status", "v0.22.0", "v0.22.0", "AI 驱动的跨平台 Markdown 笔记应用", "An AI-powered cross-platform Markdown note-taking app")] },
+      { cn: "NoteGen", en: "NoteGen", presentation: "cards", rows: [row("NoteGen", "NoteGen", "status", "v0.36.0", "v0.36.0", "AI 驱动的跨平台 Markdown 笔记应用", "An AI-powered cross-platform Markdown note-taking app")] },
       { cn: "软件更新", en: "Software update", cnDescription: "检查新版本并选择更新渠道", enDescription: "Check for new versions and choose an update channel", rows: [row("当前版本", "Current version", "status", "已是最新版本", "Up to date"), row("更新渠道", "Update channel", "select", "稳定版", "Stable")] },
       { cn: "项目链接", en: "Project links", presentation: "cards", rows: [row("GitHub", "GitHub", "button", "查看源码", "View source", "访问 NoteGen 开源仓库", "Visit the NoteGen repository"), row("官方网站", "Official website", "button", "打开网站", "Open website", "查看文档与下载信息", "Read docs and download NoteGen")] },
     ],
