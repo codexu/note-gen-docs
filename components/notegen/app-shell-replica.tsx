@@ -102,7 +102,7 @@ export function NoteGenPanelHandle({ orientation = "vertical" }: { orientation?:
 
 function StatusButton({ icon: Icon, label, endIcon: EndIcon }: { icon: typeof Bot; label: string; endIcon?: typeof Bot }) {
   return (
-    <Button variant="ghost" size="xs" className="h-5 min-w-0 gap-1 px-1.5 text-[8px] font-normal text-muted-foreground">
+    <Button variant="ghost" size="sm" className="h-5 min-w-0 gap-1 px-1.5 text-[8px] font-normal text-muted-foreground">
       <Icon data-icon="inline-start" />
       <span className="truncate">{label}</span>
       {EndIcon ? <EndIcon data-icon="inline-end" className="opacity-50" /> : null}
@@ -123,7 +123,7 @@ export function NoteGenMainStatusBar({
 
   return (
     <footer className={cn("flex h-6 min-h-6 shrink-0 items-center gap-2 overflow-hidden border-t bg-background px-1 text-[8px] text-muted-foreground", className)}>
-      <Button variant="ghost" size="xs" className="h-5 max-w-48 shrink-0 gap-1 px-1.5 text-[8px] font-normal text-muted-foreground">
+      <Button variant="ghost" size="sm" className="h-5 max-w-48 shrink-0 gap-1 px-1.5 text-[8px] font-normal text-muted-foreground">
         <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
         <FolderOpen data-icon="inline-start" />
         <span className="truncate">{isEnglish ? "Local workspace" : "本地工作区"}</span>
