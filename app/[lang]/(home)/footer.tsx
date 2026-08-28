@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function HomeFooter({ lang }: { lang: "cn" | "en" }) {
@@ -7,7 +8,12 @@ export default function HomeFooter({ lang }: { lang: "cn" | "en" }) {
     <footer className="border-t">
       <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex items-center gap-2 font-medium text-foreground">
-          <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-xs text-primary-foreground">N</span>
+          <Image
+            src="https://s2.loli.net/2025/08/05/IceAMqnBJytp2wE.png"
+            alt="NoteGen"
+            width={28}
+            height={28}
+          />
           NOTEGEN.
         </div>
         <p>Capture first, organize later.</p>

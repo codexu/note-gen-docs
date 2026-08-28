@@ -3,7 +3,6 @@ import {
   Bold,
   ChevronDown,
   ChevronRight,
-  Cloud,
   Code,
   File,
   FilePlus2,
@@ -38,7 +37,7 @@ export function NoteGenFileTreeRow({ name, kind = "file", depth = 0, active, ope
 }
 
 export function NoteGenFileSidebar({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <aside className="flex h-full min-h-0 flex-col bg-sidebar"><NoteGenFileToolbar lang={lang} /><div className="min-h-0 flex-1 space-y-0.5 overflow-hidden p-2"><NoteGenFileTreeRow name={lang === "en" ? "My notes" : "我的笔记"} kind="folder" open /><NoteGenFileTreeRow name={lang === "en" ? "Product" : "产品"} kind="folder" depth={1} open /><NoteGenFileTreeRow name={lang === "en" ? "NoteGen design principles.md" : "NoteGen 设计原则.md"} depth={2} active /><NoteGenFileTreeRow name={lang === "en" ? "Release plan.md" : "版本计划.md"} depth={2} /><NoteGenFileTreeRow name={lang === "en" ? "Research" : "资料"} kind="folder" depth={1} /><NoteGenFileTreeRow name={lang === "en" ? "Daily" : "每日记录"} kind="folder" depth={1} meta="12" /></div><div className="flex h-7 items-center justify-between border-t px-3 text-[8px] text-muted-foreground"><span>{lang === "en" ? "6 files" : "6 个文件"}</span><Cloud className="size-3" /></div></aside>
+  return <aside className="flex h-full min-h-0 flex-col bg-sidebar"><NoteGenFileToolbar lang={lang} /><div className="min-h-0 flex-1 space-y-0.5 overflow-hidden p-2"><NoteGenFileTreeRow name={lang === "en" ? "My notes" : "我的笔记"} kind="folder" open /><NoteGenFileTreeRow name={lang === "en" ? "Product" : "产品"} kind="folder" depth={1} open /><NoteGenFileTreeRow name={lang === "en" ? "NoteGen design principles.md" : "NoteGen 设计原则.md"} depth={2} active /><NoteGenFileTreeRow name={lang === "en" ? "Release plan.md" : "版本计划.md"} depth={2} /><NoteGenFileTreeRow name={lang === "en" ? "Research" : "资料"} kind="folder" depth={1} /><NoteGenFileTreeRow name={lang === "en" ? "Daily" : "每日记录"} kind="folder" depth={1} meta="12" /></div></aside>
 }
 
 export function NoteGenEditorTabs({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
@@ -58,10 +57,6 @@ export function NoteGenDocumentPage({ lang = "cn" }: { lang?: NoteGenReplicaLang
   return <article className="mx-auto w-full max-w-2xl px-8 py-8"><div className="mb-4 flex items-center gap-2 text-[8px] text-muted-foreground"><Hash className="size-3" />product · design</div><h1 className="text-2xl font-bold tracking-tight">{lang === "en" ? "Design principles for calm writing" : "安静写作的设计原则"}</h1><p className="mt-3 text-[10px] leading-5 text-muted-foreground">{lang === "en" ? "A workspace should make capture effortless and leave enough room for thought." : "一个好的工作区，应该让记录毫不费力，同时给思考留下足够的空间。"}</p><h2 className="mt-7 text-base font-semibold">{lang === "en" ? "Capture without interruption" : "不打断地记录"}</h2><p className="mt-2 text-[10px] leading-5">{lang === "en" ? "Text, voice, images and links enter the same stream. Structure is added only when it becomes useful." : "文本、语音、图片与链接进入同一条信息流。只有当结构真正有用时，再进行整理。"}</p><blockquote className="mt-5 border-l-2 pl-4 text-[10px] italic leading-5 text-muted-foreground">{lang === "en" ? "Tools should disappear while ideas remain visible." : "工具应当隐去，而想法始终清晰可见。"}</blockquote><div className="mt-4"><NoteGenBubbleMenu /></div></article>
 }
 
-export function NoteGenEditorFooter({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <footer className="flex h-7 items-center justify-between border-t px-3 text-[8px] text-muted-foreground"><span>{lang === "en" ? "126 words · 2 min read" : "126 字 · 阅读 2 分钟"}</span><div className="flex gap-3"><span>Markdown</span><span className="flex items-center gap-1"><Cloud className="size-3" />{lang === "en" ? "Synced" : "已同步"}</span></div></footer>
-}
-
 export function NoteGenEditorWorkspace({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="grid h-full min-h-0 grid-cols-[30%_70%]"><NoteGenFileSidebar lang={lang} /><section className="flex min-h-0 flex-col border-l bg-background"><NoteGenEditorTabs lang={lang} /><div className="min-h-0 flex-1 overflow-hidden"><NoteGenDocumentPage lang={lang} /></div><NoteGenEditorFooter lang={lang} /></section></div>
+  return <div className="grid h-full min-h-0 grid-cols-[30%_70%]"><NoteGenFileSidebar lang={lang} /><section className="flex min-h-0 flex-col border-l bg-background"><NoteGenEditorTabs lang={lang} /><div className="min-h-0 flex-1 overflow-hidden"><NoteGenDocumentPage lang={lang} /></div></section></div>
 }

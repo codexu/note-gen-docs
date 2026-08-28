@@ -1,0 +1,33 @@
+---
+title: Platform compatibility
+description: Compare major NoteGen features and limitations across desktop, Android, and iOS.
+icon: MonitorSmartphone
+---
+
+NoteGen shares Markdown, records, and the main AI workflow across platforms, but operating-system capabilities differ. This table describes current product boundaries; availability can still depend on OS version, app version, and store review.
+
+| Feature | Windows / macOS / Linux | Android | iOS |
+| --- | --- | --- | --- |
+| Markdown editing | Full editor with source mode, split groups, and separate windows | touch layout | touch layout |
+| Records and AI organization | supported | supported | supported |
+| Canvas | full desktop tools | touch editing | touch editing |
+| System tray and global shortcuts | supported, desktop-dependent | unavailable | unavailable |
+| Browser web clipper | Chrome, Edge, and Firefox extension | unavailable | unavailable |
+| stdio MCP | local commands supported | unavailable | unavailable |
+| HTTP MCP | supported | supported | supported |
+| NoteGen local MCP service | supported | unavailable | unavailable |
+| OCR | system OCR on macOS; local OCR/VLM elsewhere | system capability or VLM | system capability or VLM |
+| Git / S3 / WebDAV sync | supported | availability depends on mobile implementation | availability depends on mobile implementation |
+| Cloud folder | choose a local cloud-drive folder | grant a OneDrive or other folder through the system picker | migrate into NoteGen's iCloud Drive container |
+| Local ZIP backup | supported | system file picker | system file picker |
+| Developer tools and diagnostics | full | limited diagnostics | limited diagnostics |
+
+## Common platform differences
+
+- `localhost` means the current device. A phone cannot use it to reach a model, MCP service, or self-hosted server on a computer; use an accessible LAN or public address.
+- iOS and Android impose stricter background, filesystem, and microphone limits, so automatic sync and long tasks can be affected by system scheduling.
+- Linux desktop environments vary in tray, font, and file-association support.
+- Separate editor windows depend on a desktop window system and are not shown on mobile.
+- Local commands can execute programs, so stdio MCP and the NoteGen local MCP service are desktop-only.
+
+If behavior differs from this table, confirm the NoteGen and OS versions, then see [Troubleshooting](/en/docs/troubleshooting).

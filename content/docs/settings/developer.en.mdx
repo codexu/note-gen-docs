@@ -1,16 +1,24 @@
 ---
-title: Developer
-description: Developer settings are prepared for certain debugging scenarios.
+title: Advanced and developer settings
+description: Configure networking, diagnostics, configuration files, and local data management.
 icon: Code
 ---
 
-<img src="https://files.seeusercontent.com/2026/07/16/iy3W/desktop-developer-settings.jpeg" alt="Desktop Developer settings" className="rounded-xl border" />
+<NoteGenDocPreview kind="settings" section="general" lang="en" label="Advanced options in General Settings" />
 
+These options are under Settings → General Settings → Advanced settings. Developer mode applies only to the current device and reveals self-hosted sync and developer diagnostics.
 
+## Networking and diagnostics
 
-### Description
+- Use the network proxy when model or sync services cannot be reached directly. Restart NoteGen after changing it.
+- Open developer tools from Settings, `F12`, `Cmd/Ctrl+Shift+I`, or the Inspect context-menu action.
+- Performance information shows document size, editor mode, and render timing in the editor.
+- Diagnostics can generate a redacted preview before you copy or export JSON. Automatic redaction cannot catch every piece of user content, so review it before sharing.
 
-- Proxy, used to resolve network issues. Recommended to restart the application after configuration.
-- Clear data information, including system configuration information, database (including records).
-- Clear files (default workspace), including images, articles.
-- Configuration file (JSON format) import and export. Importing a configuration file will overwrite the current configuration and takes effect after restart.
+## Data and configuration
+
+- Export the current configuration for reuse. Importing JSON overwrites existing settings and takes effect after restart.
+- Clear Data permanently removes system settings, the database, and all captures.
+- Clear Files permanently removes local images, notes, and temporary files.
+
+Before importing or clearing anything, create a full export under Backup & Restore and confirm that the backup file was saved successfully.

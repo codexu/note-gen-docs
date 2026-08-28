@@ -1,28 +1,28 @@
 ---
-title: Scenario models
-description: Understand the primary model and models selected for individual features.
+title: Model selection and fallback
+description: Understand conversation models, included models, and model selection for individual features.
 icon: Settings
 ---
 
-NoteGen separates provider configuration from scenario models. First add providers and models under [Model Configuration](/en/docs/settings/model-config), then select models for individual features.
+NoteGen separates model platforms from feature-specific model selection. First add platforms and models under [Model Configuration](/en/docs/settings/model-config), then choose a model in the conversation or the relevant feature settings. Model Services also lists included models that work without additional provider setup.
 
-<img src="https://files.seeusercontent.com/2026/07/16/jiU6/desktop-models.jpeg" alt="Desktop model configuration and scenario model entry" className="rounded-xl border" />
+<NoteGenDocPreview kind="settings" section="ai" lang="en" label="Model Platforms settings" />
 
 ## Fallback behavior
 
-The primary chat model is the default fallback for conversational features. A scenario normally uses it when no model is selected. Choosing No Model disables the corresponding AI capability.
+The model selected beside the composer is used by the current Chat or Agent conversation. Editor, capture, and other scenarios normally follow the primary model when no separate model is selected. Choosing No Model disables that AI capability.
 
 ## Where to configure models
 
 | Scenario | Settings page | Recommendation |
 | --- | --- | --- |
-| Chat / Agent | Chat | Strong chat and tool-calling model |
-| Conversation condensation | Chat | Low-cost model that summarizes well |
-| Editor completion | Editor | Low-latency chat model |
-| Record descriptions | Record or Default Model | Small chat model |
+| Chat / Agent | Model selector beside the composer | Strong chat and tool-calling model |
+| Conversation compaction | Follows the active conversation model | Triggered automatically or manually from context usage |
+| Editor completion | Editor | Low-latency chat model; follows the primary model when unset |
+| Record descriptions | Record | Small chat model; follows the primary model when unset |
 | Knowledge-base embedding/rerank | Knowledge Base | Match the embedding/rerank type |
 | Image understanding | Image Recognition | Vision-capable model |
 | Speech to text | Audio | STT model |
-| Read aloud | Read Aloud | TTS model or system voice |
+| Read aloud | Audio | TTS model or system voice |
 
 After changing the embedding model, rebuild knowledge-base vectors so vectors from different models are not mixed.

@@ -1,0 +1,42 @@
+---
+title: Web search
+description: Configure native model search, third-party providers, and basic web-search fallback order.
+icon: Globe2
+---
+
+Web search gives Chat and Agent access to current public information. NoteGen attempts available layers in this order: native model search, third-party search API, then basic web search. A disabled or unavailable layer falls through to the next one.
+
+<NoteGenDocPreview kind="settings" section="webSearch" lang="en" label="Web search settings" />
+
+## Native model search
+
+When enabled, models with built-in web search can use their provider's native capability. Web search must also be enabled on the corresponding model configuration. Unsupported models continue to the next layer.
+
+Source formatting, coverage, and billing for native search are controlled by the model provider.
+
+## Third-party search APIs
+
+NoteGen supports Zhipu Web Search, Tavily, Brave Search, and Exa. Enter an API key, run the connection test, and drag providers into the desired attempt order.
+
+Auto mode chooses the first configured and available service in this order. Disabling third-party search does not delete stored keys.
+
+## Basic web search
+
+Basic search does not require a separate third-party search key and acts as the final fallback. Its result quality, site access, and stability can be lower than a dedicated search API and depend more heavily on the network and target websites.
+
+## Use it in a conversation
+
+1. Open Chat or Agent.
+2. Enable Web Search in the conversation toolbar.
+3. Ask a question that needs current information and request sources.
+4. Open the source links and verify important facts, dates, and context.
+
+Web search and the knowledge base serve different purposes: web search reads public pages, while the knowledge base retrieves your workspace. They can be enabled together.
+
+## Privacy and troubleshooting
+
+- Search queries are sent to the model or search provider that handles the request.
+- API keys are stored in NoteGen configuration; remove them before sharing configuration or logs.
+- If a test fails, check the key, account quota, regional restrictions, proxy, and system time.
+- If results exist but are not cited, confirm that the model supports tool use and retry in a new conversation.
+- For medical, legal, financial, or other consequential decisions, open and cross-check the original sources.

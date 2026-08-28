@@ -1,21 +1,31 @@
 ---
 title: Record settings
-description: Configure record descriptions and the record toolbar.
+description: Configure record models, display, default destinations, web clipping, and the record toolbar.
 icon: PenTool
 ---
 
-<img src="https://files.seeusercontent.com/2026/07/16/qL9b/desktop-record-settings.jpeg" alt="Desktop Record settings with description model and toolbar controls" className="rounded-xl border" />
+<NoteGenDocPreview kind="settings" section="record" lang="en" label="Record settings" />
 
-## Record description model
+## Record model
 
-This model processes OCR and related recognition results into descriptions that are easier to browse and organize. A small, fast chat model is usually sufficient. NoteGen falls back to the primary model when none is selected.
+The record-description model processes OCR and other recognition results into a useful browsing and organization description. A small, fast chat model is usually sufficient. The primary model is used when none is selected.
+
+## Display
+
+Choose list, compact, or card view and sort by newest, oldest, or type. These settings affect the current device interface only and do not delete or rewrite record content.
+
+## Default destination
+
+Save new records to the current tag, last-used tag, or a fixed tag. After capture, stay in place, highlight the new record, or open its details. Mobile text capture can still choose a different destination in the save drawer.
+
+Changing the default only affects future records and does not move existing ones.
+
+## Web clipper
+
+Desktop NoteGen can run the local web-clipper service and open the browser-extension installer. The extension sends selected text, images, or the current page through a local port without a NoteGen cloud relay. See [Use the web clipper](/en/docs/guides/web-clipper) for the workflow and limits.
 
 ## Record toolbar
 
-The toolbar can include text, voice, scan, image, link, file, and todo controls. Open Settings to:
+The toolbar can contain text, recording, scan, image, link, file, and todo actions. Show, hide, and reorder them separately for desktop and mobile.
 
-- show or hide controls;
-- drag them into a different order;
-- configure desktop and mobile layouts separately.
-
-Desktop tray shortcuts also follow the record-toolbar order. Hiding a control does not delete existing records.
+The desktop tray quick-capture menu follows the enabled items and their order. Hiding an action does not delete saved records.

@@ -1,0 +1,37 @@
+---
+title: Let Agent edit notes safely
+description: Give a bounded task, limit available tools, and review every proposed change before writing.
+icon: BotMessageSquare
+---
+
+Agent can use NoteGen tools to read and modify files, records, tags, and memories, along with enabled MCP servers and Skills. It has more authority than ordinary Chat, so define the scope before running it.
+
+<NoteGenDocPreview kind="desktop-agent" lang="en" label="Desktop Agent workspace with a simulated task and tool calls" />
+
+## Before starting
+
+1. Open the target note or name its path explicitly.
+2. Enable only the knowledge base, MCP servers, and Skills required for the task.
+3. Copy important files or create a local ZIP backup.
+4. State the goal, forbidden changes, and acceptance criteria.
+
+For example:
+
+> Reorganize the level-two headings in the current note. Preserve all facts and links, and do not add unsupported conclusions. Summarize the changes afterward.
+
+## Review the run
+
+- Reading, searching, and drafting normally do not change files directly.
+- Write, move, and delete operations request confirmation according to the active permission policy.
+- Editor changes appear as a Diff. Check deleted text, links, code blocks, and image paths before accepting.
+- For multi-file work, review each file rather than approving from the summary alone.
+
+## Reduce risk
+
+- Split the task into analysis, proposal, and modification stages.
+- Ask Agent to list the files it intends to change first.
+- Do not enable unrelated filesystem or remote MCP tools.
+- Require source-note or web citations for factual claims.
+- You can add instructions while a long Agent task is queued; stop it immediately if it is heading in the wrong direction.
+
+If the result is wrong, reject the Diff or use editor undo. Recover completed cross-file operations from a backup, sync history, or Git history. See [AI Chat and Agent](/en/docs/preview/chat) for capability boundaries.

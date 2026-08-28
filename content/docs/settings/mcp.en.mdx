@@ -1,12 +1,12 @@
 ---
 title: MCP configuration
-description: Connect command-based or HTTP MCP servers to provide external tools to Agent.
+description: Connect external MCP tools or expose NoteGen to another AI client through a local MCP service.
 icon: Puzzle
 ---
 
 MCP (Model Context Protocol) lets NoteGen call external tools and resources through a standard protocol. Enabling MCP does not authorize every server automatically; enable a server and select it in the conversation.
 
-![MCP settings with runtime checks, Add Server, and Import JSON](https://files.seeusercontent.com/2026/07/16/n0vC/desktop-mcp.jpeg)
+<NoteGenDocPreview kind="settings" section="mcp" lang="en" label="MCP settings" />
 
 ## Connection types
 
@@ -49,9 +49,23 @@ Local commands often require Node.js, Python, uv, or another launcher. Check Env
 
 The tool browser shows connected tools, descriptions, and parameters. In Chat or Agent, open MCP in the toolbar and select the servers for the current conversation. Tool calls still follow Agent approval rules.
 
+## Let another client access NoteGen
+
+Desktop MCP settings include an Access NoteGen tab. When enabled, NoteGen runs a local Streamable HTTP MCP service on `127.0.0.1`, allowing Claude Desktop, Codex, or another compatible client to work with the current workspace.
+
+1. Open Access NoteGen and enable the service.
+2. Keep the default port or select an unused port from 1024–65535.
+3. Select Connect/Copy configuration. NoteGen generates JSON containing the local URL and a Bearer token.
+4. Add the configuration to the other client and reload its MCP connections.
+
+The service listens only on the local machine and uses port `37422` by default. Its token is a credential for the displayed workspace. Never paste it into a public conversation or issue. If exposure is possible, reset the access token and update every client.
+
+After switching workspaces, verify the new scope shown in NoteGen before allowing an external client to continue write or delete operations.
+
 ## Security
 
 - Commands run programs with your user permissions; use trusted configurations only.
 - Environment variables and headers may contain secrets. Do not share screenshots or exports containing them.
 - Send remote MCP servers only the context needed for the task.
 - Deleting a server does not revoke its third-party token.
+- External Servers lets NoteGen call someone else's tools. Access NoteGen reverses that direction; treat their permission boundaries separately.

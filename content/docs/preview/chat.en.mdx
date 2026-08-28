@@ -6,10 +6,7 @@ icon: BotMessageSquare
 
 NoteGen offers two conversational workflows. Chat answers and generates content directly. Agent can plan and call built-in tools, MCP, and Skills to complete multi-step tasks.
 
-<div className="grid gap-4 sm:grid-cols-2">
-  <img src="https://files.seeusercontent.com/2026/07/16/Owx8/ios-chat.jpeg" alt="AI Chat home on iOS" className="rounded-xl border" />
-  <img src="https://files.seeusercontent.com/2026/07/16/3Ydw/android-home.png" alt="AI Chat home in Android dark mode" className="rounded-xl border" />
-</div>
+<NoteGenDocPreview kind="mobile" screen="chat" lang="en" label="Mobile AI Chat interface" />
 
 ## Chat
 
@@ -21,9 +18,10 @@ Chat works well for questions, summaries, rewriting, translation, brainstorming,
 - a quoted editor selection;
 - image attachments;
 - knowledge-base excerpts;
+- web-search results and sources;
 - memories and Skills matched to the request.
 
-Toolbar controls include model, prompt, response language, linked tags/files, MCP, knowledge base, clipboard monitoring, new chat, and context clearing.
+Toolbar controls include model, prompt, response language, linked tags/files, MCP, knowledge base, web search, clipboard monitoring, new chat, and context clearing.
 
 ## Agent
 
@@ -37,6 +35,8 @@ Agent follows a loop of understanding, planning, tool use, and result checking. 
 - call currently enabled MCP tools.
 
 During a run, inspect the plan, timeline, tool arguments, and results. A failed run can continue with its context preserved.
+
+Long tasks show their running state and queue. You can send additional requirements while Agent is working. If the goal or scope is already wrong, stop the task before restarting with clearer constraints.
 
 ## Permission and approval
 
@@ -62,8 +62,9 @@ More context is not always better. Reduce linked files, disable unnecessary know
 | Skills | Reusable task instructions and allowed tools |
 | Knowledge base | Retrieve related workspace excerpts from vector indexes |
 | Memory | Load preferences globally or match facts semantically |
+| Web Search | Retrieve current public pages and return sources |
 
-These capabilities can work together, but they also expand the data available to the model. Review [Privacy and data](/en/docs/privacy) before handling sensitive content.
+These capabilities can work together, but they also expand the data available to the model. Review [Privacy and data](/en/docs/privacy) before handling sensitive content. For file changes, see [Let Agent edit notes safely](/en/docs/guides/agent-edit).
 
 ## Message actions
 

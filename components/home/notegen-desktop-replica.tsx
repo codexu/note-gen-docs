@@ -7,8 +7,6 @@ import {
   ChevronDown,
   ChevronRight,
   Cloud,
-  Code2,
-  Copy,
   Download,
   Database,
   EllipsisVertical,
@@ -20,14 +18,10 @@ import {
   Folder,
   FolderOpen,
   FolderPlus,
-  Grid3X3,
   ImageIcon,
   ImagePlus,
   Languages,
   Link,
-  List,
-  Magnet,
-  Maximize2,
   MessageSquareDashed,
   MessageSquarePlus,
   Mic,
@@ -47,15 +41,14 @@ import {
   Trash2,
   Type,
   Undo2,
-  WandSparkles,
   Wrench,
   X,
-  ZoomOut,
 } from "lucide-react"
 
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { CanvasThumbnail } from "@/components/home/canvas-thumbnail"
+import { NoteGenMainStatusBar } from "@/components/notegen/app-shell-replica"
 import { NoteGenReplicaFrame } from "@/components/notegen/replica-primitives"
 import { NoteGenSettingsReplica } from "@/components/notegen/settings-replica"
 import type { NoteGenReplicaView } from "@/components/notegen/types"
@@ -195,7 +188,7 @@ export function NoteGenDesktopReplica({
   initialWorkspace?: Workspace
   initialView?: NoteGenReplicaView
   autoCycle?: boolean
-  panelLayout?: "three" | "left" | "center" | "right"
+  panelLayout?: "three" | "two" | "left" | "center" | "right"
   titleBarMode?: NoteGenTitleBarMode | "none"
   fill?: boolean
   recordItems?: NoteGenReplicaRecord[]
@@ -230,7 +223,7 @@ export function NoteGenDesktopReplica({
           onViewChange={setView}
         />
       ) : null}
-      <div className={cn("overflow-hidden", titleBarMode === "none" ? "h-full" : "h-[calc(100%-36px)]")}>
+      <div className={cn("overflow-hidden", titleBarMode === "none" ? "h-[calc(100%-24px)]" : "h-[calc(100%-60px)]")}>
         {view === "settings" ? (
           <NoteGenSettingsReplica lang={lang} onClose={() => setView("workspace")} />
         ) : <div
@@ -238,10 +231,12 @@ export function NoteGenDesktopReplica({
             "grid min-w-0 origin-top-left",
             panelLayout === "three"
               ? "h-full w-full grid-cols-[26%_44%_30%]"
-              : "h-[117.647%] w-[117.647%] scale-[0.85] grid-cols-1"
+              : panelLayout === "two"
+                ? "h-full w-full grid-cols-[30%_70%]"
+                : "h-[117.647%] w-[117.647%] scale-[0.85] grid-cols-1"
           )}
         >
-          {panelLayout === "three" || panelLayout === "left" ? (
+          {panelLayout === "three" || panelLayout === "two" || panelLayout === "left" ? (
             <WorkspaceSidebar
               lang={lang}
               workspace={workspace}
@@ -250,7 +245,7 @@ export function NoteGenDesktopReplica({
               recordGroupLabel={recordGroupLabel}
             />
           ) : null}
-          {panelLayout === "three" || panelLayout === "center" ? (
+          {panelLayout === "three" || panelLayout === "two" || panelLayout === "center" ? (
             <>
               {workspace === "records" ? <RecordDetailReplica lang={lang} /> : null}
               {workspace === "writing" && (lang === "en" ? <MemoizedEnglishEditor /> : <MemoizedEditor />)}
@@ -260,6 +255,7 @@ export function NoteGenDesktopReplica({
           {panelLayout === "three" || panelLayout === "right" ? <MemoizedAgentPanel lang={lang} /> : null}
         </div>}
       </div>
+      <NoteGenMainStatusBar lang={lang} workspace={workspace} />
     </NoteGenReplicaFrame>
   )
 }
@@ -315,12 +311,6 @@ function WorkspaceSidebar({
           <CanvasSidebarContent lang={lang} />
         </div>
       </div>
-
-      <WorkspaceFooter
-        lang={lang}
-        workspace={workspace}
-        recordCount={recordItems?.length}
-      />
     </section>
   )
 }
@@ -496,34 +486,6 @@ function CanvasSidebarContent({ lang }: { lang: "cn" | "en" }) {
         ))}
       </div>
     </div>
-  )
-}
-
-function WorkspaceFooter({
-  lang,
-  workspace,
-  recordCount,
-}: {
-  lang: "cn" | "en"
-  workspace: Workspace
-  recordCount?: number
-}) {
-  const visibleRecordCount = recordCount ?? 4
-  const englishLabel = workspace === "writing"
-    ? "Local workspace · 6 files"
-    : workspace === "canvas"
-      ? "4 canvases"
-      : `Showing ${visibleRecordCount} records`
-  const label = workspace === "writing"
-      ? "本地工作区 · 6 个文件"
-    : workspace === "canvas"
-      ? "共 4 个画布"
-      : `当前显示 ${visibleRecordCount} 条记录`
-
-  return (
-    <footer className="flex h-6 shrink-0 items-center border-t bg-background px-2 text-[10px] text-muted-foreground">
-      <span>{lang === "en" ? englishLabel : label}</span>
-    </footer>
   )
 }
 
@@ -779,19 +741,6 @@ function CanvasEditorReplica({ lang }: { lang: "cn" | "en" }) {
           </div>
         </div>
       </div>
-      <footer className="flex h-6 shrink-0 items-center justify-between border-t bg-background px-3 text-[9px] text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Grid3X3 className="size-3" />
-          <Magnet className="size-3" />
-          <WandSparkles className="size-3" />
-          <Download className="size-3" />
-        </div>
-        <div className="flex items-center gap-2">
-          <ZoomOut className="size-3" />
-          <span>100%</span>
-          <Maximize2 className="size-3" />
-        </div>
-      </footer>
     </section>
   )
 }
@@ -864,10 +813,6 @@ function EnglishEditor() {
           </div>
         </div>
       </article>
-      <footer className="flex h-6 shrink-0 items-center justify-between border-t bg-background px-3 text-[9px] text-muted-foreground">
-        <span>862 characters · 4 min</span>
-        <span className="flex items-center gap-1"><Cloud className="size-3" /> Synced</span>
-      </footer>
     </section>
   )
 }
@@ -999,23 +944,6 @@ function Editor() {
           </p>
         </div>
       </article>
-
-      <footer className="flex h-6 shrink-0 items-center justify-between border-t bg-background px-3 text-[9px] text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <span>862 字符 · 4 分钟</span>
-          <Code2 className="size-3" />
-          <Copy className="size-3" />
-          <Download className="size-3" />
-          <span className="flex items-center gap-1">
-            <List className="size-3" />
-            大纲
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Cloud className="size-3" />
-          <span>已同步</span>
-        </div>
-      </footer>
     </section>
   )
 }

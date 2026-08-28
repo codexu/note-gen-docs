@@ -1,0 +1,47 @@
+---
+title: Use the web clipper
+description: Install the browser extension and save selected text, images, or the current page to desktop NoteGen.
+icon: Scissors
+---
+
+NoteGen Web Clipper supports Chrome, Microsoft Edge, and Firefox. It connects to the running desktop app through the local loopback interface. Mobile and Safari are not currently supported.
+
+<NoteGenDocPreview kind="settings" section="record" lang="en" label="Record settings with simulated browser-extension status" />
+
+## Install and connect
+
+1. In desktop NoteGen, open Settings → Record Settings → Web Clipper.
+2. Enable the web-clipper service.
+3. Select Install, or open the [Web Clipper download page](/en/web-clipper/download).
+4. Install the extension for your browser and keep NoteGen running in the background.
+5. Open the extension popup and confirm that it is connected.
+
+The extension connects to `127.0.0.1:37421` and only accepts a local browser. If it cannot connect, confirm the NoteGen switch and then restart the extension or browser.
+
+## Save selections and images
+
+Select text on a page and use the quick-save bubble that appears nearby. Text becomes a text record. Selected images are downloaded into NoteGen and handled as separate image records; generated recognition text depends on Image Recognition settings.
+
+If you do not want the quick-save bubble, disable the selection assistant in the extension options. Disabling it unregisters the related content script.
+
+## Save the current page
+
+Open the extension popup and save the current page. Its URL enters NoteGen's link-record capture flow, which attempts to collect a title, summary, and available page images. Login requirements, anti-bot controls, and dynamic rendering can limit the result.
+
+## Offline queue and limits
+
+When NoteGen is unavailable, the extension retains unsent clips and retries after reconnecting. The queue holds up to 100 items or 50 MiB, and a single Markdown clip is limited to 2 MiB. Start NoteGen and let the queue drain before it reaches the limit.
+
+## Privacy
+
+- The extension has no account, analytics, cookie collection, or cloud relay.
+- It reads a selection only after you click Save, and reads the current tab URL only when you save the page.
+- Clips go only to local NoteGen. Later uploads depend on your recognition model, image-hosting, and sync settings.
+- HTTP/HTTPS page access is required to display the selection assistant.
+
+## Common problems
+
+- **Disconnected:** start desktop NoteGen, enable Web Clipper, and check whether security software blocks the local port.
+- **No selection bubble:** refresh the page and confirm the assistant is enabled. Browser-internal and extension-store pages normally block content scripts.
+- **No recognized image text:** check OCR/VLM configuration and model availability.
+- **Incomplete page content:** save the link first, then add content that is protected by login or dynamic loading manually.

@@ -631,6 +631,26 @@ function NoteGenSettingsContentReplica({ lang, section }: { lang: NoteGenReplica
   </NoteGenSettingsPage>
 }
 
+export function NoteGenSettingsDetailReplica({
+  lang = "cn",
+  section = "general",
+  className,
+}: {
+  lang?: NoteGenReplicaLanguage
+  section?: NoteGenSettingSectionId
+  className?: string
+}) {
+  return (
+    <div
+      data-notegen-replica="settings-detail"
+      data-active-section={section}
+      className={cn("h-full min-h-0 overflow-hidden rounded-xl border bg-background", className)}
+    >
+      <NoteGenSettingsContentReplica lang={lang} section={section} />
+    </div>
+  )
+}
+
 export function NoteGenSettingsDialogReplica({ lang = "cn", initialSection = "general", className }: { lang?: NoteGenReplicaLanguage; initialSection?: NoteGenSettingSectionId; className?: string }) {
   return <div className={cn("relative flex min-h-[520px] items-center justify-center overflow-hidden rounded-xl border bg-muted/30 p-4 before:absolute before:inset-0 before:bg-background/45 before:backdrop-blur-[2px]", className)}><div className="relative z-10 h-[min(840px,calc(100%-16px))] min-h-[480px] w-[calc(100%-16px)] max-w-[1280px] overflow-hidden rounded-xl border bg-background shadow-2xl"><NoteGenSettingsReplica lang={lang} initialSection={initialSection} /><span aria-label={lang === "en" ? "Close settings" : "关闭设置"} className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"><X className="size-4" /></span></div></div>
 }

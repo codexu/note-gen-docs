@@ -1,0 +1,45 @@
+---
+title: Configure your first AI model
+description: Add an OpenAI-compatible provider, test a model, and select defaults for individual features.
+icon: Bot
+---
+
+NoteGen can use included models or connect to your own OpenAI-compatible service, Ollama, or LM Studio. Provider setup and feature-specific model selection are separate steps.
+
+<NoteGenDocPreview kind="settings" section="ai" lang="en" label="Model settings with simulated providers and models" />
+
+## Add a provider
+
+1. Open Settings → Model Services.
+2. Choose a built-in template or create a custom provider.
+3. Enter a name, Base URL, and API key.
+4. Add the model name and choose the correct type, such as `chat`, `embedding`, `rerank`, `stt`, or `tts`.
+5. Run the connection test and save.
+
+A Base URL normally ends at the version path, such as `https://api.openai.com/v1`, without `/chat/completions`. Ollama commonly uses `http://localhost:11434/v1` and LM Studio `http://localhost:1234/v1`, but the local service must be running.
+
+## Select models for features
+
+After adding models, select them in the relevant settings:
+
+| Use | Setting | Typical type |
+| --- | --- | --- |
+| Chat, Agent, organization | model selector or defaults | `chat` |
+| Image understanding | Image Recognition | vision-capable `chat` |
+| Knowledge-base indexing | Knowledge Base | `embedding` |
+| Retrieval reranking | Knowledge Base | `rerank` |
+| Transcription | Audio Settings | `stt` |
+| Read aloud | Read Aloud | `tts` |
+
+## Proxy and compatibility
+
+A provider can inherit the global proxy, force a direct connection, or use a custom proxy. If an older compatible endpoint rejects `max_completion_tokens`, switch to `max_tokens`. Leave context window, temperature, and output limits at their defaults unless the provider documents different values.
+
+## Security and troubleshooting
+
+- API keys are stored in local configuration and are only uploaded if settings sync is enabled and permits them.
+- Never publish keys in issues, screenshots, diagnostics, or shared configuration.
+- `401/403` usually indicates a key, permission, or account problem. `404` often means an incorrect Base URL or model name. For timeouts, check the network and proxy.
+- A phone cannot reach a model running on a computer through `localhost`; use the computer's LAN address and check firewall rules.
+
+See [Model configuration](/en/docs/settings/model-config) and [Model selection and fallback](/en/docs/settings/default-model) for every field.

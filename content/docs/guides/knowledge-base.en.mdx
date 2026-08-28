@@ -1,0 +1,36 @@
+---
+title: Build and use a knowledge base
+description: Index the workspace and retrieve your own notes in Chat or Agent.
+icon: BookOpen
+---
+
+The knowledge base finds related passages across Markdown files. It does not train the model; it retrieves workspace content and adds it to the current conversation when you ask a question.
+
+<NoteGenDocPreview kind="settings" section="rag" lang="en" label="Knowledge Base settings with simulated index status" />
+
+## Prepare models
+
+Add an `embedding` model under Model Services. An optional `rerank` model can reorder initial matches, but the knowledge base works without one.
+
+## Build the index
+
+1. Open Settings → Knowledge Base.
+2. Select the embedding model and optional reranker.
+3. Configure chunk size, overlap, and result count, or keep the defaults.
+4. Build an index for the workspace or selected folders.
+5. Wait for completion and review any failed files.
+
+The index primarily targets Markdown. Automatic calculation can update an indexed file after it changes. After bulk moves, external edits, or a workspace switch, review index status.
+
+## Use it in a conversation
+
+Open Chat or Agent and enable Knowledge Base in the toolbar before asking. Include a clear subject, date, or document scope—for example, “Using the project weekly reports, summarize the three main risks in July.” Ask for source file names so you can verify the original text.
+
+## Maintenance and privacy
+
+- Rebuild after changing the embedding model because vectors from different models are not interchangeable.
+- Rebuild after deleting or moving many files to remove stale paths.
+- The index is local, but online embedding and reranking providers receive the text chunks they process.
+- Retrieval depends on chunking and model quality. A missing result does not prove the content is absent.
+
+See [Knowledge Base settings](/en/docs/settings/rag) for parameters.

@@ -1,19 +1,19 @@
 ---
 title: 同步配置
-description: 使用 Git、S3、WebDAV、OneDrive 或 iCloud Drive 同步 NoteGen 数据。
+description: 使用 Git、S3、WebDAV、云盘文件夹或 NoteGen 自托管服务同步数据。
 icon: RefreshCw
 ---
 
-NoteGen 支持 GitHub、Gitee、GitLab、Gitea、S3、WebDAV、OneDrive 和 iCloud Drive。选择的平台会成为当前主要同步方式。
+NoteGen 支持 GitHub、Gitee、GitLab、Gitea、S3、WebDAV、OneDrive、iCloud Drive 和实验性的 NoteGen 自托管同步。选择的平台会成为当前主要同步方式。
 
-![同步配置页，展示 GitHub 仓库、笔记和记录同步选项](https://files.seeusercontent.com/2026/07/16/c1cW/desktop-sync.jpeg)
+<NoteGenDocPreview kind="settings" section="sync" lang="cn" label="同步配置" />
 
 ## 同步对象
 
 | 对象 | 行为 |
 | --- | --- |
 | Markdown 与资源 | 文件级上传、拉取、删除和编辑停止后的自动同步 |
-| 记录、标签、聊天与设置 | 以数据包方式手动或自动上传、下载，并检测跨设备冲突 |
+| 记录、标签、聊天、画布与设置 | 以结构化数据手动或自动上传、下载，并检测跨设备冲突 |
 
 工作区路径、界面缩放等设备特定设置默认排除。开启“不同步敏感配置”时还会排除 Token、密码、图床、MCP 等私密配置。
 
@@ -48,6 +48,25 @@ NoteGen 支持 GitHub、Gitee、GitLab、Gitea、S3、WebDAV、OneDrive 和 iClo
 
 iOS 使用 iCloud Drive 前需要登录 Apple 账户并开启 iCloud Drive。NoteGen 不会获得 Apple 账户密码，也不会通过 NoteGen 服务器中转 iCloud 文件。
 
+### NoteGen 自托管（实验性）
+
+开启开发者模式后，可以在同步平台中选择自托管服务。填写部署完成的服务器地址，注册或登录账户，并把本地工作区关联到远程资料库。服务器部署参见[自托管部署](/cn/docs/self-hosted)。
+
+自托管模式支持管理资料库、成员与设备，并分别控制工作区文件和个人数据同步范围。连接前确认：
+
+- 地址使用受信任的 HTTPS；
+- 恢复密钥已离线保存；
+- 当前本地工作区与目标资料库对应正确；
+- 首次传输方向已经明确，并且本地 ZIP 备份可用。
+
+自托管同步仍是实验性功能。升级客户端或服务端前固定版本并备份数据库、对象存储和本地工作区。
+
+客户端登录、资料库、成员权限和冲突处理参见[连接 NoteGen 自托管服务](/cn/docs/guides/self-hosted-client)。
+
+## 多工作区与仓库映射
+
+Git 平台可以为不同本地工作区配置独立仓库。切换工作区后检查当前仓库映射，避免把两套目录推送到同一远程路径。系统 Git 不可用、凭证过期或工作树存在异常时，先停止自动同步并查看诊断信息。
+
 ## 笔记自动同步
 
 可选择关闭或在停止编辑 2 秒至 2 分钟后自动同步。还可启用“打开文件时自动拉取”和“切换文件时自动拉取”。自动拉取可能用远程版本覆盖本地，请只在同步流程稳定后开启。
@@ -70,4 +89,4 @@ iOS 使用 iCloud Drive 前需要登录 Apple 账户并开启 iCloud Drive。Not
 
 处理高风险冲突前，建议先从标题栏同步菜单导出本地 ZIP 备份。
 
-<img src="https://files.seeusercontent.com/2026/07/16/rHl2/android-chat.png" alt="Android 端的同步冲突确认面板" className="mx-auto w-full max-w-md rounded-xl border" />
+<NoteGenDocPreview kind="sync-conflict" lang="cn" label="同步冲突提示" />

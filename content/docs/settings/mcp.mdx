@@ -1,12 +1,12 @@
 ---
 title: MCP 配置
-description: 连接本地命令或 HTTP MCP 服务器，为 Agent 提供外部工具。
+description: 连接外部 MCP 工具，或让其他 AI 客户端通过本地 MCP 服务访问 NoteGen。
 icon: Puzzle
 ---
 
 MCP（Model Context Protocol）让 NoteGen 通过统一协议调用外部工具和资源。启用 MCP 不会自动授权所有服务器；还需要启用服务器并在对话中选择它。
 
-![MCP 配置页，可检查运行时、添加服务器或导入 JSON](https://files.seeusercontent.com/2026/07/16/n0vC/desktop-mcp.jpeg)
+<NoteGenDocPreview kind="settings" section="mcp" lang="cn" label="MCP 设置" />
 
 ## 连接类型
 
@@ -49,9 +49,23 @@ MCP（Model Context Protocol）让 NoteGen 通过统一协议调用外部工具�
 
 连接成功后，工具浏览器会显示服务器提供的工具、描述和参数。打开 Chat/Agent 工具栏中的 MCP 按钮，选择要用于当前会话的服务器。Agent 调用工具时仍会遵循权限确认规则。
 
+## 让其他客户端访问 NoteGen
+
+桌面端 MCP 设置包含“访问 NoteGen”标签页。启用后，NoteGen 会在 `127.0.0.1` 启动本地 Streamable HTTP MCP 服务，让 Claude Desktop、Codex 或其他兼容客户端操作当前工作区。
+
+1. 打开“访问 NoteGen”并启用服务。
+2. 保留默认端口，或选择 1024–65535 之间未被占用的端口。
+3. 点击连接/复制配置。NoteGen 会生成包含本地 URL 和 Bearer Token 的 JSON。
+4. 将配置添加到目标客户端，并重新加载其 MCP 连接。
+
+服务只监听本机地址，默认端口为 `37422`。连接配置中的 Token 等同于当前工作区访问凭证，不要粘贴到公开对话或 Issue。怀疑泄漏时使用“重置访问 Token”，并更新所有客户端。
+
+本地 MCP 的操作范围以设置中显示的当前工作区为准。切换工作区后，先确认服务显示的新范围，再允许外部客户端继续执行写入或删除。
+
 ## 安全
 
 - 本地命令能以当前用户权限运行程序，只使用可信配置。
 - 环境变量和请求头可能包含密钥，不要截图或公开导出配置。
 - 只给远程 MCP 发送完成任务所需的最少上下文。
 - 删除服务器不可撤销，但不会自动撤销第三方服务中的 Token。
+- “外部服务器”让 NoteGen 调用别人提供的工具；“访问 NoteGen”方向相反，不要混淆两者的权限边界。

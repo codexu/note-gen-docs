@@ -1,0 +1,58 @@
+---
+title: Canvas
+description: Organize notes, records, and visual ideas with editable nodes, connectors, drawings, and charts.
+icon: Palette
+---
+
+Canvas is designed for relationships that are difficult to express in a linear document. It is a top-level workspace alongside Records and Writing, and every saved element remains editable.
+
+<NoteGenDocPreview kind="desktop-canvas" lang="en" label="Desktop canvas" />
+
+## Create a canvas
+
+Switch the left sidebar to Canvas, select New, and start from a blank canvas or a template. Built-in templates include flowchart, mind map, timeline, quadrant, Kanban, and SWOT. A template is only a starting point and can be changed freely.
+
+The canvas manager supports grid and list views, sorting by update time, creation time, or name, plus rename, duplicate, pin, delete, and trash recovery actions.
+
+## Add and edit content
+
+- Use Select or Hand to edit items or move around the canvas.
+- Draw with the pen and highlighter, and remove strokes with the eraser.
+- Insert text, images, groups, and common flowchart shapes.
+- Connect nodes and edit connector labels.
+- Drag text, images, links, files, or todos from Records.
+- Drag Markdown notes from Files while retaining a reference to the original file.
+
+After selecting an element, adjust its text, color, border, opacity, layer, size, and alignment. Multiple elements can be aligned, distributed, or saved as a reusable custom component in the current canvas.
+
+## Charts and AI
+
+The chart panel accepts manually entered data or selected workspace notes. Choose a chart type or let the model decide, then NoteGen generates editable bar, line, area, pie, and other charts.
+
+Chart generation requires an available chat model. NoteGen sends the data you enter and the notes you explicitly select to that provider. Review the provider's privacy policy before using sensitive material.
+
+## Layout and navigation
+
+- Auto layout rearranges nodes and connectors in the selected direction.
+- The minimap helps navigate large canvases.
+- Grid and snap settings help align elements.
+- Zoom, fit view, and marquee selection support larger structures.
+
+## Import and export
+
+Canvas imports NoteGen canvas JSON and Mermaid `flowchart`/`graph` syntax. Export options include:
+
+- PNG or SVG images;
+- an image record saved back to NoteGen;
+- portable NoteGen canvas JSON;
+- a Mermaid flowchart file.
+
+Mermaid only preserves compatible flowchart nodes and connectors. Freehand strokes, images, charts, and groups are not fully represented. Use canvas JSON for a lossless backup.
+
+## Save, sync, and mobile
+
+Canvas data is stored in NoteGen application data, with thumbnails generated for the manager. When record and settings sync is enabled, canvases sync with structured application data. Pending or failed uploads appear in the canvas list.
+
+Mobile can view and edit canvases with a touch-oriented toolbar. Desktop is better suited to complex connectors, multi-selection, and large layouts.
+
+See [Canvas settings](/en/docs/settings/canvas) for display and interaction preferences.

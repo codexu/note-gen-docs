@@ -33,8 +33,106 @@ export function NoteGenConfirmationDialog({ lang = "cn" }: { lang?: NoteGenRepli
 }
 
 export function NoteGenActivityHeatmap({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  const levels = [0,1,0,2,3,0,1, 1,2,3,2,0,1,0, 0,1,2,4,3,2,1, 1,0,2,3,4,2,0, 0,1,0,2,3,1,0]
-  return <div className="rounded-xl border bg-background p-4"><div className="flex items-center justify-between"><div><h3 className="text-[10px] font-semibold">{lang === "en" ? "Writing activity" : "写作活动"}</h3><p className="mt-0.5 text-[8px] text-muted-foreground">{lang === "en" ? "42 active days this year" : "今年已活跃 42 天"}</p></div><Sparkles className="size-4 text-muted-foreground" /></div><div className="mt-4 grid grid-flow-col grid-rows-7 gap-1">{levels.map((level, index) => <span key={index} className={cn("aspect-square rounded-[2px]", level === 0 ? "bg-muted" : level === 1 ? "bg-emerald-200 dark:bg-emerald-950" : level === 2 ? "bg-emerald-400 dark:bg-emerald-800" : level === 3 ? "bg-emerald-600" : "bg-emerald-800")} />)}</div></div>
+  const primaryMetrics = lang === "en"
+    ? [["Total activity", "3"], ["Active days", "1"]]
+    : [["总活跃次数", "3"], ["活跃天数", "1"]]
+  const sourceMetrics = lang === "en"
+    ? [["Captures", "2"], ["Writing", "1"], ["Chats", "0"]]
+    : [["记录次数", "2"], ["写作活跃", "1"], ["对话次数", "0"]]
+  const levels = Array.from({ length: 26 * 7 }, (_, index) => {
+    if (index === 180) return 4
+    if (index === 151 || index === 166) return 2
+    return 0
+  })
+  const levelClass = (level: number) => level === 0
+    ? "bg-muted"
+    : level === 1
+      ? "bg-emerald-100 dark:bg-emerald-950/70"
+      : level === 2
+        ? "bg-emerald-300 dark:bg-emerald-800/80"
+        : level === 3
+          ? "bg-emerald-500 dark:bg-emerald-600/90"
+          : "bg-emerald-700 dark:bg-emerald-400/90"
+
+  return (
+    <section className="w-full rounded-xl border bg-background p-4 text-foreground shadow-xs">
+      <header>
+        <h3 className="text-sm font-semibold">{lang === "en" ? "Activity" : "活跃度"}</h3>
+        <p className="mt-1 text-[9px] leading-4 text-muted-foreground">
+          {lang === "en" ? "Review today's and recent activity trends." : "快速查看今天状态和最近一段时间的活跃趋势。"}
+        </p>
+      </header>
+
+      <div className="mt-4 grid grid-cols-2 gap-1.5">
+        {primaryMetrics.map(([label, value]) => (
+          <div key={label} className="rounded-lg bg-muted/20 px-3 py-2.5">
+            <p className="text-[8px] text-muted-foreground">{label}</p>
+            <p className="mt-1 text-sm font-semibold tabular-nums">{value}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+        {sourceMetrics.map(([label, value]) => (
+          <div key={label} className="rounded-lg bg-muted/20 px-3 py-2.5">
+            <p className="text-[8px] text-muted-foreground">{label}</p>
+            <p className="mt-1 text-sm font-semibold tabular-nums">{value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-5 flex items-center justify-between gap-3">
+        <p className="text-xs font-semibold">2026-02-27 - 2026-08-27</p>
+        <div className="flex items-center gap-1 text-[8px] text-muted-foreground">
+          <span>{lang === "en" ? "Less" : "少"}</span>
+          {[0, 1, 2, 3, 4].map(level => (
+            <span key={level} className={cn("size-2 rounded-[2px] border border-black/5", levelClass(level))} />
+          ))}
+          <span>{lang === "en" ? "More" : "多"}</span>
+        </div>
+      </div>
+
+      <div className="mt-3 w-full overflow-hidden py-1">
+        <div className="flex w-max min-w-full justify-end gap-0.5">
+          {Array.from({ length: 26 }, (_, weekIndex) => (
+            <div key={weekIndex} className="flex flex-col gap-0.5">
+              {levels.slice(weekIndex * 7, weekIndex * 7 + 7).map((level, dayIndex) => (
+                <span
+                  key={dayIndex}
+                  className={cn("size-2.5 rounded-[3px] border border-black/5", levelClass(level))}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-3 border-t pt-4">
+        <h4 className="text-xs font-semibold">2026-08-27</h4>
+        <div className="flex gap-1 text-[8px]">
+          <span className="rounded bg-rose-100 px-1.5 py-0.5 text-rose-700 dark:bg-rose-950 dark:text-rose-300">{lang === "en" ? "Capture: 2" : "记录: 2"}</span>
+          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">{lang === "en" ? "Writing: 1" : "写作: 1"}</span>
+          <span className="rounded bg-sky-100 px-1.5 py-0.5 text-sky-700 dark:bg-sky-950 dark:text-sky-300">{lang === "en" ? "Chats: 0" : "对话: 0"}</span>
+        </div>
+      </div>
+
+      <div className="relative mt-3 space-y-3 pl-12 before:absolute before:bottom-1 before:left-[34px] before:top-1 before:w-px before:bg-border">
+        <div className="relative rounded-lg bg-muted/15 px-3 py-2.5">
+          <time className="absolute -left-12 top-2.5 text-[8px] text-muted-foreground">10:24</time>
+          <span className="absolute -left-[17px] top-3.5 size-1.5 rounded-full bg-foreground ring-2 ring-background" />
+          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[8px] text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">{lang === "en" ? "Writing" : "写作"}</span>
+          <p className="mt-2 text-[9px] font-medium">{lang === "en" ? "NoteGen design principles.md" : "NoteGen 设计原则.md"}</p>
+        </div>
+        <div className="relative rounded-lg bg-muted/15 px-3 py-2.5">
+          <time className="absolute -left-12 top-2.5 text-[8px] text-muted-foreground">10:18</time>
+          <span className="absolute -left-[17px] top-3.5 size-1.5 rounded-full bg-foreground ring-2 ring-background" />
+          <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[8px] text-rose-700 dark:bg-rose-950 dark:text-rose-300">{lang === "en" ? "Capture" : "记录"}</span>
+          <p className="mt-2 line-clamp-2 text-[9px] leading-4">
+            {lang === "en" ? "Capture first, then organize useful fragments into lasting notes." : "先记录，再整理，把有用的碎片重新组织成持久的笔记。"}
+          </p>
+        </div>
+      </div>
+    </section>
+  )
 }
 
 export function NoteGenUpdatePrompt({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {

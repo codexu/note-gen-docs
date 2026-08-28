@@ -1,17 +1,19 @@
 ---
 title: Markdown editor
-description: Write and export Markdown in NoteGen's Tiptap-based rich editor.
+description: Edit Markdown visually or as source, and organize work with tabs, split groups, and separate windows.
 icon: PenTool
 ---
 
-NoteGen uses Tiptap 3 for a single rich Markdown editing experience. Markdown structure is rendered directly; there are no separate source, preview, or split-screen modes.
+NoteGen supports a Tiptap 3 visual editor and a source mode that preserves raw Markdown. Multiple files can be open in tabs, split groups, or separate desktop windows.
 
-![Desktop Markdown writing with file management on the left and AI chat on the right](https://files.seeusercontent.com/2026/07/16/v2Nd/desktop-writing.jpeg)
+<NoteGenDocPreview kind="desktop-writing" lang="en" label="Desktop Markdown writing interface" />
 
 ## Open and manage files
 
 - Create or open Markdown files from the file manager.
 - Multiple files open as tabs; record details can also open in tabs.
+- Tabs can be split into editor groups to view different files side by side. Supported text files can also open in a separate desktop window.
+- A customizable new-tab page can show recent files and shortcut modules.
 - Content is saved to the current workspace automatically. Remote auto-sync depends on Sync settings.
 - Common text/code files can open in the editor; unsupported formats display a non-editable view.
 
@@ -24,6 +26,12 @@ The editor supports headings, paragraphs, bold, italic, strike, underline, highl
 - Drag a block handle to reorder content.
 - Table controls add, delete, and align rows and columns.
 - Paste, drop, or select images, then resize them or adjust their path.
+
+## Visual and source modes
+
+Visual mode renders headings, tables, images, and other Markdown structures directly. Source mode is useful for exact characters, frontmatter, or unsupported syntax. Choose the default mode in Editor Settings and optionally enable source line numbers and wrapping.
+
+Both modes edit the same file. After switching for the first time, verify complex HTML, custom syntax, and very large documents.
 
 ## Math and diagrams
 
@@ -55,7 +63,9 @@ Agent can read the current file and propose edits. Changes appear as a diff and 
 
 - Find/replace supports previous/next navigation and case matching.
 - The heading outline can appear on the left or right.
+- Drag a heading in the outline to move that heading and its section content together.
 - View and customize all editor shortcuts under Settings → Shortcuts; conflicts with global shortcuts are detected.
+- The status area can show characters, words, lines, and editor working state.
 
 ## Export
 
@@ -65,4 +75,4 @@ Export Markdown, HTML, plain text, JSON, or PDF from the editor. The file-manage
 
 Mobile uses the same Markdown data with a touch-friendly selection bar, writing toolbar, and More sheet. Some desktop floating controls appear in a bottom drawer instead.
 
-<img src="https://files.seeusercontent.com/2026/07/16/Wqx2/ios-writing.jpeg" alt="The iOS writing screen showing a task list and bottom navigation" className="mx-auto w-full max-w-sm rounded-xl border" />
+<NoteGenDocPreview kind="mobile" screen="writing" lang="en" label="Mobile Markdown writing interface" />

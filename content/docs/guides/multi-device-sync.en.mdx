@@ -1,0 +1,40 @@
+---
+title: Enable sync on a second device
+description: Choose a sync method, protect existing data, and complete the first upload and download safely.
+icon: RefreshCw
+---
+
+Sync can overwrite files or structured application data. Before starting, export a local ZIP from the device with the complete data and store it outside the NoteGen workspace.
+
+<NoteGenDocPreview kind="settings" section="sync" lang="en" label="Sync settings with simulated connection status" />
+
+## Choose a method
+
+- **GitHub, Gitee, GitLab, or Gitea:** suitable for Markdown version history.
+- **S3 or WebDAV:** suitable for object storage or a private NAS.
+- **OneDrive, iCloud Drive, or another cloud folder:** lets the system cloud client sync workspace files.
+- **NoteGen self-hosting:** an experimental option for files, application data, and managed remote libraries.
+
+Do not let two sync engines manage the same workspace—for example Git sync and a third-party cloud folder—unless you understand their conflict behavior.
+
+## First device
+
+1. Configure and test the provider.
+2. Verify the current workspace and remote repository or path.
+3. Manually upload Markdown and assets.
+4. When enabling record and settings sync, choose Upload local data.
+5. Wait for completion before touching the second device.
+
+## Second device
+
+1. Install a similar NoteGen version and back up any existing local data.
+2. Configure the same provider, repository, and path.
+3. Pull from remote before uploading local content.
+4. When first enabling record and settings sync, choose Download remote data.
+5. Verify notes, assets, records, tags, and settings before enabling automatic sync.
+
+## Conflicts and recovery
+
+Merge both sides is appropriate when both devices added records. Overwrite local with remote and overwrite remote with local both discard unsynchronized changes on one side. Back up first and identify which device has the authoritative data.
+
+If the result is wrong, disable automatic sync immediately, leave remote storage unchanged, restore the ZIP to one device, verify it, and then rebuild the sync relationship. See [Sync](/en/docs/settings/sync) for provider fields and permissions.

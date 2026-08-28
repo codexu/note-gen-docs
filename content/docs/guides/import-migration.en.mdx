@@ -1,0 +1,51 @@
+---
+title: Import documents and migrate a workspace
+description: Import Markdown, Notion ZIPs, and common office documents with a safe rollback path.
+icon: Import
+---
+
+Import creates files in the current workspace. Confirm the destination and back up an existing workspace first to avoid overwriting same-name files or asset paths.
+
+<NoteGenDocPreview kind="desktop-files" lang="en" label="Desktop file manager with a simulated workspace" />
+
+## Import Markdown
+
+Choose Import Markdown from the file-manager menu to copy Markdown and recognized assets into the current workspace. Afterward, check relative image paths, internal links, and duplicate names.
+
+## Import a Notion ZIP
+
+1. Export the workspace or pages from Notion as Markdown/CSV and include subpages.
+2. Keep the original ZIP and do not rearrange its internal folders.
+3. In NoteGen Files, choose Import Notion.
+4. Select the ZIP and destination, then wait for completion.
+5. Sample nested pages, images, attachments, and file names.
+
+Database views, proprietary Notion blocks, permissions, and comments may not convert one-to-one. Keep the original export until migration acceptance is complete.
+
+## Convert office documents to Markdown
+
+Document to Markdown supports:
+
+- Word: DOC, DOCX, and DOCM;
+- Excel: XLS, XLSX, XLSM, and XLSB;
+- PowerPoint: PPT, PPTX, PPTM, PPS, PPSX, PPSM, and POT;
+- OpenDocument: ODT, ODS, and ODP;
+- RTF, EPUB, CSV, and PDF.
+
+Conversion preserves text and representable structure where possible. Complex layout, comments, animation, formulas, merged cells, and embedded objects may be simplified. A scanned PDF without a text layer requires OCR first.
+
+## Switch or migrate a workspace
+
+Switching only changes the directory NoteGen opens; it does not move old files. For a migration:
+
+1. Export a full ZIP and disable automatic sync.
+2. Copy the old workspace with the system file manager, or use the platform's cloud-folder migration action.
+3. Select the new directory in NoteGen and restart the app.
+4. Check Markdown, images, recordings, and attachments.
+5. Rebuild the knowledge-base index and verify sync repository mappings.
+
+## Validate and roll back
+
+Compare key folder and file counts, then sample images, links, non-ASCII names, and large documents. Do not delete the old workspace until validation is complete.
+
+If an import fails or is incomplete, stop editing the destination, preserve the error details, switch back or restore the ZIP, and retry in smaller batches.

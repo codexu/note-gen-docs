@@ -21,9 +21,11 @@ Switching workspaces does not move files from the previous workspace. Create a l
 | --- | --- | --- |
 | Built-in free or custom online models | Prompts, selected context, images, audio, or text being processed | The configured model provider |
 | Knowledge-base answers | Query text and retrieved note excerpts | Configured chat, embedding, or rerank providers |
-| Cloud sync | Markdown, assets, records, chats, and permitted settings | The Git, S3, WebDAV, OneDrive, or iCloud Drive service selected by the user |
+| Cloud sync | Markdown, assets, records, chats, canvases, and permitted settings | The selected Git, S3, WebDAV, cloud-folder, or self-hosted service |
 | Image hosting | Uploaded images and authentication requests | Selected image host |
 | MCP | Tool arguments and context required by the tool | Selected MCP server |
+| Web search | Search queries and context needed to process results | Native model search or the selected search provider |
+| Web clipper | Selections, images, or page URLs that the user explicitly saves | Local NoteGen; later processing depends on model, image-hosting, and sync settings |
 | Update checks | Version and platform request metadata | NoteGen download service or GitHub |
 | Anonymous startup analytics | Ephemeral session ID, OS, locale, and app version | NoteGen's Aptabase endpoint |
 
@@ -39,10 +41,19 @@ NoteGen cannot access the user's Apple Account and does not receive iCloud Drive
 
 Exclude Sensitive Settings is enabled by default. Tokens, passwords, secrets, the selected sync provider, image-host settings, MCP settings, workspace paths, and other private or device-specific values are excluded. NoteGen asks for confirmation before disabling this protection.
 
+## Local services and data deletion
+
+Web Clipper uses `127.0.0.1:37421`, and NoteGen's local MCP service uses `127.0.0.1:37422` by default. Both listen only on the current machine, but the MCP Bearer token must still be protected as a workspace credential.
+
+Uninstalling the app normally does not remove a custom Markdown workspace. Databases, configuration, caches, and the default workspace live in the platform application-data location, and uninstall behavior varies. To erase everything, verify a backup, use the separate Clear data and Clear files actions, revoke third-party tokens, and delete unwanted remote repositories, object storage, or self-hosted account data separately.
+
+Clearing application data, clearing files, and deleting remote data are different and may be irreversible. See [Install, update, and uninstall](/en/docs/guides/install-update-uninstall).
+
 ## Recommendations
 
 - For sensitive material, prefer local models, local read-aloud, and local OCR.
 - Grant sync and image-host tokens the minimum required permissions.
 - Connect only trusted MCP servers; command-based MCP servers can launch local programs.
+- After exposing NoteGen through local MCP, review connections and disable the service or reset its token when no longer needed.
 - Inspect backups and logs before sharing them.
 - Revoke a third-party token when you stop using that service.

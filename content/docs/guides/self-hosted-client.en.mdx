@@ -1,0 +1,49 @@
+---
+title: Connect to a self-hosted NoteGen service
+description: Sign in from the client, bind libraries, invite members, and resolve workspace conflicts safely.
+icon: Server
+---
+
+This page covers NoteGen client operations. An administrator must first complete [Self-hosting](/en/docs/self-hosted) and verify HTTPS, readiness, database backup, and object-storage backup. Self-hosted sync is currently experimental.
+
+<NoteGenDocPreview kind="settings" section="sync" lang="en" label="Sync settings with the self-hosted provider" />
+
+## Prepare
+
+1. Export a local ZIP and back up the Markdown workspace on the existing device.
+2. Ask the administrator for the server URL, account method, and compatible client version.
+3. Enable Developer Mode so self-hosting appears under Sync.
+4. Do not let another sync engine write to the workspace that will be bound.
+
+## Sign in
+
+Open Settings → Sync → NoteGen Self-hosted, accept the experimental warning, and enter the server URL. Prefer browser authorization. When allowed by the instance, login, password, and optional TOTP are also available.
+
+NoteGen does not silently downgrade an HTTPS address to HTTP. An HTTP URL shows an insecure warning and should only be used for controlled local testing, never over the public internet.
+
+## Bind a library
+
+After connection, NoteGen prepares a default library for the current workspace. You can also:
+
+- create a library with its own local directory;
+- switch the current workspace to an existing library;
+- see whether access is read-only or read-write;
+- switch local workspaces by selecting another library.
+
+Verify the current path and library name before binding. Selecting a remote library can switch the local workspace; it does not merely rename the original directory.
+
+## Members and invitations
+
+Authorized members can invite an account by login and assign Viewer, Editor, or Manager, then refine capabilities such as history view/restore, invitations, member management, rename, and delete. Invitations can be accepted from the recipient's list or shared as a link.
+
+Grant the minimum access required. Removing a member does not erase copies that person already exported.
+
+## Personal data and conflicts
+
+Workspace files and personal data such as records, tags, chats, canvases, and settings can have separate synchronization scopes. On first connection, decide whether local or remote state is authoritative.
+
+If a local workspace is incorrectly bound to multiple libraries, the client shows a conflict. Transfer it to the correct library or keep a local copy. Disable automatic sync and export a ZIP before resolving; do not repeatedly overwrite both sides.
+
+## Disconnect and recover
+
+Disconnecting does not automatically delete the local workspace. Preserve the server URL, account and recovery information, and local backup before reconnecting. If login fails, check readiness, certificate, device time, and the browser callback, then contact the instance administrator. Never post passwords, TOTP codes, recovery keys, or invitation links in a public issue.

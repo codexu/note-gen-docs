@@ -729,7 +729,7 @@ function RecordScene() {
       lang={lang}
       initialWorkspace="records"
       autoCycle={false}
-      panelLayout="left"
+      panelLayout="two"
       titleBarMode="none"
       fill
     />
@@ -743,7 +743,7 @@ function WritingScene() {
       lang={lang}
       initialWorkspace="writing"
       autoCycle={false}
-      panelLayout="center"
+      panelLayout="two"
       titleBarMode="none"
       fill
     />
@@ -771,7 +771,7 @@ function CanvasScene() {
       lang={lang}
       initialWorkspace="canvas"
       autoCycle={false}
-      panelLayout="center"
+      panelLayout="two"
       titleBarMode="none"
       fill
     />

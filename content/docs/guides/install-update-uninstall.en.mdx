@@ -1,0 +1,49 @@
+---
+title: Install, update, and uninstall
+description: Install NoteGen on each platform, update or downgrade safely, and understand which data remains after uninstalling.
+icon: Download
+---
+
+Get the current version from the [download page](/en/download). GitHub Releases are a fallback source. Third-party repackaged installers may be modified and should not be trusted with private notes or keys.
+
+<NoteGenDocPreview kind="update" lang="en" label="NoteGen update prompt with simulated version information" />
+
+## Install
+
+| Platform | Package | Notes |
+| --- | --- | --- |
+| Windows | x64 installer | The first launch may trigger reputation or security-software warnings; verify the release source |
+| macOS | Apple Silicon or Intel DMG | Choose the package for the Mac's processor and move the app into Applications |
+| Linux | AppImage, Deb, or RPM | AppImage may need executable permission; install Deb/RPM through the system package manager |
+| Android | ARM64 APK | Allow the current browser or file manager to install unknown apps |
+| iOS | TestFlight | Seat availability and build expiration are shown on the download page |
+
+On first launch, choose a Markdown workspace and grant file, photo, microphone, or notification access when the relevant feature needs it.
+
+## Update
+
+Desktop NoteGen checks for updates, and a new version can also be installed manually. Before updating:
+
+1. wait for sync to finish;
+2. export a local ZIP;
+3. record the current version and important model or sync settings;
+4. close NoteGen before running the installer.
+
+Mobile upgrades normally retain application data, but beta builds and system cleanup policies vary. Keep an independent backup of important content.
+
+## Downgrade
+
+A newer version may migrate databases or configuration. Installing an older package does not guarantee it can read newer data. If a downgrade is required, back up the current state, install the old version, and preferably restore a ZIP created by that or a compatible release. Do not let old and new versions automatically sync the same remote data at the same time.
+
+## Uninstall and erase data
+
+The Markdown workspace is an ordinary folder and is normally not removed by uninstalling the app. Application databases, configuration, caches, and local secrets live in the platform's application-data location, and uninstall behavior varies.
+
+To keep data, export a ZIP and copy the workspace first. To erase everything:
+
+1. review the separate Clear data and Clear files scopes under Advanced and Developer Settings;
+2. revoke Git, S3, WebDAV, image-hosting, model, and MCP tokens;
+3. remove unwanted remote repositories, objects, or self-hosted account data;
+4. after uninstalling, inspect the workspace and platform application-data location.
+
+Clearing data is irreversible. Verify the backup first.

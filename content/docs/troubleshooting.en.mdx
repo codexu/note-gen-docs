@@ -51,6 +51,48 @@ icon: LifeBuoy
 - Unsupported files may appear as non-editable.
 - Switching workspaces does not move files. Switch back through history or migrate them in the system file manager.
 
+## Web Clipper cannot connect
+
+- Only desktop NoteGen receives browser clips. Keep it running and enable Web Clipper under Record Settings.
+- The extension uses `127.0.0.1:37421`. Security software, browser policy, or another process using the port can block it.
+- After changing the switch, refresh the target page and restart the extension. Browser-internal and extension-store pages block the selection assistant.
+- If the queue reaches 100 items or 50 MiB, keep NoteGen running until the backlog is delivered.
+
+## Web search returns no results
+
+- Test third-party keys under Web Search and check quota, proxy, and regional restrictions.
+- Confirm that the current model has web search or tool use enabled and that Web Search is on in the conversation toolbar.
+- If native search is unavailable, inspect third-party provider order. If those fail, confirm Basic Search is enabled.
+- Website login, anti-bot controls, and network conditions affect results; verify important claims at the original source.
+
+## Canvas import, generation, or sync fails
+
+- Use NoteGen canvas JSON for lossless import. Mermaid only supports compatible nodes and connectors from `flowchart`/`graph` syntax.
+- AI charts require an available chat model and valid data. Edit the chart request and retry after an interruption.
+- For PNG/SVG export problems, reduce the canvas bounds, fit the view, and check remote images.
+- On sync failure, preserve local data and inspect the record/settings queue before deleting or recreating canvases.
+
+## Document import fails
+
+- Encrypted, malformed, or resource-heavy files cannot convert. Remove the password, export again, or split the document.
+- A scanned PDF has no text layer and needs OCR first. Check complex tables, formulas, and embedded objects manually.
+- Use the original Markdown/CSV Notion ZIP without rearranging its internal folders.
+- Confirm the workspace is writable and resolve duplicate destination names.
+
+## Self-hosted sync cannot connect
+
+- Check server `/health/ready`, the HTTPS certificate, and WebSocket reverse-proxy support.
+- Confirm client/server compatibility, correct device time, and sign in again.
+- Protect the recovery key. Before resetting a device or account, verify another device and server backups.
+- If a library maps to the wrong workspace, disable automatic sync and export a ZIP before any overwrite.
+
+## Update or launch fails
+
+- Confirm the package matches the platform and CPU, then download it again from the website or GitHub Releases.
+- Close every running NoteGen process before updating; security software may lock installer files.
+- If a new version does not launch, preserve the application-data directory and workspace. Do not clear data before collecting redacted diagnostics.
+- Downgrades may not understand a newer database. Prefer a ZIP created by a compatible version.
+
 ## Still stuck?
 
 When opening an [Issue](https://github.com/codexu/note-gen/issues), include the NoteGen version, OS version, reproduction steps, expected result, and actual result. Remove API keys, tokens, private paths, and note content from logs and screenshots.

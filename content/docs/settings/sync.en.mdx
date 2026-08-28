@@ -1,19 +1,19 @@
 ---
 title: Sync
-description: Sync NoteGen data through Git, S3, WebDAV, OneDrive, or iCloud Drive.
+description: Sync through Git, S3, WebDAV, cloud folders, or an experimental self-hosted NoteGen service.
 icon: RefreshCw
 ---
 
-NoteGen supports GitHub, Gitee, GitLab, Gitea, S3, WebDAV, OneDrive, and iCloud Drive. The selected provider becomes the primary sync method.
+NoteGen supports GitHub, Gitee, GitLab, Gitea, S3, WebDAV, OneDrive, iCloud Drive, and experimental NoteGen self-hosting. The selected provider becomes the primary sync method.
 
-![Sync configuration with GitHub repository, note, and record sync controls](https://files.seeusercontent.com/2026/07/16/c1cW/desktop-sync.jpeg)
+<NoteGenDocPreview kind="settings" section="sync" lang="en" label="Sync settings" />
 
 ## What is synced
 
 | Data | Behavior |
 | --- | --- |
 | Markdown and assets | File-level upload, pull, delete, and delayed auto-sync after editing |
-| Records, tags, chats, and settings | Manual or automatic package upload/download with cross-device conflict detection |
+| Records, tags, chats, canvases, and settings | Manual or automatic structured-data upload/download with cross-device conflict detection |
 
 Device-specific values such as workspace paths and UI scale are excluded. Exclude Sensitive Settings also removes tokens, passwords, image-host settings, MCP settings, and other private values.
 
@@ -48,6 +48,25 @@ On desktop, choose a local sync folder managed by OneDrive, iCloud Drive, or ano
 
 iCloud Drive requires an Apple Account with iCloud Drive enabled. NoteGen never receives the Apple Account password and does not relay iCloud files through NoteGen servers.
 
+### NoteGen self-hosting (experimental)
+
+After enabling Developer Mode, select the self-hosted provider, enter the deployed server URL, sign in or register, and associate the local workspace with a remote library. See [Self-hosting](/en/docs/self-hosted) for server deployment.
+
+Self-hosted mode manages libraries, members, and devices and can separately control workspace files and personal-data synchronization. Before connecting, verify that:
+
+- the URL uses trusted HTTPS;
+- the recovery key is stored offline;
+- the local workspace matches the intended remote library;
+- the first transfer direction is clear and a local ZIP is available.
+
+Self-hosted sync remains experimental. Pin versions and back up the database, object storage, and local workspace before client or server upgrades.
+
+See [Connect to a self-hosted NoteGen service](/en/docs/guides/self-hosted-client) for sign-in, libraries, member permissions, and conflicts.
+
+## Multiple workspaces and repository mapping
+
+Git providers can map different local workspaces to separate repositories. After switching workspaces, verify the active mapping so two directories are not pushed into the same remote path. If system Git is unavailable, credentials expire, or the worktree is unhealthy, stop automatic sync and inspect diagnostics first.
+
 ## Note auto-sync
 
 Disable it or choose a delay from 2 seconds to 2 minutes after editing stops. NoteGen can also pull when a file opens or when switching files. Auto-pull can overwrite the local version, so enable it only after validating your workflow.
@@ -64,4 +83,4 @@ Changes enter an ordered upload queue. The first time it is enabled, choose Uplo
 
 Export a local ZIP from the title-bar sync menu before a high-risk overwrite.
 
-<img src="https://files.seeusercontent.com/2026/07/16/rHl2/android-chat.png" alt="Cross-device sync conflict choices on Android" className="mx-auto w-full max-w-md rounded-xl border" />
+<NoteGenDocPreview kind="sync-conflict" lang="en" label="Sync conflict status" />

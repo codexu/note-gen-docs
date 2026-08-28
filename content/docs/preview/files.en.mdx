@@ -4,9 +4,9 @@ description: Manage workspace files, folders, knowledge-base indexes, and remote
 icon: FolderOpen
 ---
 
-The file manager shows the current workspace tree. The footer switches workspaces, sorting, and expansion; the top controls create and import content.
+The file manager shows the current workspace tree. On desktop, the unified bottom status bar switches workspaces and shows sync status; file-manager controls and menus handle creation, import, sorting, and expansion.
 
-<img src="https://files.seeusercontent.com/2026/07/16/6Utx/desktop-files.jpeg" alt="Desktop file manager" className="rounded-xl border" />
+<NoteGenDocPreview kind="desktop-files" lang="en" label="Desktop file manager" />
 
 ## Basic operations
 
@@ -23,6 +23,8 @@ Use the platform's multi-select controls, then copy, cut, or delete the selectio
 ## Import Markdown
 
 Select a directory to recursively copy Markdown and related images into the workspace. Check for name collisions first. NoteGen reports the number imported when finished.
+
+Import Notion reads a Markdown/CSV ZIP exported by Notion. Document to Markdown supports Word, Excel, PowerPoint, OpenDocument, RTF, EPUB, CSV, and PDF. Complex layout and scanned PDFs may need manual cleanup or OCR first. See [Import documents and migrate a workspace](/en/docs/guides/import-migration).
 
 ## Workspaces
 
@@ -49,7 +51,7 @@ The Skills directory is loaded as workspace Skills rather than ordinary knowledg
 
 ## Sync
 
-The primary provider can be GitHub, Gitee, GitLab, Gitea, S3, or WebDAV. Items show relevant status, and upload, pull, and delete use the selected provider. Git providers can open the remote repository; S3 and WebDAV organize files under object/path prefixes.
+The primary provider can be GitHub, Gitee, GitLab, Gitea, S3, WebDAV, a cloud folder, or experimental NoteGen self-hosting. Items show status, and upload, pull, and delete use the selected provider. Different workspaces can map to different Git repositories.
 
 ## Export and unsupported files
 

@@ -39,14 +39,9 @@ export function homeOptions(locale: string): BaseLayoutProps {
     themeSwitch: { enabled: false },
     links: [
       {
-        text: lang === 'en' ? 'Workflow' : '工作流',
-        url: `/${lang}#workflow`,
-        active: 'none',
-      },
-      {
-        text: lang === 'en' ? 'Features' : '功能',
-        url: `/${lang}#features`,
-        active: 'none',
+        text: lang === 'en' ? 'Docs' : '文档',
+        url: `/${lang}/docs`,
+        active: 'nested-url',
       },
       {
         text: lang === 'en' ? 'Web Clipper' : '网页剪藏',
@@ -55,39 +50,32 @@ export function homeOptions(locale: string): BaseLayoutProps {
       },
       ...(isSelfHostedEnabled
         ? [{
-            text: lang === 'en' ? 'Self-hosted' : '自托管',
+            text: (
+              <span className="inline-flex items-center gap-1.5">
+                {lang === 'en' ? 'Self-hosted' : '自托管'}
+                <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none text-primary">
+                  Beta
+                </span>
+              </span>
+            ),
             url: `/${lang}/self-hosted`,
             active: 'url' as const,
           }]
         : []),
       {
-        text: lang === 'en' ? 'Docs' : '文档',
-        url: `/${lang}/docs`,
-        active: 'nested-url',
+        text: lang === 'en' ? 'Community' : '交流群',
+        url: `/${lang}/community`,
+        active: 'url',
       },
       {
-        type: 'menu',
-        text: lang === 'en' ? 'More' : '更多',
-        items: [
-          {
-            text: lang === 'en' ? 'Community' : '交流群',
-            description: lang === 'en' ? 'Join the NoteGen community' : '加入 NoteGen 用户交流群',
-            url: `/${lang}/community`,
-            active: 'url',
-          },
-          {
-            text: lang === 'en' ? 'Business' : '商务合作',
-            description: lang === 'en' ? 'Explore ways to work with NoteGen' : '了解与 NoteGen 的合作方式',
-            url: `/${lang}/business`,
-            active: 'url',
-          },
-          {
-            text: lang === 'en' ? 'Donate' : '捐赠',
-            description: lang === 'en' ? 'Support the open-source project' : '支持 NoteGen 开源项目',
-            url: `/${lang}/donate`,
-            active: 'url',
-          },
-        ],
+        text: lang === 'en' ? 'Business' : '商务合作',
+        url: `/${lang}/business`,
+        active: 'url',
+      },
+      {
+        text: lang === 'en' ? 'Donate' : '捐赠',
+        url: `/${lang}/donate`,
+        active: 'url',
       },
       {
         type: 'custom',

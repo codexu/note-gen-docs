@@ -1,26 +1,34 @@
 ---
 title: Editor settings
-description: Configure AI completion, content width, outline, and undo/redo controls.
+description: Configure the editor model, content width, line height, source mode, outline, and statistics.
 icon: FileCog
 ---
 
-<img src="https://files.seeusercontent.com/2026/07/16/h1cI/desktop-editor-settings.jpeg" alt="Desktop Editor settings" className="rounded-xl border" />
+<NoteGenDocPreview kind="settings" section="editor" lang="en" label="Editor settings" />
 
-## AI completion model
+## Editor model
 
-Select the chat model used for inline editor suggestions. When a suggestion appears, use the configured accept shortcut to insert it or the cancel shortcut to dismiss it. Fast models with stable output usually feel best.
+Select the chat model used for inline AI completion. A fast and predictable model usually feels best. Configure the accept and cancel keys under Shortcuts.
 
-## Centered content
+## Layout
 
-When enabled, the document remains centered with margins on both sides. Disabling it uses more of the available editor width. This changes layout only, not Markdown content.
+- **Content width:** choose narrow, standard, wide, or the full available area.
+- **Line height:** choose compact, comfortable, or relaxed.
 
-## Outline
+Layout changes display only and does not modify Markdown.
 
-- **Enable outline by default** shows the heading outline when a file opens.
-- **Outline position** places it on the left or right.
+## Editor mode
 
-The outline is generated from document headings. Select a heading to jump to it.
+- **Visual:** edit rendered Markdown structures directly.
+- **Source:** edit raw Markdown, with optional line numbers and wrapping.
 
-## Undo and redo buttons
+Both modes operate on the same file. Verify documents with custom syntax after switching for the first time.
 
-Choose whether undo and redo appear in the editor tab bar. Keyboard shortcuts continue to work when the buttons are hidden.
+## Outline and controls
+
+- Choose whether the outline opens by default and whether it appears on the left or right.
+- The outline supports navigation and drag-to-reorder sections.
+- Show or hide Undo and Redo in the tab bar; shortcuts continue to work when hidden.
+- Show or hide character, word, line, and editor-status statistics.
+
+Split groups, separate windows, and the new-tab page are editor actions and do not change these defaults. See [Markdown editor](/en/docs/preview/writing) for the full workflow.

@@ -6,10 +6,7 @@ icon: BotMessageSquare
 
 NoteGen 的对话面板包含两种工作方式：Chat 直接回答和生成内容；Agent 可以规划步骤并调用内置工具、MCP 与 Skills 完成任务。
 
-<div className="grid gap-4 sm:grid-cols-2">
-  <img src="https://files.seeusercontent.com/2026/07/16/Owx8/ios-chat.jpeg" alt="iOS 对话首页" className="rounded-xl border" />
-  <img src="https://files.seeusercontent.com/2026/07/16/3Ydw/android-home.png" alt="Android 深色模式对话首页" className="rounded-xl border" />
-</div>
+<NoteGenDocPreview kind="mobile" screen="chat" lang="cn" label="移动端 AI 对话界面" />
 
 ## Chat
 
@@ -21,9 +18,10 @@ Chat 适合问答、总结、改写、翻译、头脑风暴和根据上下文生
 - 编辑器引用的选区；
 - 图片附件；
 - 知识库检索片段；
+- 网络搜索结果及来源；
 - 与当前问题匹配的记忆和 Skills。
 
-工具栏可配置模型、Prompt、回复语言、关联标签/文件、MCP、知识库、剪贴板监听、新对话和上下文清理。
+工具栏可配置模型、Prompt、回复语言、关联标签/文件、MCP、知识库、网络搜索、剪贴板监听、新对话和上下文清理。
 
 ## Agent
 
@@ -37,6 +35,8 @@ Agent 使用“理解任务 → 制定计划 → 调用工具 → 检查结果�
 - 调用当前启用的 MCP 工具。
 
 运行过程中可以查看计划、时间线、工具参数和执行结果。失败任务可在保留上下文的情况下继续处理。
+
+长任务会显示运行状态和等待队列。Agent 执行期间可以继续发送补充要求；如果目标或范围已经错误，应先停止当前任务，再用更明确的约束重新开始。
 
 ## 权限和确认
 
@@ -62,8 +62,9 @@ Agent 使用“理解任务 → 制定计划 → 调用工具 → 检查结果�
 | Skills | 为特定任务提供可复用指令和允许工具 |
 | 知识库 | 从工作区向量索引检索相关片段 |
 | 记忆 | 跨会话加载偏好或按语义匹配事实 |
+| 网络搜索 | 检索当前公开网页并返回来源 |
 
-这四种能力可以组合使用，但也会扩大模型接收到的数据范围。处理敏感内容前先查看[隐私与数据](/cn/docs/privacy)。
+这些能力可以组合使用，但也会扩大模型接收到的数据范围。处理敏感内容前先查看[隐私与数据](/cn/docs/privacy)。需要写入文件时参见[让 Agent 安全修改笔记](/cn/docs/guides/agent-edit)。
 
 ## 消息操作
 

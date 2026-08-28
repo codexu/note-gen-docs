@@ -4,9 +4,9 @@ description: 管理工作区文件、文件夹、知识库索引与远程同步�
 icon: FolderOpen
 ---
 
-文件管理器显示当前工作区的目录树。底部可切换工作区、排序和展开状态，顶部提供新建与批量导入等操作。
+文件管理器显示当前工作区的目录树。PC 端统一底部状态栏用于切换工作区并查看同步状态；文件管理器顶部和菜单提供新建、导入、排序与展开操作。
 
-<img src="https://files.seeusercontent.com/2026/07/16/6Utx/desktop-files.jpeg" alt="桌面端文件管理器" className="rounded-xl border" />
+<NoteGenDocPreview kind="desktop-files" lang="cn" label="桌面端文件管理器" />
 
 ## 基本操作
 
@@ -23,6 +23,8 @@ icon: FolderOpen
 ## 批量导入
 
 “导入 Markdown”选择一个目录后递归复制其中的 Markdown 和相关图片到当前工作区。导入前检查同名文件，完成后应用会显示成功数量。
+
+“导入 Notion”可读取 Notion 导出的 Markdown/CSV ZIP；“文档转 Markdown”支持 Word、Excel、PowerPoint、OpenDocument、RTF、EPUB、CSV 和 PDF。复杂排版或扫描 PDF 可能需要人工整理或先执行 OCR，详见[导入文档与迁移工作区](/cn/docs/guides/import-migration)。
 
 ## 工作区
 
@@ -49,7 +51,7 @@ Skills 目录不会作为普通知识库内容处理，而是用于加载工作�
 
 ## 同步
 
-当前主要平台可以是 GitHub、Gitee、GitLab、Gitea、S3 或 WebDAV。文件项会显示相关同步状态；上传、拉取和删除由当前平台处理。Git 平台可打开远程仓库，S3/WebDAV 使用对象或路径前缀组织文件。
+当前主要平台可以是 GitHub、Gitee、GitLab、Gitea、S3、WebDAV、云盘文件夹或实验性的 NoteGen 自托管服务。文件项会显示相关同步状态；上传、拉取和删除由当前平台处理。不同工作区可以映射到不同 Git 仓库。
 
 ## 导出与不支持的文件
 
