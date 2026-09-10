@@ -196,8 +196,8 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
             </h2>
             <p className="max-w-3xl text-lg leading-8 text-primary-foreground/70">
               {text(
-                "NoteGen 默认只在本机读写标准 Markdown 与附件。需要跨设备时，再由你决定连接 Git、对象存储、私有服务或自己的网盘。",
-                "NoteGen reads and writes standard Markdown and attachments on your device by default. When you need multiple devices, you choose whether to connect Git, object storage, a private server, or your own cloud drive."
+                "笔记和附件默认保存在本机。需要跨设备时，可以连接 Git、对象存储或自己的网盘，也可以自托管 NoteGen Server，让同步服务和数据都由你掌控。",
+                "Notes and attachments stay on your device by default. Sync through Git, object storage, or your own cloud drive, or self-host NoteGen Server to keep both the sync service and your data under your control."
               )}
             </p>
           </div>
@@ -274,6 +274,23 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
                     </CardHeader>
                   </Card>
                 ))}
+              </div>
+              <Separator />
+              <div className="flex flex-col items-start gap-3">
+                <h3 className="flex items-center gap-2 font-semibold">
+                  <ServerIcon className="size-4" />
+                  {text("部署自己的同步服务", "Run your own sync server")}
+                </h3>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  {text(
+                    "自托管 NoteGen Server，在自己的服务器上同步笔记、开展团队协作，数据库与附件由你管理。",
+                    "Self-host NoteGen Server to sync notes and collaborate on your own server, with the database and attachments managed by you."
+                  )}
+                </p>
+                <a href={`/${lang}/docs/self-hosted`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                  {text("了解自托管方案", "Explore self-hosting")}
+                  <ArrowRightIcon data-icon="inline-end" />
+                </a>
               </div>
             </CardContent>
           </Card>
