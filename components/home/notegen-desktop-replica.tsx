@@ -181,6 +181,7 @@ export function NoteGenDesktopReplica({
   panelLayout = "three",
   titleBarMode = "full",
   fill = false,
+  simplified = false,
   recordItems,
   recordGroupLabel,
 }: {
@@ -191,6 +192,7 @@ export function NoteGenDesktopReplica({
   panelLayout?: "three" | "two" | "left" | "center" | "right"
   titleBarMode?: NoteGenTitleBarMode | "none"
   fill?: boolean
+  simplified?: boolean
   recordItems?: NoteGenReplicaRecord[]
   recordGroupLabel?: string
 }) {
@@ -214,6 +216,7 @@ export function NoteGenDesktopReplica({
     <NoteGenReplicaFrame
       data-testid="notegen-desktop-replica"
       fill={fill}
+      className="flex flex-col"
     >
       {titleBarMode !== "none" ? (
         <NoteGenWindowTitleBar
@@ -221,9 +224,10 @@ export function NoteGenDesktopReplica({
           mode={titleBarMode}
           view={view}
           onViewChange={setView}
+          className="shrink-0"
         />
       ) : null}
-      <div className={cn("overflow-hidden", titleBarMode === "none" ? "h-[calc(100%-24px)]" : "h-[calc(100%-60px)]")}>
+      <div className="min-h-0 flex-1 overflow-hidden">
         {view === "settings" ? (
           <NoteGenSettingsReplica lang={lang} onClose={() => setView("workspace")} />
         ) : <div
@@ -232,7 +236,7 @@ export function NoteGenDesktopReplica({
             panelLayout === "three"
               ? "h-full w-full grid-cols-[26%_44%_30%]"
               : panelLayout === "two"
-                ? "h-full w-full grid-cols-[30%_70%]"
+                ? cn("h-full w-full", simplified ? "grid-cols-[minmax(170px,34%)_minmax(0,1fr)]" : "grid-cols-[30%_70%]")
                 : "h-[117.647%] w-[117.647%] scale-[0.85] grid-cols-1"
           )}
         >
@@ -241,21 +245,22 @@ export function NoteGenDesktopReplica({
               lang={lang}
               workspace={workspace}
               onWorkspaceChange={setWorkspace}
+              simplified={simplified}
               recordItems={recordItems}
               recordGroupLabel={recordGroupLabel}
             />
           ) : null}
           {panelLayout === "three" || panelLayout === "two" || panelLayout === "center" ? (
             <>
-              {workspace === "records" ? <RecordDetailReplica lang={lang} /> : null}
-              {workspace === "writing" && (lang === "en" ? <MemoizedEnglishEditor /> : <MemoizedEditor />)}
-              {workspace === "canvas" ? <CanvasEditorReplica lang={lang} /> : null}
+              {workspace === "records" ? <RecordDetailReplica lang={lang} simplified={simplified} /> : null}
+              {workspace === "writing" && (lang === "en" ? <MemoizedEnglishEditor simplified={simplified} /> : <MemoizedEditor simplified={simplified} />)}
+              {workspace === "canvas" ? <CanvasEditorReplica lang={lang} simplified={simplified} /> : null}
             </>
           ) : null}
           {panelLayout === "three" || panelLayout === "right" ? <MemoizedAgentPanel lang={lang} /> : null}
         </div>}
       </div>
-      <NoteGenMainStatusBar lang={lang} workspace={workspace} />
+      {!simplified ? <NoteGenMainStatusBar lang={lang} workspace={workspace} /> : null}
     </NoteGenReplicaFrame>
   )
 }
@@ -266,13 +271,20 @@ function WorkspaceTabs({
   lang,
   workspace,
   onWorkspaceChange,
+  simplified,
 }: {
   lang: "cn" | "en"
   workspace: Workspace
   onWorkspaceChange: (workspace: Workspace) => void
+  simplified?: boolean
 }) {
   return (
-    <NoteGenWorkspaceSwitcher lang={lang} value={workspace} onValueChange={onWorkspaceChange} />
+    <NoteGenWorkspaceSwitcher
+      lang={lang}
+      value={workspace}
+      onValueChange={onWorkspaceChange}
+      className={simplified ? "shrink-0 flex-nowrap [&>button]:gap-1 [&>button]:px-1.5" : undefined}
+    />
   )
 }
 
@@ -280,20 +292,22 @@ function WorkspaceSidebar({
   lang,
   workspace,
   onWorkspaceChange,
+  simplified = false,
   recordItems,
   recordGroupLabel,
 }: {
   lang: "cn" | "en"
   workspace: Workspace
   onWorkspaceChange: (workspace: Workspace) => void
+  simplified?: boolean
   recordItems?: NoteGenReplicaRecord[]
   recordGroupLabel?: string
 }) {
   return (
     <section className="flex min-w-0 flex-col border-r">
       <div className="flex h-12 shrink-0 items-center justify-between border-b px-2">
-        <WorkspaceTabs lang={lang} workspace={workspace} onWorkspaceChange={onWorkspaceChange} />
-        <WorkspaceActions workspace={workspace} />
+        <WorkspaceTabs lang={lang} workspace={workspace} onWorkspaceChange={onWorkspaceChange} simplified={simplified} />
+        {!simplified ? <WorkspaceActions workspace={workspace} /> : null}
       </div>
 
       <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -533,9 +547,11 @@ function RecordItem({
 function SharedEditorTabs({
   lang,
   workspace,
+  simplified = false,
 }: {
   lang: "cn" | "en"
   workspace: Workspace
+  simplified?: boolean
 }) {
   const isEnglish = lang === "en"
   const tabs = [
@@ -561,10 +577,10 @@ function SharedEditorTabs({
 
   return (
     <div className="flex h-12 shrink-0 items-center border-b bg-background">
-      <div className="flex h-full shrink-0 items-center gap-0.5 border-r px-2">
+      {!simplified ? <div className="flex h-full shrink-0 items-center gap-0.5 border-r px-2">
         <IconButton icon={Undo2} className="text-foreground" />
         <IconButton icon={Redo2} className="opacity-35" />
-      </div>
+      </div> : null}
       <div className="flex min-w-0 flex-1 items-center overflow-hidden px-1">
         {tabs.map((tab) => (
           <div
@@ -592,12 +608,12 @@ function SharedEditorTabs({
   )
 }
 
-function RecordDetailReplica({ lang }: { lang: "cn" | "en" }) {
+function RecordDetailReplica({ lang, simplified = false }: { lang: "cn" | "en"; simplified?: boolean }) {
   const isEnglish = lang === "en"
 
   return (
     <section className="flex min-h-0 min-w-0 flex-col border-r">
-      <SharedEditorTabs lang={lang} workspace="records" />
+      <SharedEditorTabs lang={lang} workspace="records" simplified={simplified} />
 
       <div className="shrink-0 border-b bg-background/95 px-5 py-3">
         <div className="flex min-w-0 items-center gap-5">
@@ -617,12 +633,12 @@ function RecordDetailReplica({ lang }: { lang: "cn" | "en" }) {
                   2026-07-31 09:40:12
                 </span>
               </div>
-              <div className="flex shrink-0 items-center gap-0.5">
+              {!simplified ? <div className="flex shrink-0 items-center gap-0.5">
                 <IconButton icon={Tag} className="size-7" />
                 <IconButton icon={FolderOpen} className="size-7" />
                 <IconButton icon={Sparkles} className="size-7" />
                 <IconButton icon={Trash2} className="size-7 text-destructive/70" />
-              </div>
+              </div> : null}
             </div>
             <p className="truncate text-[10px] text-muted-foreground">
               {isEnglish ? "Take it slow along the Seine" : "西湖边想走慢一点"}
@@ -677,13 +693,13 @@ function RecordDetailReplica({ lang }: { lang: "cn" | "en" }) {
   )
 }
 
-function CanvasEditorReplica({ lang }: { lang: "cn" | "en" }) {
+function CanvasEditorReplica({ lang, simplified = false }: { lang: "cn" | "en"; simplified?: boolean }) {
   const isEnglish = lang === "en"
   const tools = [SquarePen, Type, FileText, ImagePlus, Link, CheckSquare]
 
   return (
     <section className="flex min-h-0 min-w-0 flex-col border-r">
-      <SharedEditorTabs lang={lang} workspace="canvas" />
+      <SharedEditorTabs lang={lang} workspace="canvas" simplified={simplified} />
       <div className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:14px_14px]">
         <svg
           className="pointer-events-none absolute inset-0 size-full text-muted-foreground/50"
@@ -745,10 +761,10 @@ function CanvasEditorReplica({ lang }: { lang: "cn" | "en" }) {
   )
 }
 
-function EnglishEditor() {
+function EnglishEditor({ simplified = false }: { simplified?: boolean }) {
   return (
     <section className="flex min-h-0 min-w-0 flex-col border-r">
-      <SharedEditorTabs lang="en" workspace="writing" />
+      <SharedEditorTabs lang="en" workspace="writing" simplified={simplified} />
       <article className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="mx-auto max-w-[590px] px-[8%] py-[7%]">
           <h1 className="text-[clamp(20px,2.1vw,30px)] font-bold tracking-tight">Weekend in Paris</h1>
@@ -817,10 +833,10 @@ function EnglishEditor() {
   )
 }
 
-function Editor() {
+function Editor({ simplified = false }: { simplified?: boolean }) {
   return (
     <section className="flex min-h-0 min-w-0 flex-col border-r">
-      <SharedEditorTabs lang="cn" workspace="writing" />
+      <SharedEditorTabs lang="cn" workspace="writing" simplified={simplified} />
 
       <article className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="mx-auto max-w-[590px] px-[8%] py-[7%]">

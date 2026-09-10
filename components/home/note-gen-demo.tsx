@@ -94,7 +94,6 @@ import {
 } from "@/components/notegen-mobile-dock"
 import { CanvasThumbnail } from "@/components/home/canvas-thumbnail"
 import { NoteGenDesktopReplica } from "@/components/home/notegen-desktop-replica"
-import { NoteGenSettingsReplica } from "@/components/notegen"
 
 const desktopRecords = [
   ["语音", "西湖边想走慢一点", "曲院风荷、北山街和孤山安排在周六上午。", "刚刚"],
@@ -254,19 +253,6 @@ function DesktopScenes() {
         ]}
       >
         <WritingScene />
-      </DesktopScene>
-      <DesktopScene
-        step="05"
-        badge={text("设置", "Settings")}
-        title={text("每一项偏好，都保持清楚可见。", "Every preference stays clear and easy to find.")}
-        description={text("设置页完整复刻了搜索、分组导航、设置分区与控件层级。文档和官网可以直接组合这些组件，展示真实界面而不再依赖截图。", "The settings replica includes search, grouped navigation, sections, and controls. Documentation and marketing pages can compose the real interface without screenshots.")}
-        details={[
-          [text("导航结构", "Navigation"), text("基础、AI 与扩展、数据", "Basic, AI & extensions, and data")],
-          [text("可复用单元", "Primitives"), text("设置页、分组、设置项与控件", "Pages, sections, rows, and controls")],
-          [text("展示方式", "Presentation"), text("可交互、可组合、支持中英文", "Interactive, composable, and bilingual")],
-        ]}
-      >
-        <SettingsScene />
       </DesktopScene>
     </div>
   )
@@ -731,6 +717,7 @@ function RecordScene() {
       autoCycle={false}
       panelLayout="two"
       titleBarMode="none"
+      simplified
       fill
     />
   )
@@ -745,6 +732,7 @@ function WritingScene() {
       autoCycle={false}
       panelLayout="two"
       titleBarMode="none"
+      simplified
       fill
     />
   )
@@ -759,6 +747,7 @@ function AgentScene() {
       autoCycle={false}
       panelLayout="right"
       titleBarMode="none"
+      simplified
       fill
     />
   )
@@ -773,14 +762,10 @@ function CanvasScene() {
       autoCycle={false}
       panelLayout="two"
       titleBarMode="none"
+      simplified
       fill
     />
   )
-}
-
-function SettingsScene() {
-  const { lang } = useDemoLanguage()
-  return <NoteGenSettingsReplica lang={lang} />
 }
 
 function MobileReplica() {
