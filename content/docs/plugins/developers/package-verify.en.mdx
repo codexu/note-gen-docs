@@ -1,0 +1,236 @@
+---
+title: Packaging and verification
+description: Prepare a development directory and understand .notegen-plugin integrity and signature rules.
+icon: PackageCheck
+---
+
+Marketplace plugins use ZIP-formatted `.notegen-plugin` archives. NoteGen never installs dependencies, runs scripts, or compiles source code on a user's device. The archive must already contain an executable, single-file JavaScript entry.
+
+Local development mode imports a directory snapshot; it does not provide a general way to install a local archive. A development directory may be unsigned, while a marketplace archive must contain a publisher signature.
+
+> Updated 2026-09-10: all four SDK packages are published on npm and the signed official marketplace is live; community submissions remain closed. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
+
+## CLI availability
+
+Install the CLI in a plugin project:
+
+~~~bash
+pnpm add -D @notegen/plugin-cli
+pnpm exec notegen-plugin --help
+~~~
+
+To use the SDK source, clone and build the [NoteGen Plugin SDK](https://github.com/codexu/note-gen-plugin-sdk), then replace `notegen-plugin` in this page with:
+
+~~~text
+node /absolute/path/note-gen-plugin-sdk/packages/plugin-cli/dist/bin.js
+~~~
+
+See [Build your first plugin](/en/docs/plugins/developers/getting-started) for the complete source setup and project-creation workflow.
+
+## Development build
+
+Run these commands in a plugin source project:
+
+~~~bash
+notegen-plugin validate
+notegen-plugin build
+notegen-plugin validate .notegen/package
+~~~
+
+The first `validate` preflights the source project. `build` bundles the entry and its dependencies into one ESM file, generates `integrity.json`, and always writes the importable `.notegen/package` directory. The second `validate` checks the complete development payload. None of these commands execute plugin code.
+
+`validate [path]` accepts a source project, built directory, or archive and allows unsigned development input by default. `verify <archive-or-directory>` accepts only a complete directory or archive; it does not fill in files for a source project or trigger a build.
+
+`create`, `validate`, `build`, `pack`, `keygen`, `sign`, and `verify` all support `--json`. That mode never prompts and writes the successful result or diagnostic failure as the only JSON document on stdout; package-manager logs from `create --install` are redirected to stderr. For unattended creation, pass `--id <id> --json`; the name is derived from the directory when omitted, and `--yes` is unnecessary.
+
+Without `--app-version`, the CLI validates the manifest but does not compare `minAppVersion` with a concrete NoteGen release. Text output states that explicitly, and JSON output sets `appCompatibilityChecked` to `false`. Always pass the target app version before release.
+
+## From source to a signed package
+
+Release artifacts use two explicit stages:
+
+~~~bash
+notegen-plugin pack
+notegen-plugin sign \
+  .notegen/releases/com.example.word-count-0.1.0.unsigned.notegen-plugin \
+  --private-key /secure/path/publisher-private.pem
+notegen-plugin verify \
+  .notegen/releases/com.example.word-count-0.1.0.notegen-plugin \
+  --public-key ./publisher-public.json \
+  --require-signature
+~~~
+
+`pack [directory]` builds and validates the source project, then writes this default artifact:
+
+~~~text
+.notegen/releases/<id>-<version>.unsigned.notegen-plugin
+~~~
+
+`pack` does not accept or read a private key. `sign` reads only the already-built unsigned archive, validates it again, adds `signature.sig`, and by default writes the final `.notegen-plugin` with `.unsigned` removed. It does not read source, install dependencies, or run a build. This boundary lets you copy the unsigned archive to an isolated signing machine.
+
+When creating a publisher key for the first time, select both output files explicitly:
+
+~~~bash
+notegen-plugin keygen \
+  --private-key /secure/path/publisher-private.pem \
+  --public-key ./publisher-public.json
+~~~
+
+The private key is PKCS#8 PEM. Keep and back it up offline; never put it in a source repository, synced notes directory, plugin package, or public CI log. The public-key JSON is safe to publish and is accepted by `verify --public-key <publisher-public.json>`. To encrypt the private key, use `--passphrase-env <ENV>` to read a passphrase from an environment variable instead of placing it in a command argument.
+
+Both key files are staged and published as a pair. When `--force` replaces an existing pair, the old files remain available until the new private and public keys are both active; a failed publication rolls back the pair instead of leaving mismatched keys.
+
+`keygen` creates publisher keys, not the NoteGen marketplace root key. The CLI cannot sign the marketplace index, register a publisher, or upload a package. A successful local `verify` proves only that the manifest, integrity document, archive limits, and signature match the provided publisher key. It does not mean that NoteGen has reviewed, trusted, or listed the plugin.
+
+## Minimal structure
+
+A source project:
+
+~~~text
+word-count/
+├── package.json
+├── plugin.json
+└── src/
+    └── main.ts
+~~~
+
+A development directory:
+
+~~~text
+word-count/.notegen/package/
+├── plugin.json
+├── integrity.json
+└── dist/
+    └── main.js
+~~~
+
+A marketplace archive:
+
+~~~text
+com.example.word-count-0.1.0.notegen-plugin
+├── plugin.json
+├── integrity.json
+├── signature.sig
+└── dist/
+    └── main.js
+~~~
+
+The client requires:
+
+- `plugin.json` and `integrity.json` at the package root;
+- an existing UTF-8 `.js` file at the manifest's `entry` path;
+- every locale file declared by the manifest;
+- an `integrity.json` entry for every payload and no extra entries;
+- a valid `signature.sig` in a marketplace package.
+
+README, LICENSE, and author images are not required at runtime, although public projects should document the plugin and its license in the source repository. Only files actually included in the package belong in the integrity manifest. API v1 has no general package-resource reader, so do not ship unused assets.
+
+## Integrity manifest
+
+~~~json
+{
+  "version": 1,
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "dist/main.js",
+      "size": 18432,
+      "sha256": "<64-character-lowercase-hex>"
+    },
+    {
+      "path": "plugin.json",
+      "size": 902,
+      "sha256": "<64-character-lowercase-hex>"
+    }
+  ]
+}
+~~~
+
+Rules:
+
+- `version` must be `1`, and `algorithm` must be `sha256`.
+- Paths use NFC-normalized, forward-slash relative notation.
+- `size` is the exact number of bytes in the file.
+- `sha256` is a 64-character lowercase hexadecimal digest.
+- The manifest lists `plugin.json`, the entry file, declared locales, and every other payload.
+- It must not list itself or `signature.sig`.
+- The actual payload and manifest entries must correspond exactly; no file may be omitted or added.
+- Paths cannot be duplicated or differ only by letter case.
+
+You normally do not need to generate this file manually: `notegen-plugin build` creates it from the actual payload and validates it immediately. A custom build pipeline must still follow every rule above.
+
+## Marketplace package signature
+
+Marketplace packages use Ed25519. The publisher signs this byte sequence:
+
+~~~text
+"NOTEGEN_PLUGIN_SIGNATURE_V1\0"
++ uint64_be(canonical_plugin_json_length)
++ canonical_plugin_json
++ uint64_be(canonical_integrity_json_length)
++ canonical_integrity_json
+~~~
+
+Both `canonical_plugin_json` and `canonical_integrity_json` must use the [RFC 8785 JSON Canonicalization Scheme (JCS)](https://www.rfc-editor.org/rfc/rfc8785). JCS defines object-property ordering, string escaping, and number serialization; sorting keys before an ordinary `JSON.stringify` call is not an equivalent implementation. `signature.sig` is Base64 text representing the 64-byte signature. A publisher public key is Base64 text representing a 32-byte Ed25519 public key.
+
+The signature covers the canonicalized `plugin.json` and `integrity.json`; the integrity manifest covers the remaining payload. The SHA-256 of the complete archive must also equal `packageSha256` in the signed marketplace index.
+
+`signature.sig` must be inside the package. Although the marketplace schema reserves an optional `signatureUrl`, the current client does not download it as a substitute for the embedded signature.
+
+## Rejected paths and files
+
+The client rejects:
+
+- absolute paths, backslashes, `..`, empty segments, doubled slashes, control characters, and non-normalized Unicode;
+- segments ending in a dot or space, Windows reserved file names, and case-only path collisions;
+- symbolic links, special files, and files with an executable bit in a development directory;
+- `.notegen`, `node_modules`, `.git`, `.hg`, `.svn`, and `.cache`;
+- `.env` and `.env.*`;
+- native libraries, executables, installers, shell scripts, Java class or JAR files, WASM, source maps, and sensitive PEM/P12/PFX files;
+- `install`, `preinstall`, or `postinstall` scripts in `package.json`.
+
+The client cannot determine whether an ordinary text file contains an API key, personal path, real user data, or remote-code string. Inspect packages manually before publication. Never include a private key or user data in source control or a package.
+
+## Size and archive limits
+
+| Item | Limit |
+| --- | --- |
+| Compressed archive | 20 MiB |
+| All unpacked files | 50 MiB |
+| One file | 10 MiB |
+| JavaScript entry | 5 MiB |
+| ZIP entries | 256 |
+| Path depth | 12 segments |
+| Compression ratio for one file over 1 MiB | 100:1 |
+
+The compression-ratio limit applies only to entries whose unpacked size exceeds 1 MiB; a non-empty entry with a compressed size of zero is also rejected. Archive paths are additionally limited to 1,024 UTF-8 bytes in total, 240 UTF-8 bytes per segment, and 12 segments of depth. CJK characters and emoji commonly occupy multiple bytes. NoteGen rejects any violation before running code.
+
+## Marketplace installation sequence
+
+A marketplace installation:
+
+1. Requires a newly fetched, unexpired root-signed index.
+2. Validates the index generation, expiration, publisher, and release metadata.
+3. Downloads at most 20 MiB from an approved HTTPS host.
+4. Compares the archive against `packageSha256`.
+5. Extracts it safely into a randomly named staging directory.
+6. Validates paths, file types, sizes, manifest contents, and compatibility.
+7. Compares every payload against `integrity.json`.
+8. Verifies the embedded `signature.sig` with the publisher public key from the index.
+9. Atomically records the installation and switches the active version.
+
+The installation transaction does not execute JavaScript. The entry starts later when an activation event matches. For a new marketplace version marked as pending update, the main window rolls back to the previous version only if that first activation fails.
+
+## Development-directory snapshots
+
+A development import requires:
+
+- Developer mode enabled;
+- the absolute path to a real directory, with no symbolic link in the directory or payload path;
+- valid `plugin.json`, `integrity.json`, and entry files;
+- `desktop` in the manifest's platform list;
+- an ID that neither replaces a marketplace plugin nor uses the host-internal reserved namespace.
+
+NoteGen copies only the payload named in the integrity manifest, plus the integrity manifest itself, and stores an immutable snapshot identified by content hash. Source code, README files, and build configuration may remain in the development directory without entering the snapshot.
+
+The reviewed identity includes the plugin ID, version, content hash, source type, and canonical source path. Changing the directory, contents, or version requires another review. Development plugins have neither automatic updates nor the automatic first-activation rollback provided for marketplace updates.

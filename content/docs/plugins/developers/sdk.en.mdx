@@ -1,0 +1,154 @@
+---
+title: Development tools overview
+description: Choose and use NoteGen's plugin API, scaffold, command-line tools, and test host.
+icon: Boxes
+---
+
+The NoteGen Plugin SDK is the public TypeScript toolchain for official, community, and local development plugin authors. It defines the host contract, creates projects, builds importable snapshots, produces signed release packages, and tests plugin behavior in a Node.js process.
+
+The SDK does not connect to a NoteGen server and is not a runtime dependency. After a plugin starts in NoteGen, it can use only the `PluginContext` passed to `activate` by the host.
+
+> Updated 2026-09-10: all four SDK packages are published on npm and the signed official marketplace is live; community submissions remain closed. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
+
+## Choose a package
+
+| Package | Where to install it | Purpose |
+| --- | --- | --- |
+| [`@notegen/plugin-api`](https://www.npmjs.com/package/@notegen/plugin-api) | Plugin project development dependency | Manifest, lifecycle, permission, contribution, `PluginContext`, and stable error types |
+| [`@notegen/plugin-cli`](https://www.npmjs.com/package/@notegen/plugin-cli) | Plugin project or release-tool development dependency | Creation, strict validation, build, packaging, key generation, signing, and verification |
+| [`create-notegen-plugin`](https://www.npmjs.com/package/create-notegen-plugin) | Run temporarily through `npx` | Create a project with TypeScript configuration and build scripts |
+| [`@notegen/plugin-test`](https://www.npmjs.com/package/@notegen/plugin-test) | Plugin test development dependency | Simulate lifecycle, commands, permissions, notes, editor state, settings, and storage in process |
+
+Most plugins install `@notegen/plugin-api` and `@notegen/plugin-cli`. Add `@notegen/plugin-test` only when writing automated behavior tests. Do not bundle the CLI or test host into the plugin entry.
+
+## Requirements and support
+
+| Item | Current requirement |
+| --- | --- |
+| Node.js | 20 or newer |
+| SDK repository development | pnpm 10 |
+| Module format | ESM-only; use `import` in Node.js code because CommonJS `require()` is unsupported |
+| Plugin API protocol | `0.1.0` |
+| Marketplace plugin platform | NoteGen desktop |
+| Development import | Developer mode in NoteGen desktop |
+
+The manifest schema can represent `desktop`, `ios`, and `android`, but the current marketplace and development runtimes are available only on desktop. Do not claim support for a platform that you have not verified in the real host.
+
+## Quick start with npm
+
+Create a project:
+
+~~~bash
+npx create-notegen-plugin my-plugin \
+  --id com.example.my-plugin \
+  --name "My Plugin"
+cd my-plugin
+pnpm install
+~~~
+
+Build and validate the development snapshot:
+
+~~~bash
+pnpm build
+pnpm validate
+pnpm exec notegen-plugin validate .notegen/package
+~~~
+
+Then enable Developer mode in NoteGen desktop and import the absolute path to `.notegen/package` from Settings → Plugins → Developer. See [Build your first plugin](/en/docs/plugins/developers/getting-started) for the complete walkthrough.
+
+The scaffold generates scripts that type-check the plugin before invoking the CLI:
+
+~~~json
+{
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit && notegen-plugin build",
+    "validate": "tsc -p tsconfig.json --noEmit && notegen-plugin validate"
+  }
+}
+~~~
+
+Both `pnpm build` and `pnpm validate` therefore catch source code that violates `PluginContext`, command JSON boundaries, or another SDK type contract before the CLI checks the manifest, entry, locales, and artifact structure. Neither layer replaces the other.
+
+`@notegen/plugin-api` also exports `@notegen/plugin-api/plugin-manifest-v1.schema.json` for `plugin.json` completion and structural diagnostics in an editor. After installation, the schema file is at `node_modules/@notegen/plugin-api/schema/plugin-manifest-v1.schema.json`. See [API and type reference](/en/docs/plugins/developers/plugin-api#manifest-json-schema) for a complete editor configuration.
+
+## Use the SDK source
+
+Build the SDK workspace first:
+
+~~~bash
+git clone https://github.com/codexu/note-gen-plugin-sdk.git
+cd note-gen-plugin-sdk
+pnpm install
+pnpm build
+~~~
+
+Run the generated scaffold or CLI directly:
+
+~~~bash
+node packages/create-notegen-plugin/dist/bin.js ../my-plugin \
+  --id com.example.my-plugin \
+  --name "My Plugin"
+
+node /absolute/path/note-gen-plugin-sdk/packages/plugin-cli/dist/bin.js \
+  build /absolute/path/my-plugin
+~~~
+
+Use the built CLI in the SDK checkout for source development. Scaffold installation uses npm releases; link local SDK dependencies explicitly to test unreleased changes.
+
+## From source to a release artifact
+
+| Stage | Command or action | Result |
+| --- | --- | --- |
+| Source preflight | `notegen-plugin validate` | Validates the manifest and source configuration and checks that entry and locale files are safe to read; `build` validates locale contents |
+| Development build | `notegen-plugin build` | Atomically creates `.notegen/package` |
+| Real-host test | Import or reload from NoteGen Developer | Exercises permissions and UI behavior in the QuickJS sandbox |
+| Unsigned package | `notegen-plugin pack` | Creates `.unsigned.notegen-plugin` |
+| Publisher key | `notegen-plugin keygen` | Creates an Ed25519 private key and public identity document |
+| Offline signing | `notegen-plugin sign` | Creates `.notegen-plugin` with `signature.sig` |
+| Local verification | `notegen-plugin verify` | Checks the archive, integrity, and the supplied publisher signature |
+
+`pack` and `sign` are deliberately separate. The build machine does not need the private key, and the signing machine never reads source, installs dependencies, or builds code. See the complete [Command-line tools](/en/docs/plugins/developers/cli).
+
+## Version model
+
+SDK package versions, the plugin API protocol, and NoteGen application versions are separate values:
+
+| Value | Example | Purpose |
+| --- | --- | --- |
+| npm package version | `@notegen/plugin-api@0.1.0` | Selects a TypeScript package release |
+| `PLUGIN_API_VERSION` | `0.1.0` | Identifies the concrete host protocol described by that package |
+| Manifest `apiVersion` | `^0.1.0` | Declares the host API SemVer range accepted by the plugin |
+| Manifest `minAppVersion` | `0.37.0` | Declares the oldest supported NoteGen application version |
+| `ctx.plugin.apiVersion` | `0.1.0` | Reports the concrete API version implemented by the running host |
+
+A breaking host-contract change requires a new API major. Backward-compatible capability additions use a minor version. A package-only fix can increment the package patch without changing the protocol. Do not substitute `minAppVersion` for `apiVersion`, or confuse the manifest range with the runtime's concrete version.
+
+## Single-file runtime boundary
+
+NoteGen loads one self-contained JavaScript ESM file selected by the manifest. The runtime does not resolve npm packages, relative modules, Node.js built-ins, or remote modules.
+
+- `import type` disappears after compilation and is safe for host types.
+- Value imports such as `PLUGIN_API_VERSION`, `PluginError`, and `isPluginError` must be bundled into the entry by the CLI.
+- Other source modules and npm dependencies must also be bundled into the same entry.
+- A build with residual static or dynamic imports is rejected.
+- Plugins have no DOM, Node.js, Tauri, arbitrary file-system, or general network capability; network requests can only go through `network.fetch` to user-approved HTTPS origins.
+
+The SDK is not a remote client SDK for NoteGen data. It does not upload marketplace releases, sign the root index, or register publishers.
+
+## Documentation map
+
+| Goal | Continue with |
+| --- | --- |
+| Complete the first importable plugin | [Build your first plugin](/en/docs/plugins/developers/getting-started) |
+| Look up API exports and version rules | [API and type reference](/en/docs/plugins/developers/plugin-api) |
+| Look up every CLI command, option, and exit code | [Command-line tools](/en/docs/plugins/developers/cli) |
+| Write `plugin.json` | [Plugin configuration](/en/docs/plugins/developers/manifest) |
+| Use `PluginContext` | [Capabilities and permissions](/en/docs/plugins/developers/api-permissions) |
+| Test plugin behavior | [Testing plugins](/en/docs/plugins/developers/testing) |
+| Understand archives and signatures | [Packaging and verification](/en/docs/plugins/developers/package-verify) |
+
+## SDK releases and plugin releases
+
+The four npm packages have completed their initial publication. SDK maintainers bump changed package versions and affected dependencies, then publish from `main` through **Publish npm packages** using npm Trusted Publishing (OIDC). The workflow packs and checks all four packages; existing versions are skipped only when their integrity matches, and missing versions are published in dependency order.
+
+Plugin authors do not need to publish the SDK when changing their own plugin. Bump the plugin version and follow the [Publish to the plugin marketplace](/en/docs/plugins/developers/publishing). A published npm version, a plugin's own version, and its supported host API range serve different purposes. Operational configuration remains in the [SDK README](https://github.com/codexu/note-gen-plugin-sdk#maintainer-release-procedure).

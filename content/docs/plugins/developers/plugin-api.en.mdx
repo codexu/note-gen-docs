@@ -1,0 +1,252 @@
+---
+title: API and type reference
+description: Look up NoteGen's TypeScript contracts for manifests, lifecycle, PluginContext, data objects, and stable errors.
+icon: Package
+---
+
+`@notegen/plugin-api` is the public TypeScript contract shared by plugin code and the NoteGen host. It provides types, an API-version constant, and a few authoring helpers. It does not connect to a service or let a plugin bypass `PluginContext` to obtain more authority.
+
+> Updated 2026-09-10: all four SDK packages are published on npm and the signed official marketplace is live; community submissions remain closed. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
+
+## Install and import
+
+Install it as a development dependency:
+
+~~~bash
+pnpm add -D @notegen/plugin-api
+~~~
+
+A plugin entry normally imports only types:
+
+~~~ts
+import type { PluginActivate } from "@notegen/plugin-api";
+
+export const activate: PluginActivate = async (ctx) => {
+  ctx.commands.handle("com.example.hello.open", async () => {
+    await ctx.ui.showNotice("Hello from NoteGen");
+  });
+};
+~~~
+
+`import type` disappears after compilation. If you use runtime values such as `PluginError`, `isPluginError`, `PLUGIN_API_VERSION`, or `definePluginManifest`, the builder must include the package code in the final single-file entry.
+
+The package has no runtime dependencies and does not require DOM types in the TypeScript project.
+
+## Runtime value exports
+
+| Export | Type or purpose |
+| --- | --- |
+| `PLUGIN_API_VERSION` | Concrete host API version described by this package; currently `"0.1.0"` |
+| `PLUGIN_ERROR_CODES` | Read-only list of every stable `PluginErrorCode` |
+| `PluginError` | Error class with `code`, `message`, and optional `details` |
+| `isPluginError(value)` | Structurally recognizes a known plugin error across Workers or realms |
+| `definePluginManifest(manifest)` | Preserves literal manifest types and checks the v1 shape at compile time |
+
+`definePluginManifest` is an identity helper. It does not read or generate `plugin.json`, and it does not replace CLI or host validation.
+
+## Manifest JSON Schema
+
+The package also publishes an editor-oriented JSON Schema through this deep entry point:
+
+~~~text
+@notegen/plugin-api/plugin-manifest-v1.schema.json
+~~~
+
+For example, associate it with each plugin's `plugin.json` in a VS Code workspace `.vscode/settings.json` file:
+
+~~~json
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["**/plugin.json"],
+      "url": "./node_modules/@notegen/plugin-api/schema/plugin-manifest-v1.schema.json"
+    }
+  ]
+}
+~~~
+
+The schema provides field completion, type hints, and structural diagnostics while editing. It does not replace `notegen-plugin validate`: namespace ownership, locale files, API/application compatibility, and packaged-file checks remain authoritative in the CLI and NoteGen host. Do not add a `$schema` property to `plugin.json`; strict manifest validation rejects undeclared fields.
+
+## Manifest and contribution types
+
+| Category | Exports |
+| --- | --- |
+| Main manifest | `PluginManifestV1`, `PluginAuthor`, `PluginPlatform`, `PluginActivationEvent` |
+| Permissions | `PluginPermissionName`, `PluginPermissionScope`, `PluginPermissionDeclaration`, `PluginPermissionDeclarations` |
+| Commands | `PluginCommandContribution` |
+| Settings | `PluginSettingContribution`, `PluginSettingOption`, `PluginSettingValue` |
+| Status bar | `PluginStatusBarContribution`, `PluginStatusBarUpdate` |
+| Menus | `PluginMenuLocation`, `PluginMenuContribution` |
+| Aggregate | `PluginContributions` |
+
+These types describe the maximum shape an author may declare, but TypeScript is not a security boundary. During import or installation, the host still rejects duplicate or unknown fields, explicit `null`, incompatible versions, invalid permission scopes, and broken contribution references. See [Plugin configuration](/en/docs/plugins/developers/manifest) for the complete JSON rules.
+
+## Lifecycle types
+
+~~~ts
+interface PluginModule {
+  activate: (context: PluginContext) => void | Promise<void>;
+  deactivate?: () => void | Promise<void>;
+}
+
+type PluginActivate = PluginModule["activate"];
+type PluginDeactivate = NonNullable<PluginModule["deactivate"]>;
+
+interface PluginDisposable {
+  readonly dispose: () => void;
+}
+~~~
+
+The entry must export a named `activate` and may export `deactivate`. Event subscriptions and command handlers return `PluginDisposable`; call `dispose()` when the registration is no longer needed. The host also clears registrations owned by the stopped runtime instance.
+
+`PluginAbortSignal` is the cancellation contract implemented by marketplace and development runtimes:
+
+~~~ts
+interface PluginAbortSignal {
+  readonly aborted: boolean;
+  readonly reason: unknown;
+  readonly throwIfAborted: () => void;
+  readonly addEventListener: (
+    type: "abort",
+    listener: PluginAbortListener,
+    options?: { once?: boolean },
+  ) => void;
+  readonly removeEventListener: (
+    type: "abort",
+    listener: PluginAbortListener,
+  ) => void;
+}
+~~~
+
+It is not a native browser `AbortSignal`. Do not use `instanceof AbortSignal` or depend on undeclared DOM methods. See [How plugins run](/en/docs/plugins/developers/lifecycle).
+
+## PluginContext reference
+
+| Member | Main methods | Permission or declaration requirement |
+| --- | --- | --- |
+| `plugin` | `id`, `version`, `apiVersion` | Read-only instance metadata |
+| `signal` | `throwIfAborted()` and abort listeners | None; used to stop asynchronous work |
+| `commands` | `handle(commandId, handler)` | Command must be declared in the manifest |
+| `workspace` | `getCurrent()`, `onDidChange` | None; returns only an opaque ID and display name |
+| `calendar` | `resolveDay(options)` | None; accepts an IANA time zone and `HH:mm` day boundary |
+| `notes` | Read, list, search, create, write, move, delete, and change events | Corresponding `notes.*` permissions |
+| `attachments` | `read`, `create` | Separate `attachments.read` and `attachments.create` grants |
+| `editor` | Active editor, selection, snapshot, edits, and events | `editor.read`; edits also require `editor.write` |
+| `log` | `info`, `warning`, `error` | Local diagnostic messages; no automatic console capture |
+| `storage.device` | `get`, `set`, `delete` | Plugin-private local KV |
+| `storage.workspace` | `get`, `set`, `delete` | Local KV partitioned by workspace ID |
+| `ui` | Notices, status bar, declarative views, and dialogs | Status-bar and view IDs must be declared |
+| `network` | `fetch(request)` | `network.fetch`, limited to user-approved HTTPS origins |
+| `i18n` | `t(key, values?)` | Uses locale files declared by the manifest |
+| `settings` | `get`, `onDidChange` | Key must be declared by `contributes.settings` |
+
+See [Capabilities and permissions](/en/docs/plugins/developers/api-permissions) for every method's parameters, return values, permissions, quotas, and failure behavior.
+
+## Host data types
+
+| Capability | Parameter, result, and event types |
+| --- | --- |
+| Workspace | `WorkspaceInfo`, `WorkspaceChangeEvent` |
+| Calendar | `ResolveDayOptions`, `ResolvedDay` |
+| Notes | `NoteSnapshot`, `NoteEntry`, read/write/move options, `NoteChangeEvent` |
+| Editor identity | `ActiveEditorContext` |
+| Selection and text | `EditorSelection`, `GetEditorTextSnapshotOptions`, `EditorTextSnapshot` |
+| Editor edits and events | `ApplyEditorEditOptions`, `ApplyEditorEditResult`, `EditorActiveChangeEvent`, `EditorContentChangeEvent` |
+| Network | `PluginNetworkRequest`, `PluginNetworkResponse` |
+| Declarative UI | `PluginUiDocument`, `PluginUiBlock`, `PluginDialogOptions` |
+| Storage | `PluginStorageArea` |
+
+These objects are call-time snapshots. IDs are opaque and paths are workspace-relative; never infer an absolute path from an ID. Editor data carries a revision, so asynchronous readers must handle `StaleRevision` correctly.
+
+## JSON data boundary
+
+Command arguments, command results, plugin storage values, and declarative UI action arguments share these public types:
+
+~~~ts
+type PluginJsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | readonly PluginJsonValue[]
+  | { readonly [key: string]: PluginJsonValue };
+
+type PluginCommandArgument = PluginJsonValue | undefined;
+type PluginCommandResult = PluginJsonValue | void;
+~~~
+
+`PluginJsonValue` contains only JSON values that can make a lossless round trip: `null`, booleans, finite numbers, strings, and recursive arrays or plain objects. An object property or array element cannot be `undefined`; use `null` for an explicit empty value or omit an unnecessary object property. Functions, symbols, `BigInt`, non-finite numbers, cyclic references, and class instances with custom prototypes are rejected. Convert `Date`, `Map`, `Set`, and error objects to plain JSON data first.
+
+`undefined` has only two top-level command meanings: no argument was supplied to `executeCommand`, or a handler returned no value. It cannot be nested inside `PluginJsonValue`. Storage `get()` returns `undefined` only when a key does not exist; `set()` still accepts only `PluginJsonValue`.
+
+## API version values
+
+The manifest's `apiVersion` is the SemVer range accepted by the plugin:
+
+~~~json
+{
+  "apiVersion": "^0.1.0"
+}
+~~~
+
+`PLUGIN_API_VERSION` and the running `ctx.plugin.apiVersion` are concrete versions:
+
+~~~ts
+import { PLUGIN_API_VERSION } from "@notegen/plugin-api";
+import type { PluginActivate } from "@notegen/plugin-api";
+
+export const activate: PluginActivate = async (ctx) => {
+  // PLUGIN_API_VERSION === "0.1.0"
+  // ctx.plugin.apiVersion === "0.1.0" in the current host
+};
+~~~
+
+The public type of `ctx.plugin.apiVersion` remains `string`, because users may run the plugin on a compatible host newer than the SDK used during development. Use it for diagnostics, not as a replacement for the manifest compatibility range.
+
+## Handle API errors
+
+Every stable code belongs to `PluginErrorCode`. Across a Worker boundary, do not rely only on `instanceof PluginError`; use `isPluginError`:
+
+~~~ts
+import { isPluginError } from "@notegen/plugin-api";
+import type { PluginActivate } from "@notegen/plugin-api";
+
+export const activate: PluginActivate = async (ctx) => {
+  try {
+    await ctx.notes.read({ path: "Templates/example.md" });
+  } catch (error) {
+    if (isPluginError(error) && error.code === "PermissionDenied") {
+      await ctx.ui.showNotice("The selected file is not authorized.");
+      return;
+    }
+    throw error;
+  }
+};
+~~~
+
+`isPluginError` is a value import and must be bundled into the entry. Branch on the stable `code`; do not match the complete English message. See [Capabilities and permissions](/en/docs/plugins/developers/api-permissions#error-codes) for the full list.
+
+## Single-file loading boundary
+
+The plugin runtime loads one self-contained ESM entry selected by the manifest. It does not resolve relative modules, npm packages, Node.js built-ins, or remote modules from that entry.
+
+- Prefer `import type` when only types are needed.
+- Bundle this package's runtime values and other dependencies with `notegen-plugin build`.
+- Without a bundler, the final entry can depend only on the `ctx` supplied by NoteGen.
+- The built output must contain no residual static or dynamic imports.
+
+This package does not expose the marketplace catalog, installation records, signature validators, host storage state, Worker/RPC messages, or other host internals.
+
+## Continue reading
+
+- [Development tools overview](/en/docs/plugins/developers/sdk)
+- [Command-line tools](/en/docs/plugins/developers/cli)
+- [Plugin configuration](/en/docs/plugins/developers/manifest)
+- [Capabilities and permissions](/en/docs/plugins/developers/api-permissions)
+- [Testing plugins](/en/docs/plugins/developers/testing)
+
+## Additional API types
+
+Forms export `PluginFormBlock`, `PluginFormField`, and `PluginFormValue`. View visibility uses `PluginViewState`. Search uses `SearchNotesOptions` and `SearchNotesResult`. Source-range operations use `EditorRangeEdit`, `ApplyEditorEditsOptions`, and `SetEditorSelectionOptions`. Attachment reads return `PluginAttachment`.
+
+The SDK has completed its initial npm publication. Changes to published package contents require a package version bump; protocol compatibility changes require coordinated host and SDK updates. Declare the supported protocol range in `apiVersion`, such as `^0.1.0`. Use commit revisions to distinguish unpublished development snapshots.

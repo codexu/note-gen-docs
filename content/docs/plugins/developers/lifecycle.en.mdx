@@ -1,0 +1,156 @@
+---
+title: How plugins run
+description: Handle lazy activation, cancellation, deactivation, updates, and runtime failures correctly.
+icon: RefreshCcw
+---
+
+NoteGen starts plugins on demand and may reclaim their runtimes after disablement, an update, a workspace switch, or a failure. A plugin must not assume that it remains resident or that `deactivate` always runs.
+
+## State transitions
+
+~~~text
+Installed and disabled
+    │ enable and approve every required permission
+    ▼
+Not activated ──matching activationEvent──▶ Activating ──success──▶ Running
+   ▲                                         │                    │
+   │                                         └─failure──▶ failed  │
+   │                                                              │
+   └──────── disable, update, workspace switch, or reclamation ────┘
+
+Three accumulated runtime failures that have not been cleared
+    └──▶ quarantined and automatically disabled
+~~~
+
+Installation validates the manifest, compatibility, and file integrity. Marketplace packages additionally require a valid index and publisher signature; a development directory may be unsigned. Installation never executes the entry code.
+
+After a plugin is enabled, NoteGen registers its static commands, menus, settings, and status-bar declarations. It executes code only when an activation event matches. One runtime crash clears dynamic status-bar state but leaves static commands and menus registered, so a later invocation can attempt activation again. Disablement, uninstallation, or quarantine removes the contributions.
+
+## Marketplace and development runtimes
+
+Official and community plugins are signed marketplace packages. Official status comes only from the NoteGen publisher registered in the root-signed index and grants no additional host capabilities.
+
+Every active marketplace or development plugin receives its own Dedicated Worker and QuickJS-WASM runtime. Plugin code never enters the NoteGen page context and has no DOM, network, Node.js, Tauri, or raw-filesystem access.
+
+Current primary limits are:
+
+| Limit | Value |
+| --- | --- |
+| QuickJS memory | 32 MiB |
+| QuickJS stack | 512 KiB |
+| Entry source | 5 MiB |
+| Activation timeout | 45 seconds |
+| Command timeout | 45 seconds |
+| Pending host API calls | 64 |
+| Pending commands | 16 |
+| Host call rate | 120 calls per second |
+| Notice rate | 5 calls per 10 seconds |
+| One bridge JSON message | Approximately 2.125 MiB |
+
+Quotas protect the main application. Splitting work into many smaller requests cannot bypass rate limits or data scopes.
+
+The 45-second window accommodates one controlled network request of up to 30 seconds plus host-bridge overhead; it is not a recommendation to keep interactive commands busy. Cancellable work should observe `ctx.signal`, and long computation should be divided or moved out of an interactive command.
+
+## `activate`
+
+Export `activate` from the entry module:
+
+~~~js
+export async function activate(ctx) {
+  ctx.commands.handle("com.example.selection-info.show", async () => {
+    if (ctx.signal.aborted) return;
+
+    const selection = await ctx.editor.getSelection();
+    if (!selection) return;
+
+    await ctx.ui.showNotice("Selected: " + selection.text.length);
+  });
+}
+~~~
+
+`activate` should register command handlers and event listeners, then return promptly. Do not scan large amounts of content, wait for user input, or perform lengthy calculations during activation.
+
+NoteGen tracks the disposables returned by command registration and the workspace, note, editor, and settings event APIs. The plugin context has no timer API. Do not rely on an undeclared global even if a particular runtime happens to expose it.
+
+## Cancellation
+
+`ctx.signal.aborted` becomes true when NoteGen stops the runtime, including when:
+
+- the user disables the plugin;
+- installation state or the authorized identity changes;
+- the plugin is updated, rolled back, or reloaded from a development directory;
+- the workspace changes;
+- NoteGen reclaims the current plugin host.
+
+Public API methods do not currently take a `signal` argument. Check the signal yourself between long loops, parsing stages, and adjacent asynchronous calls:
+
+~~~js
+if (ctx.signal.aborted) return;
+const snapshot = await ctx.editor.getTextSnapshot(options);
+if (ctx.signal.aborted) return;
+~~~
+
+New calls are rejected after shutdown begins. A file write already in the host's atomic commit stage may still finish, so `Cancelled` does not prove that an operation had no effect.
+
+## Events and revisions
+
+Editor events may be coalesced, delayed, or superseded while a calculation is in progress:
+
+- Request a snapshot using the event's `editorId` and `revision`.
+- On `StaleRevision`, read the new active-editor state instead of publishing the old result.
+- Compare the revision again after asynchronous work completes.
+- Use a stable `idempotencyKey` when creating a file.
+- Do not depend on activation order between plugins.
+- Do not keep the only copy of important state in module globals.
+
+## `deactivate`
+
+The entry may also export:
+
+~~~js
+export async function deactivate() {
+  // Perform only fast, best-effort cleanup.
+}
+~~~
+
+NoteGen first revokes the context and event delivery, then notifies the plugin that it is being deactivated. The plugin Worker is terminated after a short grace period. That notification is best effort: a crash, forced reclamation, or power loss may prevent it from finishing.
+
+Persist data when it is produced. Do not wait until `deactivate` to save the only copy, and do not begin a new long-running operation during shutdown.
+
+## Workspace switches and permission changes
+
+Switching workspaces stops the old runtime. Old workspace IDs, editor IDs, revisions, and workspace-storage partitions cannot be reused for calls in the new workspace. The plugin activates again only if it is enabled and its permissions have been reviewed there.
+
+Revoking a permission or changing the manifest identity immediately blocks new host-capability calls and makes NoteGen reconcile the runtime. The exception for a write already in atomic commit still applies.
+
+## Failure, recovery, and quarantine
+
+Entry errors, protocol failures, quota violations, timeouts, and Worker crashes are generally reported as `RuntimeFailure`, `QuotaExceeded`, or `Timeout`. The public error-code contract does not contain `ActivationFailed`, `OutOfMemory`, or `ProtocolViolation`.
+
+One failure puts the current run in the `failed` state. When three uncleared failures accumulate in the main window, the plugin is quarantined and disabled. A successful activation clears the earlier failure record. The user can also clear it in plugin details, then turn the plugin off and on again.
+
+A single plugin failure never stops Markdown editing or saving.
+
+## Marketplace updates and development reloads
+
+A marketplace update proceeds in this order:
+
+1. Download and verify the package using a fresh signed index.
+2. Atomically switch the local active version and record the previous version.
+3. Stop the old runtime and start the new version when its activation event matches.
+4. Persist the candidate marker in native installation state; clear it after the first successful activation in the main window, or roll back to the previous version on failure.
+5. Reject another version install until the candidate is confirmed or rolled back, preserving the last verified version.
+
+Successful installation therefore does not mean that the entry has executed successfully. Rollback switches program versions and their associated KV snapshots, but does not restore contributed settings, Markdown or remote side effects.
+
+Enabled development plugins are automatically re-imported when validated build output changes and Developer mode is on. Reloading creates a new content-hash snapshot, but it does not receive the marketplace update guarantee of automatic rollback after first-activation failure.
+
+## Development checklist
+
+- Prefer `onCommand` activation for command-oriented features.
+- Make `activate` return quickly.
+- Check `ctx.signal.aborted` between asynchronous stages.
+- Use revisions to discard stale calculations.
+- Use idempotency keys when creating files.
+- Never rely on `deactivate` to persist the only copy of state.
+- Give users actionable messages for denied permissions, timeouts, conflicts, and unsupported platforms.

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { NoteGenDemo } from "@/components/home/note-gen-demo"
+import { PluginSection } from "@/components/home/plugin-section"
 import { cn } from "@/lib/utils"
 
 import HomeFooter from "./footer"
@@ -278,6 +279,8 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
           </Card>
         </div>
       </section>
+
+      <PluginSection lang={lang} />
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
         <SectionHeading

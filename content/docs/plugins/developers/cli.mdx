@@ -1,0 +1,373 @@
+---
+title: 命令行工具
+description: 使用官方 CLI 创建、校验、构建、打包、签名和验证 NoteGen 插件。
+icon: Terminal
+---
+
+`@notegen/plugin-cli` 是 NoteGen 插件的官方作者工具。它在开发机上的 Node.js 进程中运行，负责项目脚手架、严格校验、单文件构建、确定性归档、Ed25519 密钥与签名，不是插件运行时的一部分。
+
+> 更新日期：2026-09-10。四个 SDK 包已发布 npm，官方插件签名市场已上线；社区投稿尚未开放。接口说明以当前开发分支为准，未发布的新增能力需使用对应源码版本。远程安装还要求 NoteGen 支持插件系统并内置正式根公钥。
+
+## 环境与安装
+
+- Node.js 20 或更高版本；
+- 在 SDK 仓库工作时使用 pnpm 10；
+- CLI 应作为开发工具使用，不能打进 NoteGen 加载的插件入口。
+
+在插件项目中安装已发布的 npm 包：
+
+~~~bash
+pnpm add -D @notegen/plugin-cli
+pnpm exec notegen-plugin --help
+~~~
+
+需要使用 SDK 源码时运行：
+
+~~~bash
+git clone https://github.com/codexu/note-gen-plugin-sdk.git
+cd note-gen-plugin-sdk
+pnpm install
+pnpm build
+node packages/plugin-cli/dist/bin.js --help
+~~~
+
+下文使用 `notegen-plugin`。从源码运行时，将它替换为构建后 `packages/plugin-cli/dist/bin.js` 的绝对路径。
+
+## 标准工作流
+
+~~~text
+源码项目
+  │ validate / build
+  ▼
+.notegen/package                 本地开发导入目录
+  │ pack
+  ▼
+<id>-<version>.unsigned.notegen-plugin
+  │ sign
+  ▼
+<id>-<version>.notegen-plugin   发布者签名归档
+  │ verify
+  ▼
+本地验证完成
+~~~
+
+`build`、`validate` 和 `verify` 都不会执行插件入口。`pack` 不读取私钥；`sign` 只接受已构建的 unsigned 归档，不读取源码或触发构建。CLI 不包含上传、发布者登记或市场投稿命令。
+
+## `create`
+
+~~~text
+notegen-plugin create <directory> [options]
+~~~
+
+创建一个 TypeScript 插件项目。目标已存在时必须是空的真实目录；命令不会覆盖非空目录或符号链接。
+
+| 选项 | 默认值 | 作用 |
+| --- | --- | --- |
+| `--id <plugin-id>` | 无 | 反向域名插件 ID；交互终端中可以询问，`--yes` 或 `--json` 模式下必须提供 |
+| `--name <name>` | 目录名生成的标题 | 展示名称；交互模式中会询问 |
+| `--description <text>` | 模板自带说明 | 写入 manifest 的初始说明 |
+| `--template <template>` | `command` | `command` 或 `editor-statistics` |
+| `--min-app-version <version>` | `0.37.0` | 写入 manifest 的最低 NoteGen 版本 |
+| `--api-version <range>` | `^0.1.0` | 写入 manifest 的插件 API 兼容范围 |
+| `--package-manager <manager>` | `pnpm` | `pnpm` 或 `npm` |
+| `--install` | 关闭 | 创建后执行所选包管理器的 `install` |
+| `--yes` | 关闭 | 禁止交互；必须同时传入 `--id` |
+| `--json` | 关闭 | 禁止交互并输出一份 JSON；必须传入 `--id` |
+
+默认生成：
+
+~~~text
+<directory>/
+├── .gitignore
+├── package.json
+├── plugin.json
+├── tsconfig.json
+└── src/
+    └── main.ts
+~~~
+
+生成项目的 `package.json#notegen.source` 默认为 `src/main.ts`，并包含 `build`、`validate` 和 `pack` 脚本。依赖安装是显式操作，因为包管理器可能执行第三方生命周期脚本。
+
+### `create-notegen-plugin`
+
+`create-notegen-plugin` 是只提供命令入口的轻量包，它把参数原样转发给 `notegen-plugin create`：
+
+~~~bash
+npx create-notegen-plugin my-plugin \
+  --id com.example.my-plugin \
+  --name "My Plugin"
+~~~
+
+它支持上表中的全部选项，没有单独的 JavaScript 库导出。使用 SDK 源码时可以运行：
+
+~~~bash
+node packages/create-notegen-plugin/dist/bin.js ../my-plugin \
+  --id com.example.my-plugin \
+  --name "My Plugin"
+~~~
+
+## `validate`
+
+~~~text
+notegen-plugin validate [path] [options]
+~~~
+
+`path` 默认为当前目录。命令按输入内容自动分类：
+
+| 输入 | 校验行为 |
+| --- | --- |
+| 源码项目 | 校验 `plugin.json` 与 `package.json#notegen.source`，确认源码入口及已声明 locale 文件存在且可安全读取；不构建，也不解析 locale 消息内容（该检查在 `build` 时执行） |
+| 开发目录 | 读取 `integrity.json` 声明的载荷；允许目录中存在不会进入快照的源码或说明文件 |
+| `.unsigned.notegen-plugin` | 校验完整归档，并要求包内不存在 `signature.sig` |
+| 最终 `.notegen-plugin` | 校验完整归档，并始终要求包内存在 `signature.sig` |
+
+| 选项 | 作用 |
+| --- | --- |
+| `--api-version <version>` | 用具体宿主 API 版本检查 manifest 的 `apiVersion` 范围 |
+| `--app-version <version>` | 用具体 NoteGen 版本检查 `minAppVersion` |
+| `--public-key <file>` | 使用发布者公钥 JSON 或只含 Base64 公钥的 UTF-8 文件验签 |
+| `--require-signature` | 拒绝没有 `signature.sig` 的开发目录和 unsigned 输入 |
+| `--json` | 输出机器可读结果或诊断 |
+
+`validate` 默认允许未签名的源码项目和开发目录。向源码项目同时传入 `--public-key` 或 `--require-signature` 会失败，因为源码项目还没有可验证的包签名。
+
+路径冲突检查也覆盖父目录，即使 ZIP 没有显式列出目录项。例如，同一个包不能同时包含 `A/x.json` 和 `a/y.json`，否则在区分与不区分大小写的文件系统上会得到不同结果。每个目录应始终使用相同的拼写。
+
+## `build`
+
+~~~text
+notegen-plugin build [directory] [options]
+~~~
+
+`directory` 默认为当前目录。构建器读取 `package.json#notegen.source`，默认入口为 `src/main.ts`，然后：
+
+1. 严格校验 manifest 和声明的 locale；
+2. 将源码与依赖构建为一个自包含 JavaScript ESM 入口；
+3. 拒绝最终入口中残留的相对、包、远程或动态 import；
+4. 生成 `integrity.json`；
+5. 完整复验载荷并原子替换 `.notegen/package`。
+
+| 选项 | 作用 |
+| --- | --- |
+| `--api-version <version>` | 用具体宿主 API 版本校验 |
+| `--app-version <version>` | 用具体 NoteGen 版本校验 |
+| `--json` | 输出机器可读结果或诊断 |
+
+输出目录固定为项目内的 `.notegen/package`，没有自定义输出选项。把该目录的绝对路径导入 NoteGen“设置 → 插件 → 开发者”。
+
+## `pack`
+
+~~~text
+notegen-plugin pack [directory] [options]
+~~~
+
+先执行与 `build` 相同的构建和完整校验，再写入确定性的 unsigned ZIP 归档。默认输出为：
+
+~~~text
+.notegen/releases/<id>-<version>.unsigned.notegen-plugin
+~~~
+
+| 选项 | 作用 |
+| --- | --- |
+| `--output <file>` | 自定义输出；文件名必须以 `.unsigned.notegen-plugin` 结尾 |
+| `--force` | 仅覆盖指定的现有输出文件 |
+| `--api-version <version>` | 用具体宿主 API 版本校验 |
+| `--app-version <version>` | 用具体 NoteGen 版本校验 |
+| `--json` | 输出机器可读结果或诊断 |
+
+`pack` 不接受也不会寻找私钥，不能直接生成可投放市场的最终签名包。
+
+## `keygen`
+
+~~~text
+notegen-plugin keygen [options]
+~~~
+
+生成 Ed25519 发布者密钥对。默认文件为：
+
+~~~text
+.notegen/keys/publisher-private.pem
+.notegen/keys/publisher-public.json
+~~~
+
+| 选项 | 作用 |
+| --- | --- |
+| `--output <directory>` | 修改两个默认文件的基础目录 |
+| `--private-key <file>` | 单独指定 PKCS#8 PEM 私钥路径 |
+| `--public-key <file>` | 单独指定公钥 JSON 路径 |
+| `--passphrase-env <name>` | 从指定环境变量读取口令并加密私钥 |
+| `--force` | 以可恢复事务替换已有的两份密钥文件 |
+| `--json` | 输出机器可读结果；永不输出私钥内容 |
+
+公钥 JSON 包含 `algorithm: "Ed25519"`、`keyId` 和 32 字节原始公钥的标准 Base64。私钥与口令不能放入仓库、插件包、同步目录或命令参数。`keygen` 生成发布者密钥，不生成 NoteGen 市场根密钥。
+
+## `sign`
+
+~~~text
+notegen-plugin sign <unsigned-archive> --private-key <pem> [options]
+~~~
+
+输入必须以 `.unsigned.notegen-plugin` 结尾且不能已经含有 `signature.sig`。命令复验归档，以 RFC 8785 JCS 规范化签名文档，加入 Ed25519 `signature.sig`，默认把 `.unsigned.notegen-plugin` 替换为 `.notegen-plugin`。
+
+| 选项 | 作用 |
+| --- | --- |
+| `--private-key <file>` | 必需；发布者 PKCS#8 PEM 私钥 |
+| `--output <file>` | 自定义最终路径；必须以 `.notegen-plugin` 结尾，且不能仍是 unsigned 后缀 |
+| `--passphrase-env <name>` | 从指定环境变量读取私钥口令 |
+| `--force` | 覆盖指定的现有最终文件 |
+| `--api-version <version>` | 用具体宿主 API 版本校验 |
+| `--app-version <version>` | 用具体 NoteGen 版本校验 |
+| `--json` | 输出机器可读结果或诊断 |
+
+输出不能覆盖 unsigned 输入。`sign` 不扫描源码、不安装依赖，也不执行构建。
+
+## `verify`
+
+~~~text
+notegen-plugin verify <archive-or-directory> [options]
+~~~
+
+只接受完整的开发目录或归档，不接受源码项目。与 `validate` 读取开发目录清单载荷不同，`verify` 会遍历完整目录，因此会拒绝未声明文件、符号链接、特殊文件和其他不安全条目。
+
+| 选项 | 作用 |
+| --- | --- |
+| `--public-key <file>` | 使用发布者公钥 JSON 或只含 Base64 公钥的 UTF-8 文件验证发布者身份 |
+| `--api-version <version>` | 用具体宿主 API 版本校验 |
+| `--app-version <version>` | 用具体 NoteGen 版本校验 |
+| `--require-signature` | 拒绝没有签名的开发目录和 unsigned 输入 |
+| `--json` | 输出机器可读结果或诊断 |
+
+没有 `--public-key` 时，含签名输入只能证明签名编码和完整性结构有效，不能证明发布者身份。本地验签也不校验市场根索引、发布者登记、源码可重复构建、许可证或人工审核状态。
+
+## 兼容性参数
+
+`create --api-version` 写入的是 manifest SemVer 范围；其余命令的 `--api-version` 是用于校验的具体宿主 API 版本。这两个值不要混用。
+
+`--app-version` 也是具体 NoteGen 版本。省略它时，CLI 仍校验 `minAppVersion` 的格式，但不会与某个应用版本比较：
+
+- 文本输出会明确提示兼容性未检查；
+- JSON 输出中的 `appCompatibilityChecked` 为 `false`，并包含 `appCompatibilityNote`；
+- 发布制品检查应显式传入目标应用版本。
+
+## 签名与文件后缀
+
+最终 `.notegen-plugin` 后缀本身就表示必须有 `signature.sig`，程序化调用也不能关闭这一规则。`--require-signature` 的作用是拒绝其他未签名输入。由于 `.unsigned.notegen-plugin` 后缀同时禁止包内存在 `signature.sig`，对这种归档使用该选项会按预期失败；请先用 `sign` 生成最终后缀的归档。
+
+`--public-key` 不只是检查签名是否存在：它使用指定公钥验证发布者签名。如果输入没有签名，则直接失败。公钥文件可以是 `keygen` 生成的严格 JSON，也可以只包含原始公钥 Base64 文本。
+
+## `--json` 契约
+
+七个命令都支持命令级 `--json`。该模式：
+
+- 禁止交互提示；
+- 在 stdout 只写入一份 JSON 文档；
+- 成功和失败都使用同一条 stdout JSON 通道；
+- `create --install` 的包管理器日志改写到 stderr；
+- 仍必须以进程退出码判断成功或失败。
+
+诊断结构为：
+
+~~~ts
+interface Diagnostic {
+  severity: "error" | "warning";
+  code: string;
+  message: string;
+  path?: string;
+  hint?: string;
+}
+~~~
+
+失败结果为 `{ ok: false, diagnostics: Diagnostic[] }`。帮助和版本请求在 JSON 模式下返回 `{ ok: true, command: "help" | "version", output: string }`。
+
+各命令成功结果的字段如下。路径字段的基准取决于其语义：`target`、输出目录和归档路径等文件系统目标由 CLI 解析；`create.files` 以及返回 manifest 内的 `entry`、locale 路径仍是项目或包内相对路径。自动化不要假设所有含路径的字符串都是绝对路径。
+
+| command | 附加字段 |
+| --- | --- |
+| `create` | `directory`、`files`、`packageManager`、`installed` |
+| `validate`、`verify` | `kind`、`target`、`manifest`、`signed`、`signatureVerified`、`appCompatibilityChecked`、`appCompatibilityNote`，归档还含 `archiveSha256`、`archiveSize` |
+| `build` | `pluginId`、`version`、`outputDirectory`、`appCompatibilityChecked`、`appCompatibilityNote` |
+| `pack` | `path`、`pluginId`、`version`、`sha256`、`size`、`developmentDirectory`、兼容性字段 |
+| `keygen` | `privateKeyPath`、`publicKeyPath`、`keyId`、`publicKey`；不含私钥内容 |
+| `sign` | `path`、`pluginId`、`version`、`keyId`、`publicKey`、`sha256`、`size`、兼容性字段 |
+
+诊断 `code` 当前是字符串而不是封闭枚举。自动化应先按退出码处理，再按确实需要的 code 分支，并保留未知 code 的兜底路径。
+
+## 退出码
+
+| 退出码 | 含义 |
+| --- | --- |
+| `0` | 成功 |
+| `1` | 项目、manifest、构建、包、完整性、密钥或签名检查失败 |
+| `2` | 命令名、参数或选项用法无效 |
+| `3` | CLI 拒绝不安全或可能破坏数据的操作，例如非空创建目录、已有输出、越界或符号链接路径 |
+| `70` | 未预期的内部失败 |
+| `130` | 操作被中断 |
+
+文本模式把正常结果写到 stdout，把格式化诊断写到 stderr。无论输出模式如何，都不要把包含 `ok: false` 的 JSON 或非零退出码当作成功。
+
+## Node.js 程序化 API
+
+`@notegen/plugin-cli` 的包根入口同时提供 Node.js 程序化 API。这些函数会使用文件系统、路径、加密、ZIP 和构建工具，只能在作者工具、CI 或发布流程中运行，不能导入插件入口。该包仅支持 ESM，请使用 `import`；CommonJS `require()` 不可用。包只开放根入口和 `./package.json`；不要依赖 `dist/lib/*` 等深层路径。
+
+~~~ts
+import {
+  isDiagnosticError,
+  validatePluginTarget,
+} from "@notegen/plugin-cli";
+
+try {
+  const result = await validatePluginTarget({
+    target: ".notegen/package",
+    appVersion: "0.37.0",
+  });
+  console.log(result.manifest.id);
+} catch (error) {
+  if (isDiagnosticError(error)) {
+    console.error(error.diagnostics);
+  }
+}
+~~~
+
+当前包根入口的导出按用途分为：
+
+| 分类 | 导出 |
+| --- | --- |
+| CLI 嵌入 | `PLUGIN_CLI_VERSION`、`CliIo`、`CreateCliProgramOptions`、`createCliProgram`、`runCli`、`runCreateCli` |
+| 项目创建 | `PluginTemplate`、`PackageManager`、`CreatePluginProjectOptions`、`CreatedPluginProject`、`createPluginProject` |
+| 项目构建 | `BuildPluginProjectOptions`、`BuiltPluginProject`、`ValidatedPluginProjectSource`、`buildPluginProject`、`validatePluginProjectSource` |
+| 高层任务 | `ValidateTargetOptions`、`ValidationResult`、`PackPluginOptions`、`PackPluginResult`、`GenerateKeysOptions`、`GeneratedKeysResult`、`SignPluginOptions`、`SignPluginResult`、`readPublisherPublicKey`、`validatePluginTarget`、`packPluginProject`、`generatePublisherKeys`、`signPluginArchive` |
+| manifest | `ManifestValidationOptions`、`satisfiesPluginApiRequirement`、`validateLocaleMessages`、`validatePluginManifest`、`parsePluginManifest` |
+| 完整包 | `PackageValidationOptions`、`ValidatedPluginPackage`、`validatePackageFiles`、`readPackageDirectory`、`readCompletePackageDirectory` |
+| 完整性 | `INTEGRITY_VERSION`、`INTEGRITY_ALGORITHM`、`MAX_SIGNATURE_FILE_BYTES`、`IntegrityFileV1`、`IntegrityManifestV1`、`PackageFileMap`、`sha256Hex`、`isLowercaseSha256`、`createIntegrityManifest`、`serializeIntegrityManifest`、`validateIntegrityManifest`、`parseIntegrityManifest` |
+| 归档 | `PackageFile`、`PackageArchive`、`readPackageArchive`、`writePackageArchive` |
+| 包路径 | `MAX_PACKAGE_PATH_BYTES`、`MAX_PACKAGE_SEGMENT_BYTES`、`MAX_PACKAGE_PATH_DEPTH`、`PackagePathOptions`、`PackagePathEntry`、`utf8ByteLength`、`hasControlCharacter`、`packagePathCollisionKey`、`isForbiddenPackageFilePath`、`validatePackagePath`、`assertUniquePackagePaths`、`countPackageEntries` |
+| 签名 | `ED25519_PUBLIC_KEY_BYTES`、`ED25519_SIGNATURE_BYTES`、`PrivateKeySource`、`PublicKeySource`、`PrivateKeyOptions`、`GeneratedPublisherKeyPair`、`canonicalJsonBytes`、`createPackageSignatureMessage`、`decodePublisherPublicKey`、`decodePackageSignature`、`publisherPublicKeyFromPrivate`、`publisherKeyId`、`generatePublisherKeyPair`、`signPackage`、`verifyPackageSignature`、`assertPackageSignature` |
+| 诊断 | `DiagnosticSeverity`、`Diagnostic`、`DiagnosticInput`、`diagnostic`、`DiagnosticError`、`fail`、`isDiagnosticError`、`hasDiagnosticErrors`、`formatDiagnostic`、`diagnosticsFromError` |
+| 路径与退出常量 | `PACKAGE_EXTENSION`、`UNSIGNED_PACKAGE_EXTENSION`、`DEVELOPMENT_OUTPUT_DIRECTORY`、`RELEASE_OUTPUT_DIRECTORY`、`EXIT_SUCCESS`、`EXIT_PROJECT_FAILURE`、`EXIT_USAGE`、`EXIT_UNSAFE_REFUSAL`、`EXIT_UNEXPECTED`、`EXIT_INTERRUPTED` |
+
+对原始 `plugin.json` 字节应使用 `parsePluginManifest`，这样才能执行严格 JSON、重复键和整数字面量检查；`validatePluginManifest` 面向已经解析的值。`readPackageDirectory` 按 `integrity.json` 读取开发快照，`readCompletePackageDirectory` 则遍历并检查全部目录条目。
+
+文件事务辅助函数和底层 strict-JSON 解析器不是包根入口的公开导出。`create-notegen-plugin` 也只有可执行入口；需要在代码中创建项目时，使用 `@notegen/plugin-cli` 的 `createPluginProject`。
+
+## 相关文档
+
+- [开发第一个插件](/cn/docs/plugins/developers/getting-started)
+- [插件配置](/cn/docs/plugins/developers/manifest)
+- [打包与验证](/cn/docs/plugins/developers/package-verify)
+- [插件测试](/cn/docs/plugins/developers/testing)
+
+## 监听开发与自动重载
+
+在插件源码项目运行：
+
+~~~bash
+pnpm exec notegen-plugin dev
+~~~
+
+新脚手架也提供 `pnpm dev`。首次执行会构建，之后每秒检查项目目录内的文件变更，串行重新构建，并通过暂存目录替换 `.notegen/package`。编译或包校验失败时不替换现有产物；修复源码后继续构建。该命令不运行 TypeScript 类型检查或测试，可按需单独执行项目的检查命令。`--json` 输出逐行构建结果；Ctrl+C 停止监听，已经开始的构建可能会完成。
+
+监听忽略 `node_modules`、`.git`、`.notegen`、`dist`、`build`、`.next` 和符号链接，最多扫描 10,000 个条目、32 层目录。项目外依赖或被忽略目录发生变化时，需要重新启动命令。不要把源码入口放到这些输出目录。
+
+在 NoteGen 中启用开发者模式，导入 `.notegen/package` 并启用插件。主窗口自动每两秒比较已安装快照与产物的完整性清单，变化时执行完整校验和导入。不需要“重载”按钮或“自动重载”开关。关闭设置页后继续监听，宿主重启后恢复；禁用插件暂停重载，关闭开发者模式清除监听。
+
+宿主不会执行本地脚本，扩大的权限仍需审核。失败记录到日志，同一失败产物不会无限重试；生成不同的新产物或重启宿主后重试。重载会重建运行时和界面，表单草稿不会保留，这不是保留组件状态的热更新。

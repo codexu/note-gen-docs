@@ -1,0 +1,265 @@
+---
+title: Testing plugins
+description: Test plugin lifecycle, permissions, notes, editor state, settings, storage, and UI calls in a deterministic in-process host.
+icon: FlaskConical
+---
+
+`@notegen/plugin-test` is the behavior test double for NoteGen plugins. It implements the public `PluginContext` in a Node.js process so a test can control the workspace, permissions, notes, editor state, and time, then inspect read-only snapshots left by the plugin.
+
+Use it with Vitest, Jest, another TypeScript test runner, or a plain Node.js script. It does not start NoteGen and does not validate archives or signatures.
+
+> Updated 2026-09-10: all four SDK packages are published on npm and the signed official marketplace is live; community submissions remain closed. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
+
+## Install
+
+~~~bash
+pnpm add -D @notegen/plugin-api @notegen/plugin-test
+~~~
+
+Keep it in development and test dependencies. Do not bundle `@notegen/plugin-test` into the plugin entry; NoteGen still loads only the single-file ESM produced by `notegen-plugin build`.
+
+## Minimal test
+
+~~~ts
+import { definePluginManifest, type PluginActivate } from "@notegen/plugin-api";
+import { createPluginTestHost } from "@notegen/plugin-test";
+
+const commandId = "com.example.hello.open";
+
+const manifest = definePluginManifest({
+  manifestVersion: 1,
+  id: "com.example.hello",
+  name: "Hello",
+  version: "0.1.0",
+  apiVersion: "^0.1.0",
+  minAppVersion: "0.37.0",
+  platforms: ["desktop"],
+  entry: "dist/main.js",
+  activationEvents: [`onCommand:${commandId}`],
+  permissions: {},
+  contributes: {
+    commands: [{ id: commandId, title: "Say hello" }],
+  },
+});
+
+const activate: PluginActivate = async (ctx) => {
+  ctx.commands.handle(commandId, async () => {
+    await ctx.ui.showNotice("Hello from the test host");
+  });
+};
+
+const host = createPluginTestHost({ manifest });
+await host.activate({ activate });
+await host.executeCommand(commandId);
+
+console.log(host.notices);
+console.log(host.callHistory);
+
+await host.deactivate();
+~~~
+
+One host activates exactly one plugin instance and cannot be activated again after deactivation. Create a new host for each test so lifecycle, registrations, and stored state do not leak between cases.
+
+Deactivation rejects pending activation, command execution, and injected network requests with `Cancelled`; it does not wait for those handlers to finish. The underlying Node.js callbacks are not forcibly stopped, so plugin code should observe `ctx.signal` before its own asynchronous side effects. The test host also checks network permission again before returning an injected response: revoking the grant while a request is pending prevents a successful response.
+
+## createPluginTestHost options
+
+~~~ts
+const host = createPluginTestHost({
+  manifest,
+  permissions: {},
+  workspace: { id: "workspace-1", name: "Test Workspace" },
+  notes: [],
+  folders: [],
+  storage: { device: {}, workspace: {} },
+  settings: {},
+  editor: { active: null, selection: null, text: "" },
+  messages: {},
+  now: () => new Date(0),
+});
+~~~
+
+| Option | Type and default behavior |
+| --- | --- |
+| `manifest` | Required `PluginManifestV1`; determines available commands, status items, settings, and permissions |
+| `permissions` | Overrides grants by permission name; only manifest-declared permissions are accepted |
+| `workspace` | Optional `WorkspaceInfo`; defaults to ID `test-workspace` and name `Test Workspace` |
+| `notes` | Seeds `{ path, content, id?, revision? }`; when revision is omitted, a deterministic value is derived from the UTF-8 content's SHA-256 |
+| `folders` | Seeds folders, including empty folders with no notes; the workspace root always exists |
+| `storage` | Seeds `device` and `workspace` JSON KV areas and immediately checks their combined quota |
+| `settings` | Overrides manifest setting defaults; values must match the declaration's type and range |
+| `editor` | Seeds the active editor, selection, and optional Markdown text |
+| `messages` | Key-value text used by `ctx.i18n.t` |
+| `now` | Function returning the current `Date`; defaults to the Unix epoch on every call |
+
+The test host assumes the supplied manifest has passed author-side validation, but still uses it to constrain plugin behavior. To test invalid JSON or an invalid manifest, use [Command-line tools](/en/docs/plugins/developers/cli#validate) instead of passing an invalid object to the test host.
+
+Seed notes with the same content receive the same revision, and an explicitly supplied revision is preserved. This keeps results independent of seed order. To simulate an external update, still provide a new revision explicitly or use the corresponding event control.
+
+The package root exports `createPluginTestHost` and the types `PluginTestHost`, `PluginTestHostOptions`, `PluginTestCallName`, `PluginTestCall`, `PluginTestNote`, `PluginTestEditorState`, `PluginTestStorageSeed`, `PluginTestStorageSnapshot`, `PluginTestScopedPermissionGrant`, `PluginTestPermissionGrant`, and `SetActiveEditorOptions`. It has no deep entry point intended for use outside the test process.
+
+## Permission grants
+
+Manifest-declared permissions receive permissive grants by default. Override them at construction or change them during a test:
+
+~~~ts
+const host = createPluginTestHost({
+  manifest,
+  permissions: { "notes.read": false },
+});
+
+host.setPermission("notes.read", true);
+~~~
+
+Boolean `true` is an unrestricted convenience for concise tests; it is not the shape of a production grant record. Use a scoped grant to reproduce a real file or folder boundary:
+
+~~~ts
+const host = createPluginTestHost({
+  manifest,
+  permissions: {
+    "notes.read": {
+      granted: true,
+      paths: ["Templates/example.md"],
+    },
+    "notes.create": {
+      granted: true,
+      paths: ["Journal"],
+    },
+  },
+});
+
+host.setPermission("notes.read", {
+  granted: true,
+  paths: ["Templates/weekly.md"],
+});
+~~~
+
+| Manifest scope | Match behavior |
+| --- | --- |
+| `workspace-file` | Matches only the listed single file |
+| `workspace-files` | Matches only the listed files |
+| `workspace-folder` | Matches the folder itself and all descendants |
+
+An empty `paths` array allows no path access. For `workspace-folder`, `paths: [""]` grants the whole workspace. A permission absent from the manifest is rejected and cannot be added temporarily through `setPermission`.
+
+## Read-only result snapshots
+
+| Property | Contents |
+| --- | --- |
+| `manifest` | Manifest supplied when the host was created |
+| `context` | `PluginContext` passed to the plugin, also available for focused tests |
+| `active` | Whether the plugin is in the active lifecycle state |
+| `callHistory` | API call names and arguments ordered by `sequence` |
+| `notices` | Final text displayed by `showNotice` |
+| `statusBar` | Latest `PluginStatusBarUpdate` keyed by contribution ID |
+| `notes` | Current `NoteSnapshot` list sorted by path |
+| `settings` | Current contributed setting values |
+| `storage` | `device` and `workspace` KV snapshots |
+| `permissions` | Current boolean or scoped grant snapshots |
+
+Except for `manifest` and `context`, collection getters recreate and freeze their top-level arrays or records, so changing a top-level container cannot alter the host's internal collection. Nested values are not guaranteed to be deeply frozen. `manifest` is the original reference supplied when the host was created, and `context` is the live runtime object. Treat every property as read-only and do not mutate it in assertions. `clearCallHistory()` clears only the call records; it does not reset the plugin, notes, settings, or storage.
+
+## Test control methods
+
+| Method | Purpose |
+| --- | --- |
+| `activate(module)` | Calls plugin `activate` and enters the active state |
+| `deactivate()` | Signals cancellation, calls optional `deactivate`, and clears registrations |
+| `executeCommand(commandId, argument?)` | Runs a declared command with a registered handler |
+| `setPermission(permission, grant)` | Grants, denies, or changes a path scope |
+| `setSetting(key, value)` | Validates and changes a contributed setting, then notifies listeners |
+| `setActiveEditor(editor, options?)` | Switches the active editor and optionally supplies selection and Markdown text |
+| `setEditorSelection(selection)` | Changes the current selection snapshot |
+| `emitEditorContentChange(event, text?)` | Emits a content event and optionally replaces later snapshot text |
+| `clearCallHistory()` | Clears the API call history |
+
+`executeCommand` returns `NotFound` for an undeclared ID. A declared command without a handler returns `RuntimeFailure`. Settings, status items, and permissions are also constrained by the manifest.
+
+## Test editor state and events
+
+~~~ts
+await host.setActiveEditor(
+  {
+    windowId: "main",
+    editorId: "editor-1",
+    documentId: "note-1",
+    kind: "markdown",
+    mode: "source",
+    revision: 1,
+    composing: false,
+    size: { utf16Length: 5, bytes: 5, lines: 1 },
+  },
+  { text: "Hello", selection: null },
+);
+
+await host.emitEditorContentChange(
+  {
+    editorId: "editor-1",
+    documentId: "note-1",
+    revision: 2,
+    composing: false,
+    size: { utf16Length: 11, bytes: 11, lines: 1 },
+  },
+  "Hello world",
+);
+~~~
+
+`getTextSnapshot` produces `NotFound` when there is no active editor or the editor ID differs. Only an expected-revision mismatch produces `StaleRevision`. Switching to another document ID does not reuse the previous text. A rejected setting or editor listener does not block other listeners or roll back a state change already applied by the host.
+
+## Test writes, views, and networking
+
+The in-memory host implements `notes.list/write/move/delete/onDidChange` and `editor.applyEdit`; assert results through `host.notes` and `host.callHistory`. Note operations use these deterministic rules:
+
+- `notes.list()` is non-recursive by default and defaults to a limit of 200; listing a folder that does not exist returns `NotFound`.
+- When `openOrCreate` or `write({ create: true })` actually creates a file, subscribers with read or list access receive a `created` event.
+- `notes.move({ from, to })` succeeds without changing content, revision, or events when the two normalized paths are equal.
+- `notes.write` derives a deterministic content-hash revision from the written text.
+- Use `openNotePaths` and `host.setOpenNotePaths(paths)` to model notes open in any tab, pane, or separate window; file writes, moves, and deletes return `EditorBusy`. `openOrCreate({ open: true, ... })` also marks its target as open.
+- `surface: "editor-window"` models a separate window, rejecting file mutations and `open: true` while keeping the editor API available. The test host does not simulate real window races or save queues.
+
+Use `host.emitNoteChange(event)` and `host.emitWorkspaceChange(event)` for external changes. Declarative content is exposed as `host.views`, and the last dialog as `host.dialog`. The test host strictly validates declarative UI block shapes, unknown fields, count and byte limits, and rejects an action that references a command not declared by the manifest.
+
+Networking returns `UnavailableOnPlatform` unless the test supplies `networkFetch(request)`, and exact `network-origins` grants are still enforced. Before the handler runs, the request receives production-shaped safety checks for a public HTTPS hostname, no URL credentials or fragment, allowed methods, restricted headers, the body limit, and timeout normalization to 1–30 seconds. The handler response is checked for status, headers, and the 2 MiB body limit, and `set-cookie` is removed. The test double never performs a real request by itself.
+
+## Time, notices, and status bar
+
+The default clock is fixed at the Unix epoch. Supply a controllable `now` when testing date-sensitive behavior or status update throttling:
+
+~~~ts
+let now = new Date("2026-01-01T00:00:00Z");
+const host = createPluginTestHost({
+  manifest,
+  now: () => now,
+});
+
+now = new Date(now.getTime() + 100);
+~~~
+
+The test host implements these text and declaration constraints:
+
+- notices are truncated to 500 UTF-16 code units;
+- status text fields are truncated to 160 UTF-16 code units;
+- later updates to one status item within 100 ms are trailing-coalesced, and the last state is applied when the window ends;
+- the status item ID must be declared in the manifest.
+
+Both the test host and production host use trailing coalescing. The test host still does not model exact browser and operating-system scheduling; assert the final state after the window, not the precise millisecond at which an intermediate frame appears.
+
+## Quotas and production-shaped failures
+
+- Note content and initial content are limited to 2 MiB.
+- Paths and idempotency keys follow production limits.
+- Device and workspace storage share a 256-key and 1 MiB quota.
+- Setting values must match the manifest type, options, and range.
+- Permission, command, status-bar, and editor-revision failures use stable `PluginError.code` values.
+
+Assert the stable `error.code`; do not depend on the complete English message.
+
+## What it cannot replace
+
+This package is not QuickJS and is not a security sandbox. Plugin code runs with the test process's full authority. It does not simulate DNS resolution, DNS-rebinding defenses, system proxies, or real HTTP/TLS. It also does not reproduce Worker/QuickJS isolation, CPU and memory limits, host-call timeouts, general call-rate limits, every cross-realm serialization detail, archive integrity, or signature verification. It is not safe for untrusted plugins.
+
+Before release, you must still:
+
+1. run `notegen-plugin build` and `notegen-plugin verify`;
+2. import `.notegen/package` from NoteGen's Plugins → Developer page;
+3. check permission review, UI contributions, reload, and deactivation in the real desktop host.

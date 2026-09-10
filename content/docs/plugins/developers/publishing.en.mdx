@@ -1,0 +1,234 @@
+---
+title: Publish to the plugin marketplace
+description: Understand marketplace publication, static distribution, and trust boundaries for official and community NoteGen plugins.
+icon: Store
+---
+
+NoteGen maintains the public [`codexu/note-gen-plugins`](https://github.com/codexu/note-gen-plugins) repository for official plugin source, signed marketplace registration, and static distribution.
+
+> Updated 2026-09-10: all four SDK packages are published on npm and the signed official marketplace is live; community registration and publication are implemented, with production opening pending acceptance. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
+
+Community authors keep source in their own repositories and submit registration PRs for review. Merging registers a plugin; a maintainer must publish it. Production opening still requires protected branches/environments and independent-publisher acceptance in real clients.
+
+`@notegen/plugin-cli` is published on npm and provides author-side `keygen`, `pack`, `sign`, and `verify` commands. You can also build matching source from the [SDK repository](https://github.com/codexu/note-gen-plugin-sdk). The CLI does not provide marketplace submissions, publisher registration or an upload service.
+
+## Community submission workflow
+
+Keep source in your own public GitHub repository. Build from a fixed commit, sign with your own publisher key, upload the final archive to a versioned GitHub Release, and record its SHA-256. Never submit private keys.
+
+Submit a PR editing community/registry.json. Register your publisher and plugin once; prepend new releases without changing historical records. Include sourceCommit, packageUrl, packageSha256, publisherKeyId, changelog, buildInstructions, permissionsReason, and testedOn for each release. See the [full registration reference](https://github.com/codexu/note-gen-plugins/blob/main/community/README.en.md) and complete the PR template.
+
+CI checks structure, immutable history, new package hashes, publisher signatures, and manifest identity without executing author code or accessing production credentials. Human review confirms ownership, source reproducibility, permissions, license, and real-client behavior. Merge registers the plugin; a maintainer dispatches the release workflow on main to publish it. Community packages retain their author signature, are mirrored to OSS/CDN and GitHub Releases, and enter the root-signed index.
+
+Production rechecks unpublished packages and reuses root-verified published history, allowing revocation even after old upstream assets disappear. Updates retain the plugin and publisher IDs. Key rotation retains previousKeys and each historical release's publisherKeyId, with independent identity review. Revocations preserve affected version records; cross-owner or repository transfer requires a new plugin ID.
+
+## First production enablement
+
+Require PRs, successful CI, and CODEOWNERS review on main. Protect plugin-market-production with reviewers and main-only deployment; CODEOWNERS alone does not configure protection. Confirm the pinned SDK revision and signing/OSS settings. Before opening submissions, use an independent publisher to verify real-client installation, upgrades, permission changes, revocation, and key rotation.
+
+After merge, manually dispatch a new release tag and higher generation. Scheduled refresh renews only the existing index. Catalog resets cannot erase published community history. This implementation does not claim production acceptance is complete.
+
+## What authors can prepare now
+
+An author repository should contain:
+
+- plugin source, a dependency lock file, and reproducible build instructions;
+- importable `plugin.json`, `integrity.json`, and a single-file JavaScript entry;
+- a README, open-source license, and version changelog;
+- an explanation of why each permission is necessary and which workspace content it can reach;
+- the oldest NoteGen version and desktop operating systems you have tested;
+- issue-reporting and security-contact information;
+- sample data with no real notes, absolute paths, or credentials.
+
+The marketplace and development runtimes currently support desktop only. Even though the manifest schema can represent iOS and Android, do not list an unimplemented mobile platform as tested.
+
+See [Build your first plugin](/en/docs/plugins/developers/getting-started) for local import and [Packaging and verification](/en/docs/plugins/developers/package-verify) for artifact and signature rules.
+
+## Release artifacts you can verify now
+
+An author can complete this workflow locally:
+
+~~~bash
+notegen-plugin pack
+notegen-plugin keygen \
+  --private-key /secure/path/publisher-private.pem \
+  --public-key ./publisher-public.json
+notegen-plugin sign \
+  .notegen/releases/com.example.plugin-0.1.0.unsigned.notegen-plugin \
+  --private-key /secure/path/publisher-private.pem
+notegen-plugin verify \
+  .notegen/releases/com.example.plugin-0.1.0.notegen-plugin \
+  --public-key ./publisher-public.json \
+  --require-signature
+~~~
+
+`pack` produces an unsigned archive and never reads a private key. `sign` accepts only an already-built archive and neither reads source nor runs a build. The signing documents are canonicalized with [RFC 8785 JSON Canonicalization Scheme (JCS)](https://www.rfc-editor.org/rfc/rfc8785) before the length-framed NoteGen Ed25519 signature message is created.
+
+`verify --public-key` proves only that the package contents match the provided publisher public key. It does not validate a marketplace root index, publisher registration, reproducible source build, license, or human review, and it never uploads the package. Local verification still requires registration and human review; it is not an upload operation.
+
+`keygen` creates a plugin publisher key, not a marketplace root key. The public CLI has no root-key generation, index-signing, publisher-registration, index-generation management, or upload commands. Keep and back up the private key offline; never put it in plugin source, a package, public CI logs, or the `note-gen-plugins` repository.
+
+## Official plugin release workflow
+
+Official plugins are published through GitHub Actions in the plugin repository. The steps below build official plugins; independently signed community packages join the same index through the ingestion workflow above.
+
+1. Update the plugin source, bump its version in both `plugin.json` and `package.json`, and update the registry changelog and usage documentation. Never overwrite a published version with different bytes.
+2. Commit and push, then run **Release signed plugin market** on `main` with a unique release tag and a generation greater than the highest live index. The usual index validity is 14 days; `first_release` stays false for updates.
+3. Actions checks out the pinned SDK, builds, validates, tests and packs the plugins, signs the packages and index, then publishes to GitHub Releases and OSS/CDN.
+4. Verify the live index version and signature, both download sources, package SHA-256 and publisher signature before testing the update in NoteGen.
+
+Manual publication builds and packs all official plugins. Unchanged versions retain their original download URLs; matching immutable OSS objects are skipped. Monday-and-Thursday runs renew only the index and reuse the existing packages. Fourteen days is the signature validity, not a plugin lifetime or update-check interval.
+
+An ordinary plugin update does not require an npm release. SDK package changes use the independent **Publish npm packages** workflow and npm Trusted Publishing; publishing SDK packages does not publish plugins or update NoteGen itself.
+
+Environment configuration, release inputs and recovery procedures are maintained in the [plugin repository README](https://github.com/codexu/note-gen-plugins/blob/main/README.en.md#maintainer-release-procedure) and [SDK README](https://github.com/codexu/note-gen-plugin-sdk#maintainer-release-procedure).
+
+## Test installation and updates
+
+An installation imported from `.notegen/package` is a development version and does not receive marketplace updates. To verify an old-to-new upgrade, install the older signed version through the marketplace before publishing the new version. Installing the latest version directly only verifies installation.
+
+Discover displays the market version; **Installed** means the same ID exists locally, not that the displayed version is installed. Check the version and source badge in Installed, refresh Discover, then check Updates. See [plugin management](/en/docs/plugins).
+
+## Serverless distribution
+
+The plugin marketplace does not require an always-on application server. A release pipeline creates immutable plugin packages, `index.json`, and `index.sig`, then publishes exactly the same bytes to two static sources:
+
+~~~text
+Primary:  https://download.notegen.top/plugins/v1/index.json
+          https://download.notegen.top/plugins/v1/index.sig
+
+Fallback: https://github.com/codexu/note-gen-plugins/releases/latest/download/index.json
+          https://github.com/codexu/note-gen-plugins/releases/latest/download/index.sig
+~~~
+
+Object storage and a CDN provide high-availability downloads; GitHub Release assets provide a fallback and immutable archive. The client never consumes the repository's `main` branch, GitHub Raw files, or author-defined JSON. Committing files to an ordinary directory does not publish a plugin.
+
+The index is a short-lived mutable entry point whose `generation` must increase monotonically. Published plugin packages remain immutable by version and SHA-256. The pipeline stores packages under `plugins/v1/packages/<release-tag>/` and archives each signed index at `plugins/v1/generations/<generation>/index.json` and `index.sig`. Those objects use a one-year immutable cache. Only the current `plugins/v1/index.json` and `index.sig` pointers use `no-cache`, and publication updates the signature before the JSON.
+
+A full release is manually triggered with a unique release tag, an increasing generation, and the pinned SDK SHA. If no previous signed index can be found, the pipeline fails by default. Maintainers may enable `first_release` only after confirming that this is the marketplace's first publication. An existing GitHub Release or immutable OSS object can resume an interrupted run only when its bytes or recorded SHA-256 match exactly; a mismatch fails the release.
+
+The pipeline verifies each OSS, GitHub latest, and requested-tag index/signature pair before selecting the highest valid generation. Different valid bytes for the same generation fail publication. If the OSS `index.sig` and `index.json` update is interrupted, a retry can recover from a valid GitHub copy. When catalog bytes exist but no candidate verifies, `first_release` cannot bypass verification.
+
+The release tag must point to the source `GITHUB_SHA` actually built by the run, including when the tag already exists. The release's `release-metadata.json` records that source commit and the checked-out SDK SHA; `sdkCommit` is `null` for index-only refreshes. Actions' Re-run jobs retains the original commit and immutable assets. A run superseded by a higher generation cannot restore its older index as current.
+
+A scheduled job refreshes the signed index every Monday and Thursday. It reads and verifies the previous index, creates a new generation with at most 14 days of validity, and does not rebuild or replace plugin packages. A scheduled run cannot bootstrap the first generation. Clients can therefore continue to obtain an unexpired root-signed catalog even during periods without new plugin versions.
+
+Both sources must serve identical bytes for a generation, and CDN refresh must finish before the index is switched publicly. This reuses the static distribution model of application updates while retaining root-signature verification and requiring neither a database nor an upload API.
+
+## Index consumed by the client
+
+The publication workflow produces one complete root index. Individual authors do not supply client JSON directly. The top-level schema is:
+
+~~~ts
+type PluginPermission =
+  "editor.read" | "editor.write" | "notes.read" | "notes.create"
+  | "notes.open" | "notes.list" | "notes.write" | "notes.move"
+  | "notes.delete" | "network.fetch";
+
+interface PluginMarketIndex {
+  schemaVersion: 1;
+  generation: number;
+  generatedAt: string;
+  expiresAt: number;
+  publishers: Array<{
+    id: string;
+    name: string;
+    keyId: string;
+    publicKey: string;
+    verified?: boolean;
+    previousKeys?: Array<{ keyId: string; publicKey: string }>;
+  }>;
+  plugins: Array<{
+    id: string;
+    name: string;
+    description: string;
+    author: string;
+    publisherId: string;
+    repository?: string;
+    homepage?: string;
+    license?: string;
+    icon?: string;
+    categories?: string[];
+    featured?: boolean;
+    official?: boolean;
+    permissions: PluginPermission[];
+    releases: Array<{
+      version: string;
+      minAppVersion: string;
+      apiVersion: string;
+      platforms: Array<"desktop" | "ios" | "android">;
+      permissions?: PluginPermission[];
+      packageUrl: string;
+      packageUrls?: string[];
+      packageSha256: string;
+      signatureUrl?: string;
+      publishedAt: string;
+      changelog?: string;
+      publisherKeyId?: string;
+      revoked?: string;
+    }>;
+  }>;
+}
+~~~
+
+`expiresAt` is epoch milliseconds. At validation time, it must be in the future and no more than 14 days away. Unknown fields are rejected. `index.sig` is Base64 text containing the 64-byte Ed25519 signature over the exact bytes of `index.json`.
+
+Newly generated or refreshed indexes include `permissions` for each release. The client uses the selected version's summary for display, installation, and verification. Plugin-level `permissions` remains for legacy indexes: clients fall back to it for releases without a summary, and the publisher backfills missing fields from that previous entry. If a legacy summary disagrees with an old package, maintainers must check its manifest, correct the summary, and publish a new generation.
+
+Each plugin can retain at most 100 releases. Adding the 101st version fails before index signing. Maintainers must review the retention policy and explicitly adjust the historical catalog; the tooling never automatically removes compatible versions still needed by older clients.
+
+`packageUrl` is the primary download URL retained for readers of the earlier index shape. Optional `packageUrls` lists HTTPS mirrors in attempt order. The official publisher requires one to three unique URLs and requires the first entry to equal `packageUrl`. The current official index orders the OSS primary first and the release-tag-specific GitHub Release second. If a download or digest check fails at one URL, the client tries the next and verifies every candidate against the same `packageSha256`.
+
+URLs are part of the root-signed index. Adding, removing, or reordering a mirror changes the index bytes, so it requires a larger generation and a new root signature; it cannot rewrite an existing generation. A mirror-only change does not require a new plugin version when the archive bytes and SHA-256 remain unchanged.
+
+Only the trusted root-index publication process may set `official: true`, and it must refer to the registered NoteGen publisher. An author cannot obtain the Official badge through a manifest field, author name, or ID prefix. Official plugins use the same package signatures, permissions, and sandbox rules as community plugins.
+
+Authors edit community/registry.json rather than the generated root index. See the [submission format](https://github.com/codexu/note-gen-plugins/blob/main/community/README.en.md).
+
+## Immutable-release requirements
+
+Once the marketplace opens, each release must at least satisfy these requirements:
+
+- Plugin ID, version, and manifest match the registered metadata.
+- `packageUrl` and optional `packageUrls` use HTTPS distribution hosts accepted by the client and satisfy the primary, ordering, and uniqueness rules.
+- `packageSha256` matches the exact final bytes of the `.notegen-plugin` archive.
+- The package's `integrity.json` covers every payload.
+- The package's `signature.sig` verifies with the registered publisher public key.
+- The signing input for `plugin.json` and `integrity.json` is canonicalized with RFC 8785 JCS.
+- The manifest permission set matches the index permission summary.
+- An ID and version always identify the same bytes; any byte change requires a new SemVer release.
+- The source tag, locked dependencies, and build instructions remain available.
+
+Publishing a detached integrity file or signature does not replace the files embedded in the package. The current client also does not use `signatureUrl` to verify the package signature.
+
+## Publisher identity continuity
+
+The first installation pins `publisherId`, `keyId` and public-key bytes. Publisher IDs cannot silently change. A root-signed publisher entry can register previous keys through `previousKeys`; a historical release can specify `publisherKeyId`, otherwise the current publisher key applies. The installed key must match an authorized previous key before rotation to the current key is accepted. New-key packages require renewed review rather than silently inheriting old grants.
+
+Maintainers configure `previousPublisherKeys` in the official registry or `previousKeys` on a community publisher. Authors cannot authorize rotation from their own manifest. Keep old public keys for historical verification. Publisher transfer is not automatic: a different publisher uses a new plugin ID and explicit user installation/authorization.
+
+## Revocation and incident response
+
+The release field `revoked` contains a public reason. Maintainers add affected versions to the plugin's registry `revocations` and publish a higher-generation root-signed index. Do not mutate an already signed generation or replace package bytes. Revoked releases are excluded from install/update candidates; once learned, the host stops affected running plugins and blocks startup and rollback to those releases.
+
+The main host checks on startup and periodically (30 minutes), and users can refresh Discover. Offline clients cannot learn new markers immediately. Deleting a release from the index is not revocation. Preserve affected version records and hashes; publish a fixed new version and a data-recovery explanation. Key compromise may require both rotation and revocation of affected versions.
+
+This is implemented behavior, not evidence of a completed production rollout. The [community review draft](https://github.com/codexu/note-gen-plugins/blob/main/COMMUNITY-REVIEW.md) records evidence and incident steps; it is not an open submission endpoint. Independent community-package ingestion is implemented; real-client acceptance is still required before opening submissions.
+
+## Index publication constraints
+
+Each installation or update must obtain a fresh signed index during that operation. If refresh fails, browsing may show the last signature-verified cache. An expired cache is marked as a stale offline catalog and cannot be used for installation or update. The client rejects a lower generation and rejects different index contents published under an already accepted generation.
+
+After installation, NoteGen reverifies the package offline with the locally pinned publisher public key. Starting an installed plugin therefore does not depend on marketplace availability.
+
+When submissions open, this page and the `note-gen-plugins` repository will publish the only supported directory structure, commands, pull-request template, and review rules.
+
+## Application release configuration
+
+A release with the market enabled requires `PLUGIN_MARKET_ROOT_PUBLIC_KEY`. To deliberately ship without the market, set `PLUGIN_MARKET_ENABLED=false`; missing keys without this explicit opt-out fail the release. This does not bypass verification. Pin reviewed full commit SHAs in host `PLUGIN_SDK_REF`, SDK `PLUGIN_HOST_REF` and the plugin repository’s `PLUGIN_SDK_REF` before release validation. See the host [maintenance runbook](https://github.com/codexu/note-gen/blob/dev/PLUGIN-MAINTENANCE.md).
+
+## Planned withdrawal features
+
+Version revocation through a signed index is supported today: it blocks installation and stops the affected marketplace version after the client receives the revocation. Removing source files does not revoke a release or delete its OSS package.
+
+Whole-plugin withdrawal with a dedicated index-only publication workflow, publication blocking/resumption, and soft delisting that allows installed copies to keep running are still design proposals. They are not available controls. The proposal is maintained in the plugin repository; this page will document commands only after implementation and client compatibility validation. Historical package deletion is separate from revocation.

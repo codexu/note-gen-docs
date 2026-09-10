@@ -1,0 +1,264 @@
+---
+title: 插件配置
+description: 使用 plugin.json 声明插件身份、兼容性、权限、激活事件和界面入口。
+icon: FileJson
+---
+
+每个插件目录或归档根目录都必须包含 `plugin.json`。NoteGen 在执行入口前严格解析它，用于判断兼容性、注册扩展入口声明、展示权限，并验证市场包身份。未知字段会被拒绝。
+
+## 完整示例
+
+~~~json
+{
+  "manifestVersion": 1,
+  "id": "com.example.word-count",
+  "name": "Word Count",
+  "description": "Count words in the active editor.",
+  "version": "0.1.0",
+  "apiVersion": "^0.1.0",
+  "minAppVersion": "0.37.0",
+  "platforms": ["desktop"],
+  "entry": "dist/main.js",
+  "activationEvents": [
+    "onCommand:com.example.word-count.count"
+  ],
+  "permissions": {
+    "editor.read": {
+      "scope": "active-editor"
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "id": "com.example.word-count.count",
+        "title": "%command.count.title%",
+        "description": "%command.count.description%",
+        "suggestedShortcut": "Mod+Shift+W"
+      }
+    ],
+    "settings": [
+      {
+        "key": "com.example.word-count.includeCodeBlocks",
+        "type": "boolean",
+        "scope": "workspace",
+        "title": "%setting.includeCodeBlocks.title%",
+        "default": false
+      }
+    ]
+  },
+  "defaultLocale": "en",
+  "locales": {
+    "en": "locales/en.json",
+    "zh-CN": "locales/zh-CN.json"
+  },
+  "author": {
+    "name": "Example Studio",
+    "url": "https://example.com"
+  },
+  "repository": "https://github.com/example/notegen-word-count",
+  "license": "MIT"
+}
+~~~
+
+## 顶层字段
+
+| 字段 | 必需 | 规则 |
+| --- | --- | --- |
+| `manifestVersion` | 是 | 当前只能为数字 `1` |
+| `id` | 是 | 小写反向域名 ID，3–160 个 ASCII 字符 |
+| `name` | 是 | 1–100 个 UTF-8 字节，不含控制字符 |
+| `description` | 否 | 最多 500 个 UTF-8 字节，不含控制字符 |
+| `version` | 是 | 完整 SemVer |
+| `apiVersion` | 是 | 单个 SemVer 或带 `^`、`~`、`>=`、`>`、`<=`、`<` 的范围 |
+| `minAppVersion` | 是 | 最低 NoteGen SemVer |
+| `platforms` | 是 | `desktop`、`ios`、`android` 中的一个或多个 |
+| `entry` | 是 | 最多 240 个 UTF-8 字节的安全包内 JavaScript 相对路径，必须以 `.js` 结尾 |
+| `activationEvents` | 是 | 最多 100 个受支持事件 |
+| `permissions` | 是 | 权限声明对象，可以为空 |
+| `contributes` | 是 | 扩展入口声明对象，可以为空 |
+| `defaultLocale`、`locales` | 否 | 本地化配置 |
+| `author`、`repository`、`license` | 否 | 作者与项目元数据 |
+
+`0.37.0` 是当前计划首个包含插件系统的 NoteGen 版本。正式发布前如果应用版本发生调整，SDK 默认值和官方插件 manifest 也必须同步；发布自己的插件时，应填写实际验证并支持的最低应用版本。
+
+## ID 与命名空间
+
+合法 ID 示例：
+
+~~~text
+com.example.word-count
+org.example.daily-tools
+~~~
+
+每一段由小写字母、数字和连字符组成，必须至少有一个点，段首和段尾必须是字母或数字。
+
+`app.notegen` 和所有 `app.notegen.*` ID 是 NoteGen 宿主内部保留命名空间，官方与社区市场包及开发目录都会被拒绝。官方身份由市场中的发布者签名确定，不由 ID 前缀确定。
+
+以下 ID 必须以 `<plugin-id>.` 开头并保持唯一：
+
+- 命令 ID；
+- 设置 key；
+- 状态栏项目 ID。
+
+菜单直接引用已声明的命令，没有单独 ID。插件 ID 发布后不要更改；`author.name` 不是发布者安全身份。
+
+## 版本、API 与平台
+
+- `version` 使用 SemVer；市场中的同版本包不可替换；
+- `apiVersion` 是插件接受的 SemVer 兼容范围，当前必须包含宿主实际提供的 API `0.1.0`；激活后的 `ctx.plugin.apiVersion` 是具体宿主版本，不是这里的范围字符串；
+- `minAppVersion` 高于当前应用时，安装会拒绝；
+- `platforms` 不包含当前平台时，插件不会运行。
+
+schema 允许声明 `desktop`、`ios` 和 `android`，但当前官方、社区和开发插件必须包含 `desktop`，也只在桌面端执行。移动端暂不运行插件；不要据此宣称移动端兼容。
+
+## 入口文件
+
+`entry` 必须是最多 240 个 UTF-8 字节的安全相对路径，并指向不超过 5 MiB、无 NUL 字节的 UTF-8 `.js` 文件。
+
+NoteGen 的安装校验只确认文件存在、类型、编码和大小。JavaScript 语法或模块导入错误会在激活时报告。入口需要是单文件 ESM，所有依赖在作者构建阶段合并进去；运行时除内部入口外不解析任何相对、外部或远程模块。
+
+## 激活事件
+
+当前支持：
+
+| 事件 | 触发时机 |
+| --- | --- |
+| `onCommand:<command-id>` | 用户第一次运行该命令 |
+| `onEditor:markdown` | 当前窗口有活动 Markdown 编辑器 |
+| `onWorkspace:open` | 插件绑定到一个已打开的工作区 |
+| `onNotes:change` | 工作区内的 Markdown 笔记发生变化 |
+
+`onCommand` 后的 ID 必须在 `contributes.commands` 中声明。优先使用按命令激活，避免不必要的常驻运行时。
+
+## 权限声明
+
+每项权限格式如下：
+
+~~~json
+{
+  "editor.read": {
+    "scope": "active-editor",
+    "optional": false,
+    "description": "%permission.editorRead.description%"
+  }
+}
+~~~
+
+| 权限 | 允许的 scope |
+| --- | --- |
+| `editor.read` | `active-editor` |
+| `editor.write` | `active-editor` |
+| `notes.read` | `workspace-file`、`workspace-files`、`workspace-folder` |
+| `notes.list`、`notes.move` | `workspace-folder` |
+| `notes.create` | `workspace-folder` |
+| `notes.open` | `workspace-folder` |
+| `notes.write`、`notes.delete` | `workspace-file`、`workspace-files`、`workspace-folder` |
+| `network.fetch` | `network-origins` |
+
+`optional` 默认为 false。必需权限未批准时插件不能激活；可选权限可被拒绝，相关 API 调用会返回 `PermissionDenied`。
+
+manifest 是权限请求上限，实际路径在每个工作区由用户审核。运行时不能请求未声明的新权限。
+
+## 扩展入口声明
+
+`contributes` 支持：
+
+- `commands`：进入插件命令面板，也可被菜单和状态栏引用；
+- `settings`：由 NoteGen 渲染的设置；
+- `statusBar`：宿主状态栏项目；
+- `menus`：命令在允许位置的入口。
+- `views`：宿主渲染的 `left-sidebar`、`right-sidebar` 或 `editor-tab` 入口。
+
+`suggestedShortcut` 只在插件命令面板中显示提示文字，不注册快捷键，也没有冲突检测或用户绑定界面。
+
+扩展入口声明只能是 schema 允许的 JSON，不能携带 HTML、CSS、React 组件或回调源码。详见[扩展应用界面](/cn/docs/plugins/developers/ui-contributions)。
+
+## 数量与长度限制
+
+| 项目 | 限制 |
+| --- | --- |
+| 命令、设置、菜单 | 每类最多 100 项 |
+| 状态栏项目 | 最多 30 项 |
+| 声明式视图 | 最多 30 项 |
+| 激活事件 | 最多 100 项且不能重复 |
+| 命令、设置、状态栏的完整 ID | 最多 220 个 UTF-8 字节 |
+| 可本地化标题、说明、placeholder、选项 label | 最多 240 个 UTF-8 字节 |
+| 权限说明 | 最多 240 个 UTF-8 字节 |
+| 命令 `icon` | 1–80 个 ASCII 字符，只能含字母、数字和连字符 |
+| `suggestedShortcut`、菜单 `group` | 最多 80 个 UTF-8 字节 |
+| 状态栏 `priority` | `-10000` 到 `10000` 的整数字面量 |
+| select `options` | 1–100 项；每个 value 最多 160 个 UTF-8 字节且不能重复 |
+| string `maxLength` | 1–65,536，按默认值的 UTF-8 字节数检查 |
+| `author.name`、`license` | 分别最多 120、80 个 UTF-8 字节 |
+
+“字符数”和“字节数”不能混用。中文、Emoji 等字符通常占多个 UTF-8 字节；达到边界时以 CLI 与宿主计算的字节数为准。
+
+## 本地化
+
+声明 `locales` 时必须同时声明 `defaultLocale`，且默认语言必须出现在映射中。值是包内 JSON 相对路径：
+
+~~~json
+{
+  "defaultLocale": "en",
+  "locales": {
+    "en": "locales/en.json",
+    "zh-CN": "locales/zh-CN.json"
+  }
+}
+~~~
+
+命令、设置、权限说明及 select 选项文案可以使用 `%key%`。语言文件是 key 到字符串的对象：
+
+~~~json
+{
+  "command.count.title": "Count words",
+  "command.count.description": "Count words in the current selection"
+}
+~~~
+
+当前语言不存在时回退到默认语言。manifest 引用的本地化文件必须存在、可解析，并进入 `integrity.json`。
+
+本地化还有以下硬性限制：
+
+- 最多声明 50 个 locale 资源；
+- locale tag 为 2–35 个 ASCII 字符，忽略大小写后不能重复；
+- locale 路径必须以 `.json` 结尾，最多 240 个 UTF-8 字节且不能发生大小写冲突；
+- 每个语言文件最多 2,000 条消息；
+- key 非空、无控制字符，最多 160 个 UTF-8 字节；
+- message 必须是字符串，最多 4,096 个 UTF-8 字节且不能含 NUL；
+- 默认语言必须包含 manifest 扩展入口声明引用的每一个 `%key%`。
+
+## 常见拒绝原因
+
+- 顶层或嵌套对象含未知字段；
+- 可选字段写成 `null` 而不是直接省略，或把某种设置专属字段写到其他类型；
+- `manifestVersion`、`maxLength`、状态栏 `priority` 等整数字段使用 `1.0`、`1e0` 或 `-0` 这类非整数字面量；
+- ID、命令、设置或状态栏命名空间不合法或重复；
+- 权限与 scope 组合无效；
+- 激活事件引用未声明命令；
+- 状态栏或菜单引用未声明命令；
+- `when` 不是当前支持的条件；
+- select 默认值不在 options 中，或数字默认值越界；
+- 本地化映射不完整；
+- 入口、完整性清单、兼容性或市场签名校验失败。
+
+完整包规则见[打包与验证](/cn/docs/plugins/developers/package-verify)。
+
+## 将目录设置与权限绑定
+
+一个 `type: "string"`、`scope: "workspace"` 的设置可以声明 `permissionPaths`。引用的权限必须已声明、是必需权限且范围为 `workspace-folder`；一个插件只能有一个这样的绑定设置。授权弹窗集中显示目录选择，在用户确认时同步设置。这是通用能力，不依赖 Daily Notes 等特定插件 ID。
+
+~~~json
+{
+  "key": "com.example.plugin.folder",
+  "type": "string",
+  "scope": "workspace",
+  "title": "笔记目录",
+  "default": "Journal",
+  "permissionPaths": ["notes.create", "notes.open"]
+}
+~~~
+
+将该片段放入 `contributes.settings`，并将这两个权限声明为 `workspace-folder`，省略 `optional` 或设为 false。声明绑定不会自动授予权限；普通设置修改也不会自动扩大现有授权。
+
+将 `com.example.plugin` 替换为 manifest 中的插件 ID；所有设置 key 都必须带该插件命名空间。

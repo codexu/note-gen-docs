@@ -1,0 +1,384 @@
+---
+title: Extend the app interface
+description: Extend NoteGen with host-rendered commands, settings, menus, and status-bar items.
+icon: PanelBottom
+---
+
+This page explains how to add commands, settings, menus, status-bar items, sidebars, and editor tabs to NoteGen. A command is an executable plugin action, such as opening a daily note; menus and buttons give users a way to trigger it.
+
+Plugins declare interface entry points under `contributes` in `plugin.json`. NoteGen renders them with its own components, themes, localization, and accessibility behavior. Plugin code, including official plugins, cannot manipulate the DOM or mount framework components.
+
+Static contributions are registered before the entry code runs. NoteGen removes them when the plugin is disabled, uninstalled, rebuilt during an update, or quarantined after three accumulated failures. A single runtime crash clears the runtime and dynamic status-bar state but leaves static commands and menus available for the next activation attempt.
+
+## Commands
+
+~~~json
+{
+  "contributes": {
+    "commands": [
+      {
+        "id": "com.example.journal.open-today",
+        "title": "%command.openToday.title%",
+        "description": "%command.openToday.description%",
+        "icon": "calendar-days",
+        "suggestedShortcut": "Mod+Shift+D"
+      }
+    ]
+  }
+}
+~~~
+
+Each command ID must begin with the plugin ID followed by a dot and must be unique. Register its handler at runtime:
+
+~~~js
+export async function activate(ctx) {
+  ctx.commands.handle("com.example.journal.open-today", async (argument) => {
+    // Complete the user action through public APIs.
+  });
+}
+~~~
+
+Users open the plugin command palette with Command + Shift + P on macOS or Ctrl + Shift + P on Windows and Linux. Commands are searchable by title, description, and plugin name.
+
+`suggestedShortcut` is only a label shown on the right side of the command palette. It does not register a keyboard shortcut. NoteGen currently has no plugin key-binding UI or conflict detection, and plugins cannot listen for global host keyboard events.
+
+`icon` is an optional host icon name. An unknown name falls back to the generic plugin icon; NoteGen never loads an icon script or font supplied by the plugin.
+
+## Settings
+
+~~~json
+{
+  "contributes": {
+    "settings": [
+      {
+        "key": "com.example.journal.enabled",
+        "type": "boolean",
+        "scope": "workspace",
+        "title": "%setting.enabled.title%",
+        "default": false
+      },
+      {
+        "key": "com.example.journal.folder",
+        "type": "workspace-folder",
+        "scope": "workspace",
+        "title": "%setting.folder.title%",
+        "default": "Journal"
+      }
+    ]
+  }
+}
+~~~
+
+Supported setting types are:
+
+| `type` | `scope` | Main fields |
+| --- | --- | --- |
+| `boolean` | `device` or `workspace` | `default` |
+| `string` | `device` or `workspace` | `default`, `placeholder`, `maxLength` |
+| `number` | `device` or `workspace` | `default`, `min`, `max`, `step` |
+| `select` | `device` or `workspace` | `default`, `options` |
+| `workspace-file` | `workspace` only | Relative-path string |
+| `workspace-folder` | `workspace` only | Relative-path string |
+
+Every key must be in the plugin namespace. Never store passwords, tokens, or private keys in ordinary settings.
+
+`workspace-file` and `workspace-folder` are currently rendered as text fields. They validate a safe relative path but do not open a file picker. Saving a setting does not infer, add, or broaden a permission: the manifest must declare the permission in advance, and the user reviews the path separately.
+
+Both `device` and `workspace` contribution settings are stored locally. `workspace` means that values are partitioned by workspace ID; it does not currently mean that they sync between devices.
+
+At runtime, use `ctx.settings.get` and `ctx.settings.onDidChange`. Plugin code cannot write contributed settings directly.
+
+## Status bar
+
+Declare a status-bar item:
+
+~~~json
+{
+  "contributes": {
+    "statusBar": [
+      {
+        "id": "com.example.stats.summary",
+        "alignment": "right",
+        "priority": 100,
+        "command": "com.example.stats.show-details"
+      }
+    ]
+  }
+}
+~~~
+
+`command` is optional. When present, it must reference a declared command. `alignment` is `left` or `right`; `priority` controls ordering on that side.
+
+Update the item at runtime:
+
+~~~js
+await ctx.ui.statusBar.update("com.example.stats.summary", {
+  visible: true,
+  text: "1,248 characters · 5 min",
+  compactText: "1,248",
+  tooltip: "Writing statistics",
+  accessibleLabel: "1,248 characters, 5 minutes reading time",
+  busy: false
+});
+~~~
+
+`update` returns `Promise<void>`; await it to receive failures caused by lifecycle shutdown or invalid arguments. Each text field is limited to 160 UTF-16 code units and rendered as plain text. Further updates to one item within 100 milliseconds are coalesced, with the last state applied when the window ends. Promise resolution means acceptance, not necessarily a paint; pending state is cancelled when the plugin stops, is disabled, or is replaced. Use `compactText` for narrow layouts and make `accessibleLabel` express the complete value and state.
+
+A status-bar item belongs to the plugin host in the current window. Before publishing an asynchronous result, compare the editor ID and revision so an old calculation cannot overwrite a new document or window.
+
+## Menus
+
+~~~json
+{
+  "contributes": {
+    "menus": [
+      {
+        "location": "editor/slash",
+        "command": "com.example.journal.open-today",
+        "when": "editor == markdown",
+        "group": "journal"
+      },
+      {
+        "location": "file/context",
+        "command": "com.example.files.inspect"
+      }
+    ]
+  }
+}
+~~~
+
+Supported locations are:
+
+| `location` | User entry point |
+| --- | --- |
+| `editor/slash` | Slash menu in the Markdown editor |
+| `editor/context` | Editor context menu shown by holding Alt/Option while right-clicking; an ordinary right-click keeps the system spelling, copy, and paste menu |
+| `file/context` | Context menu for a file, folder, or multi-selection in the file tree |
+| `mobile/writing/overflow` | More actions menu on the mobile writing page |
+
+A `file/context` command argument may include `kind`, a single `relativePath`, and `selectedPaths`. Treat the argument as untrusted serializable input and continue to rely on public APIs and permission checks before acting.
+
+Plugins currently run only on desktop, so `mobile/writing/overflow` is reserved for future mobile plugin support and does not currently display contributions from marketplace or development plugins.
+
+`when` is not a general expression language. The only accepted condition is a string semantically equivalent to `editor == markdown`, with optional whitespace around the equality operator. Any other expression makes the manifest invalid.
+
+`group` is optional grouping metadata. It must be non-empty and no longer than 80 UTF-8 bytes. The current UI does not guarantee custom grouping or ordering from this value, so do not treat it as a layout API.
+
+## Localization
+
+Use `%key%` references for static labels:
+
+~~~json
+{
+  "command.openToday.title": "Open today's entry",
+  "command.openToday.description": "Open or create today's journal entry",
+  "setting.enabled.title": "Enable journal command"
+}
+~~~
+
+For runtime notices, call `ctx.i18n.t("key", values)`. When the current language is unavailable, NoteGen falls back to the manifest's default locale. When a key is missing, it returns the key itself.
+
+## Declarative sidebars and dialogs
+
+Declare a host-rendered view with `contributes.views`, using a namespaced ID and `left-sidebar`, `right-sidebar`, or `editor-tab` location. Update it with `ctx.ui.views.update(id, { blocks })` and open it with `ctx.ui.views.open(id)`. `ctx.ui.openDialog(options)` displays a dialog; `ctx.ui.closeDialog(id)` closes your plugin's dialog.
+
+Supported blocks are `heading`, `text`, `list`, `key-value`, `actions`, `form`, `table`, and `tree`. Actions, forms, and tree nodes may call only commands declared by the same plugin. API 0.1.1 also supports layouts, toolbars, interactive lists, and more; see the [UI component reference](/en/docs/plugins/developers/ui-components). Each blocks array allows 50 entries; the document allows 200 blocks, nesting depth 6, and 128 KiB. Markdown is available through the host-rendered `markdown` block; HTML, scripts, and styles cannot be injected. Dynamic content is cleared when the plugin is disabled, updated, removed, or fails.
+
+### Interactive forms
+
+Place this inside `activate(ctx)`. Declare `com.example.tools.submit` in the manifest and activate the plugin on workspace open or through a declared command.
+
+~~~ts
+ctx.commands.handle("com.example.tools.submit", async (argument) => {
+  if (!argument || typeof argument !== "object" || !("values" in argument)) return;
+  const values = argument.values;
+  if (!values || typeof values !== "object" || !("title" in values)) return;
+  const title = typeof values.title === "string" ? values.title.trim() : "";
+  if (!title) return { fieldErrors: { title: "Enter a title" } };
+  await ctx.storage.workspace.set("lastTitle", title);
+  return { message: "Saved" };
+});
+await ctx.ui.openDialog({ title: "Save a title", content: { blocks: [{
+  type: "form", id: "title-form",
+  fields: [{ type: "text", id: "title", label: "Title", required: true, maxLength: 120 }],
+  submitLabel: "Save", command: "com.example.tools.submit"
+}] } });
+~~~
+
+Field types are `text`, `textarea`, `search`, `date`, `number`, `select`, `note-picker`, and `checkbox`. Common properties are `id`, `label`, `description`, `required`, and `value`. Text supports `placeholder` and `maxLength`; numbers support `min` and `max`; selects require `options: [{ label, value }]` with unique, nonempty values. Field IDs start with a letter, contain letters, digits, underscores or hyphens, and have at most 64 characters. Field IDs within a form and form IDs within a document must be unique.
+
+Limits: 30 fields per form, 10,000 characters per text field, 100 select options. Required checkboxes must be checked. Controls disable during submission. The command receives `{ formId, values }`, with numeric and boolean values preserved; empty optional number/select fields are omitted. Host validation checks required values and bounds, but your handler must still validate business rules.
+
+Return `{ fieldErrors: { fieldId: "Explanation" }, message: "Result" }` for field errors and feedback. Unknown field errors are ignored; thrown errors appear below the form. Opening a dialog returns immediately, without waiting for input. Users may dismiss it. Only submission starts command execution. Updating a form definition preserves its inputs; use a new `resetKey` for an explicit reset. Switching sidebars or open editor-area tabs retains inputs; closing a view or rebuilding the plugin does not.
+
+### View lifecycle
+
+Displaying a view activates its plugin; failures provide an in-view retry action. Event forwarding starts before activation, including visibility changes during initialization. User interaction, another navigation, or a workspace change supersedes a pending open request with `Cancelled` instead of letting it steal focus after saving.
+
+`views.close(id)` closes a view. `focus(id)` opens and focuses it. `getState(id)` returns `{ id, location, visible }`. `onDidChange(listener)` reports visibility changes and returns a disposable; it does not send an initial state. Subscribe, then read the current state when needed.
+
+An `editor-tab` appears in the editor area alongside an entry for the note editor. Users can switch and close plugin tabs. Opening waits for safe editor deactivation and may fail with `EditorBusy`. Drag-to-split, moving between windows, and restoring plugin tabs after restart are not supported. `visible: false` may simply mean another tab is selected, not that the plugin was unloaded.
+
+### Tables and trees
+
+~~~ts
+await ctx.ui.views.update("com.example.tools.results", { blocks: [
+  { type: "table", columns: ["Name", "Count"], rows: [["Notes", "12"]] },
+  { type: "tree", items: [
+    { id: "root", label: "Categories" },
+    { id: "child", parentId: "root", label: "Journal" }
+  ] }
+] });
+~~~
+
+Declare the `results` view in the manifest too. Tables allow 20 columns and 100 rows; each row must match the column count. Cells accept text up to 2,000 characters or an inline action `{ text, command, argument?, disabled? }`. Action labels are 1–160 characters and commands must be declared by the same plugin. Repeated clicks are disabled while the button is executing; handlers must still validate arguments and note revisions. Trees allow 100 nodes and 8 levels; IDs are unique, parents must exist, and cycles are rejected. A node may include `command` and JSON `argument`. This does not expose or mutate the host's filesystem tree.
+
+For example, a task row can contain:
+
+~~~ts
+['Organize notes', 'Inbox.md', {
+  text: 'Complete', command: 'com.example.tasks.complete',
+  argument: { path: 'Inbox.md', revision: 123, line: 5 },
+}]
+~~~
+
+This invokes a command; it does not automatically modify files. The SDK repository includes `examples/task-dashboard`, demonstrating note pagination and revision-checked task completion while preserving the write guard for open notes.
+
+## UI that plugins still cannot contribute
+
+The current API does not allow plugins to provide:
+
+- React, Vue, or Svelte components, or Tiptap/ProseMirror extensions;
+- HTML, iframes, WebViews, or DOM callbacks;
+- global CSS, theme overrides, or icon fonts;
+- custom settings pages or arbitrary component trees outside the declarative schema;
+- native windows, system-tray items, or native mobile pages.
+
+For more involved interactions, combine commands, host-rendered settings, notices, menus, status-bar items, and declarative blocks.
+
+### Stable form state
+
+Forms are identified by their view (or dialog instance) and `form.id`; fields use `field.id`. Updating labels, descriptions, ordering, buttons or options preserves entered values. New fields use their defaults, removed fields lose their drafts, and a changed field type reinitializes that field. Values invalidated by new options or bounds must be corrected on the next submission.
+
+Set a new `resetKey` on the form block (at most 160 characters) to explicitly reset it, for example `resetKey: "new-note-2"`. This clears feedback too, and late results from an old submission cannot update the new form. Removing a form, closing its view/dialog, disabling or rebuilding the plugin clears drafts. Drafts are memory-only. Switching sidebars or open editor-area tabs preserves values and pending submission state.
+
+### Dialog instances and close events
+
+~~~ts
+const subscription = ctx.ui.onDidCloseDialog(({ id, reason }) => {
+  // reason: "user" | "programmatic" | "replaced" | "disposed"
+  // Clean up state for id. A stopped runtime may not receive disposed.
+});
+const first = await ctx.ui.openDialog({
+  title: "Step one", content: { blocks: [{ type: "text", text: "Ready" }] }
+});
+const second = await ctx.ui.openDialog({
+  replaceId: first.id,
+  title: "Step two", content: { blocks: [{ type: "text", text: "Continue" }] }
+});
+await ctx.ui.closeDialog(first.id); // Cannot close step two.
+await ctx.ui.closeDialog(second.id);
+subscription.dispose();
+~~~
+
+Opening returns `{ id }` immediately. If a dialog is already open, use `replaceId` to replace your own current instance explicitly; otherwise the call returns `Conflict`. You cannot replace another plugin's dialog. A replacement target that has already closed returns `NotFound`. Closing an old ID has no effect.
+
+Dialog form commands also receive `dialogId`. Capture it before asynchronous work and close that instance afterward, rather than consulting a global variable that might now refer to a newer dialog.
+
+## Dynamic forms
+
+### Reject stale asynchronous UI results
+
+Capture `formId`, `generation` and `revision` from the change-command payload. After awaiting a result, pass them as the UI document's `expectedForm`:
+
+~~~ts
+await ctx.ui.views.update('com.example.tool.results', {
+  expectedForm: { formId, generation, revision },
+  blocks: updatedBlocks,
+});
+await ctx.ui.updateDialog(dialogId, {
+  title: 'Options',
+  content: { expectedForm: { formId, generation, revision }, blocks: updatedBlocks },
+});
+~~~
+
+The snapshot must match a form in the target surface. Further input, reset, removal or closure makes an old update fail with `StaleRevision` without changing the UI. Discard the result; do not retry without the condition. This optional precondition is not persisted in view content and cannot be supplied when opening a new dialog. It only protects UI updates, not network requests or file mutations already issued by the handler. Multiple requests from the same input snapshot still need their own ordering policy.
+
+### Stable table identity and duplicate actions
+
+For dynamic tables, provide a stable `id` and `rowIds`. Row IDs correspond one-to-one with rows, are unique within the table, and contain 1–160 characters. Keep each record's ID after sorting rather than using its current position. Table IDs are unique within a document.
+
+Action buttons, table-cell buttons and tree-node buttons share execution state. While a command runs, these buttons invoking the same command are disabled even with different arguments. Switching views does not release a pending lock; completion or failure does. This does not replace data validation or provide a global transaction lock for form submissions, shortcuts and other command entry points.
+
+Fields support `disabled` and `visibleWhen: { field, equals }`. Conditions reference another field in the same form and use strict equality. Hidden values remain in the draft. Hidden and disabled fields are excluded from submission and required-field validation. Conditions are not a security boundary: validate command arguments too.
+
+~~~ts
+const form = {
+  type: 'form' as const, id: 'options',
+  command: 'com.example.tool.submit',
+  changeCommand: 'com.example.tool.changed',
+  submitLabel: 'Run', submitDisabled: false,
+  fields: [
+    { id: 'advanced', type: 'checkbox' as const, label: 'Advanced options' },
+    { id: 'prefix', type: 'text' as const, label: 'Prefix',
+      visibleWhen: { field: 'advanced', equals: true } },
+  ],
+};
+~~~
+
+Declare and register `changeCommand`. After about 250 ms without further input, it receives `{ formId, fieldId, values, revision, generation, dialogId? }`. This is an unvalidated draft including hidden and disabled values; an empty numeric input may be an empty string. Initial rendering and programmatic updates do not trigger it. Return values are ignored.
+
+Use `views.update` or `updateDialog` to update options and button states. Matching field IDs and types retain values. If a new option list excludes the old selection, submission asks the user to choose again. Change `resetKey` to reset values explicitly.
+
+For asynchronous dependencies, record the latest request token in your handler and recheck it after awaiting results. Do not compare only `revision`: resetting the form changes `generation` and restarts the counter. Unmounting cancels notifications that have not started; showing the form again can deliver the latest unnotified draft. Already running commands are not automatically cancelled.
+
+## Update a dialog in place
+
+~~~ts
+const dialog = await ctx.ui.openDialog({
+  title: 'Tool', content: { blocks: [form] },
+});
+await ctx.ui.updateDialog(dialog.id, {
+  title: 'Tool · Ready',
+  content: { blocks: [
+    { type: 'callout', title: 'Tip', text: 'Choose options before running.' },
+    form,
+  ] },
+});
+~~~
+
+`updateDialog(id, options)` replaces the complete title and content, not a partial patch. Omitted optional description and close label revert to defaults. Do not pass `replaceId`. The instance ID stays unchanged and no close event fires. Matching forms retain drafts; removed forms are cleared. Closed or foreign instances return `NotFound`.
+
+## Feedback and action states
+
+These display blocks do not execute HTML, scripts or remote resource requests:
+
+~~~ts
+const blocks = [
+  { type: 'callout', title: 'Warning', text: 'Check the input.', tone: 'destructive' },
+  { type: 'separator' },
+  { type: 'progress', label: 'Processing', value: 50 },
+];
+~~~
+
+Progress requires a text label and a finite value from 0 to 100. Callout tones are `default` and `destructive`. Action buttons support `disabled: true`; forms support `submitDisabled`.
+
+## Host navigation commands
+
+~~~ts
+await ctx.commands.executeHost('app.openSearch');
+await ctx.commands.executeHost('app.openSettings');
+await ctx.commands.executeHost('app.openPluginSettings');
+~~~
+
+These open file-sidebar search, general settings and plugin settings in the desktop main window. Unknown commands return `PermissionDenied`; mobile and standalone editor windows return `UnavailableOnPlatform`. Invoke them in response to an explicit user action, not during activation or background refresh. This API cannot execute arbitrary internal commands, mutate files, run a shell or grant permissions. The SDK mock records calls without simulating actual navigation.
+
+## Offline usage instructions
+
+Place `USAGE.md` at the source-project root. The CLI automatically collects `USAGE*.md`, copies them to the package root and includes them in `integrity.json`; no assets configuration is needed. At most 50 guide files are allowed. Localized alternatives are `USAGE.<locale>.md` and `USAGE.<language>.md`; the host tries them in that order before `USAGE.md`. Locale `zh` is normalized to `zh-CN`. README is not a substitute. Each guide must be UTF-8 and at most 128 KiB.
+
+The Installed details render the guide offline: HTML is disabled, images render as text and links do not navigate. There is no generic launch button. Explain the exact command/menu/view entry, required permissions and paths, first-use steps, settings, failure recovery and data left after uninstall. Use the command palette or a declared view/action for executable controls.
+
+## User-defined view titles
+
+The current host recognizes a workspace string setting keyed `<view.id>.title` as a navigation-title override. Use `scope: "workspace"`; empty or whitespace-only values fall back to the localized view `title`. Left/right sidebars and editor tabs share this convention. It does not rename plugin IDs, commands or note files. Plugins read the setting and update headings inside their own content separately.

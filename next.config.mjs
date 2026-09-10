@@ -5,6 +5,15 @@ const withMDX = createMDX({});
 const config = {
   reactStrictMode: true,
   output: 'standalone',
+  async redirects() {
+    return [
+      {
+        source: '/:lang(cn|en)/docs/plugins/manage',
+        destination: '/:lang/docs/plugins',
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 's2.loli.net' },

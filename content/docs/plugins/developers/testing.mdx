@@ -1,0 +1,265 @@
+---
+title: 插件测试
+description: 使用确定性的进程内宿主测试插件生命周期、权限、笔记、编辑器、设置、存储和界面调用。
+icon: FlaskConical
+---
+
+`@notegen/plugin-test` 是 NoteGen 插件的行为测试替身。它在 Node.js 进程内实现公开 `PluginContext`，让测试可以控制工作区、权限、笔记、编辑器和时间，并检查插件留下的只读快照。
+
+它适合 Vitest、Jest、其他 TypeScript 测试器或普通 Node.js 脚本。它不会启动 NoteGen，也不会执行归档或签名校验。
+
+> 更新日期：2026-09-10。四个 SDK 包已发布 npm，官方插件签名市场已上线；社区投稿尚未开放。接口说明以当前开发分支为准，未发布的新增能力需使用对应源码版本。远程安装还要求 NoteGen 支持插件系统并内置正式根公钥。
+
+## 安装
+
+~~~bash
+pnpm add -D @notegen/plugin-api @notegen/plugin-test
+~~~
+
+只把它用于开发和测试。不要把 `@notegen/plugin-test` 打进插件入口；NoteGen 仍只加载 `notegen-plugin build` 生成的单文件 ESM。
+
+## 最小测试
+
+~~~ts
+import { definePluginManifest, type PluginActivate } from "@notegen/plugin-api";
+import { createPluginTestHost } from "@notegen/plugin-test";
+
+const commandId = "com.example.hello.open";
+
+const manifest = definePluginManifest({
+  manifestVersion: 1,
+  id: "com.example.hello",
+  name: "Hello",
+  version: "0.1.0",
+  apiVersion: "^0.1.0",
+  minAppVersion: "0.37.0",
+  platforms: ["desktop"],
+  entry: "dist/main.js",
+  activationEvents: [`onCommand:${commandId}`],
+  permissions: {},
+  contributes: {
+    commands: [{ id: commandId, title: "Say hello" }],
+  },
+});
+
+const activate: PluginActivate = async (ctx) => {
+  ctx.commands.handle(commandId, async () => {
+    await ctx.ui.showNotice("Hello from the test host");
+  });
+};
+
+const host = createPluginTestHost({ manifest });
+await host.activate({ activate });
+await host.executeCommand(commandId);
+
+console.log(host.notices);
+console.log(host.callHistory);
+
+await host.deactivate();
+~~~
+
+一个 host 只激活一个插件实例，停用后不能再次激活。测试之间应创建新的 host，以免生命周期、注册项和存储状态互相影响。
+
+停用会让尚未完成的激活、命令执行和注入的网络请求以 `Cancelled` 结束，不必等待回调完成。底层 Node.js 回调不会被强制终止，因此插件在执行自己的异步副作用前仍应检查 `ctx.signal`。测试宿主还会在返回注入的网络响应前重新检查权限：请求进行中撤销授权后，不会再返回成功响应。
+
+## createPluginTestHost 选项
+
+~~~ts
+const host = createPluginTestHost({
+  manifest,
+  permissions: {},
+  workspace: { id: "workspace-1", name: "Test Workspace" },
+  notes: [],
+  folders: [],
+  storage: { device: {}, workspace: {} },
+  settings: {},
+  editor: { active: null, selection: null, text: "" },
+  messages: {},
+  now: () => new Date(0),
+});
+~~~
+
+| 选项 | 类型与默认行为 |
+| --- | --- |
+| `manifest` | 必填 `PluginManifestV1`；决定可注册的命令、状态栏、设置和权限 |
+| `permissions` | 按权限名覆盖授权；只能覆盖 manifest 已声明的权限 |
+| `workspace` | 可选 `WorkspaceInfo`；默认 ID 为 `test-workspace`、名称为 `Test Workspace` |
+| `notes` | 预置 `{ path, content, id?, revision? }`；省略 revision 时，根据 UTF-8 正文的 SHA-256 生成确定值 |
+| `folders` | 预置目录，包括没有笔记的空目录；根目录始终存在 |
+| `storage` | 分别预置 `device` 与 `workspace` JSON KV，并立即检查合计额度 |
+| `settings` | 覆盖 manifest 设置默认值；类型和范围必须符合声明 |
+| `editor` | 预置活动编辑器、选区和可选 Markdown 文本 |
+| `messages` | `ctx.i18n.t` 使用的 key-value 文本 |
+| `now` | 返回当前 `Date` 的函数；默认始终为 Unix epoch |
+
+测试宿主假定传入的 manifest 已完成作者侧校验，但仍用 manifest 限制插件行为。需要测试无效 JSON 或无效 manifest 时，应使用 [命令行工具](/cn/docs/plugins/developers/cli#validate)，而不是把错误对象传给测试宿主。
+
+内容相同的预置笔记会得到相同 revision，显式传入的 revision 保持不变。这样测试结果不依赖数组顺序；如果测试需要模拟一次外部更新，仍应显式设置新 revision 或调用相应事件方法。
+
+包根入口公开 `createPluginTestHost`，以及 `PluginTestHost`、`PluginTestHostOptions`、`PluginTestCallName`、`PluginTestCall`、`PluginTestNote`、`PluginTestEditorState`、`PluginTestStorageSeed`、`PluginTestStorageSnapshot`、`PluginTestScopedPermissionGrant`、`PluginTestPermissionGrant` 和 `SetActiveEditorOptions` 类型。它没有需要在测试进程之外使用的深层入口。
+
+## 权限授权
+
+manifest 声明的权限默认以宽松模式授予。构造时可以覆盖，也可以在测试中动态修改：
+
+~~~ts
+const host = createPluginTestHost({
+  manifest,
+  permissions: { "notes.read": false },
+});
+
+host.setPermission("notes.read", true);
+~~~
+
+布尔值 `true` 是为了简洁测试保留的“全部路径授权”，不是生产授权记录的形状。要复现真实文件或目录范围，使用 scoped grant：
+
+~~~ts
+const host = createPluginTestHost({
+  manifest,
+  permissions: {
+    "notes.read": {
+      granted: true,
+      paths: ["Templates/example.md"],
+    },
+    "notes.create": {
+      granted: true,
+      paths: ["Journal"],
+    },
+  },
+});
+
+host.setPermission("notes.read", {
+  granted: true,
+  paths: ["Templates/weekly.md"],
+});
+~~~
+
+| manifest scope | 匹配行为 |
+| --- | --- |
+| `workspace-file` | 只匹配列出的单个文件 |
+| `workspace-files` | 只匹配列出的多个文件 |
+| `workspace-folder` | 匹配目录本身及所有后代路径 |
+
+空的 `paths` 数组表示没有任何路径可访问。对于 `workspace-folder`，`paths: [""]` 表示整个工作区。未在 manifest 声明的权限会被拒绝，不能通过 `setPermission` 临时添加。
+
+## 只读结果快照
+
+| 属性 | 内容 |
+| --- | --- |
+| `manifest` | 创建 host 时传入的 manifest |
+| `context` | 传给插件的 `PluginContext`，也可用于有针对性的测试 |
+| `active` | 插件是否处于 active 生命周期 |
+| `callHistory` | 按 `sequence` 排序的 API 调用名称与参数 |
+| `notices` | `showNotice` 最终显示的文本列表 |
+| `statusBar` | 按贡献 ID 保存的最新 `PluginStatusBarUpdate` |
+| `notes` | 按路径排序的当前 `NoteSnapshot` 列表 |
+| `settings` | 当前贡献设置值 |
+| `storage` | `device` 与 `workspace` 两个 KV 快照 |
+| `permissions` | 当前布尔或 scoped grant 快照 |
+
+除 `manifest` 和 `context` 外，集合 getter 会重新创建并冻结顶层数组或记录，因此修改顶层容器不会改变 host 的内部集合；其中的嵌套值不保证深度冻结。`manifest` 是创建 host 时传入的原始引用，`context` 是正在使用的运行时对象。请把所有这些属性视为只读，不要在断言中修改它们。`clearCallHistory()` 只清除调用记录，不重置插件、笔记、设置或存储。
+
+## 测试控制方法
+
+| 方法 | 作用 |
+| --- | --- |
+| `activate(module)` | 调用插件 `activate` 并进入 active 状态 |
+| `deactivate()` | 发出取消、调用可选 `deactivate` 并清理注册项 |
+| `executeCommand(commandId, argument?)` | 运行已声明且已注册处理器的命令 |
+| `setPermission(permission, grant)` | 授予、拒绝或改变路径范围 |
+| `setSetting(key, value)` | 校验并更新贡献设置，通知监听器 |
+| `setActiveEditor(editor, options?)` | 切换活动编辑器，可同时设置选区和 Markdown 文本 |
+| `setEditorSelection(selection)` | 设置当前选区快照 |
+| `emitEditorContentChange(event, text?)` | 发送正文变更事件，可替换后续快照文本 |
+| `clearCallHistory()` | 清空 API 调用历史 |
+
+`executeCommand` 遇到未声明的 ID 会返回 `NotFound`；命令已声明但插件没有注册处理器时返回 `RuntimeFailure`。设置、状态栏和权限同样受 manifest 约束。
+
+## 编辑器和事件测试
+
+~~~ts
+await host.setActiveEditor(
+  {
+    windowId: "main",
+    editorId: "editor-1",
+    documentId: "note-1",
+    kind: "markdown",
+    mode: "source",
+    revision: 1,
+    composing: false,
+    size: { utf16Length: 5, bytes: 5, lines: 1 },
+  },
+  { text: "Hello", selection: null },
+);
+
+await host.emitEditorContentChange(
+  {
+    editorId: "editor-1",
+    documentId: "note-1",
+    revision: 2,
+    composing: false,
+    size: { utf16Length: 11, bytes: 11, lines: 1 },
+  },
+  "Hello world",
+);
+~~~
+
+`getTextSnapshot` 在没有活动编辑器或 editor ID 不匹配时产生 `NotFound`；只有 expected revision 不匹配时才产生 `StaleRevision`。切换到不同 document ID 时不会沿用上一份文本。某个设置或编辑器监听器抛错不会阻断其他监听器，也不会回滚 host 已完成的状态变化。
+
+## 测试写入、视图和网络
+
+内存宿主实现 `notes.list/write/move/delete/onDidChange` 与 `editor.applyEdit`，结果可从 `host.notes` 和 `host.callHistory` 断言。笔记操作遵循这些确定规则：
+
+- `notes.list()` 默认只列直接子项，默认 `limit` 为 200；请求不存在的目录会返回 `NotFound`；
+- `openOrCreate` 或 `write({ create: true })` 真正创建文件时，会向已订阅且有读取或列举权限的插件发送 `created` 事件；
+- `notes.move({ from, to })` 在两个规范化路径相同时直接成功，不改内容、revision 或事件；
+- `notes.write` 根据写入正文生成确定的 content-hash revision；
+- 用 `openNotePaths` 和 `host.setOpenNotePaths(paths)` 模拟所有标签、分栏或独立窗口中打开的笔记，文件写入、移动和删除会返回 `EditorBusy`；`openOrCreate({ open: true, ... })` 也会把目标标记为打开；
+- `surface: "editor-window"` 模拟独立窗口，拒绝文件修改和 `open: true`，但仍提供编辑器 API。测试宿主不模拟真实窗口竞争或保存队列。
+
+用 `host.emitNoteChange(event)` 和 `host.emitWorkspaceChange(event)` 模拟外部变化。声明式视图保存在 `host.views`，最后打开的对话框在 `host.dialog`。测试宿主会严格检查声明式 UI 的 block 结构、未知字段、数量与字节限制，并拒绝 action 引用 manifest 未声明的命令。
+
+网络默认返回 `UnavailableOnPlatform`；测试需要显式传入 `networkFetch(request)`，并仍按 manifest 的 `network-origins` grant 检查 origin。传给 handler 之前，请求会经过生产形状的安全校验，包括公开 HTTPS hostname、无 URL 凭据或 fragment、允许的方法、受限 header、正文上限和 1–30 秒 timeout 规范化。handler 的响应也会检查状态码、header 与 2 MiB 正文上限，并移除 `set-cookie`。测试替身不会真的发起网络请求。
+
+## 时间、通知和状态栏
+
+默认时钟固定在 Unix epoch。测试日期逻辑或状态栏限流时，传入可控 `now`：
+
+~~~ts
+let now = new Date("2026-01-01T00:00:00Z");
+const host = createPluginTestHost({
+  manifest,
+  now: () => now,
+});
+
+now = new Date(now.getTime() + 100);
+~~~
+
+测试宿主实现以下文字与声明约束：
+
+- notice 截断到 500 个 UTF-16 code units；
+- 状态栏文字字段截断到 160 个 UTF-16 code units；
+- 同一状态栏项目 100 ms 内的后续更新会尾随合并，并在窗口结束时应用最后一次状态；
+- 状态栏 ID 必须在 manifest 声明。
+
+测试宿主与生产宿主都采用 trailing coalescing。测试仍不模拟浏览器和操作系统的精确调度；不要依赖中间帧出现的具体毫秒，只断言窗口结束后的最终状态。
+
+## 配额和生产形状失败
+
+- 笔记正文与初始内容最多 2 MiB；
+- 路径和幂等键使用生产限制；
+- `device` 与 `workspace` 存储合计最多 256 个键、1 MiB；
+- 设置值必须匹配 manifest 中的类型、选项和范围；
+- 权限、命令、状态栏和编辑器 revision 失败使用稳定 `PluginError.code`。
+
+断言错误时优先检查 `error.code`，不要依赖完整英文消息。
+
+## 不能替代的验证
+
+这个包不是 QuickJS，也不是安全沙箱。插件代码会以测试进程的全部权限运行。它不会模拟 DNS 解析、DNS rebinding 防护、系统代理或真实 HTTP/TLS，也不复刻 Worker/QuickJS 隔离、CPU 与内存限制、宿主调用超时、通用调用频率限制、全部跨 realm 序列化细节、归档完整性或签名验证，因此不适合执行不可信插件。
+
+发布前仍需要：
+
+1. 运行 `notegen-plugin build` 和 `notegen-plugin verify`；
+2. 从 NoteGen“插件 → 开发者”导入 `.notegen/package`；
+3. 在真实桌面宿主中检查权限审核、界面贡献、重新加载和停用行为。

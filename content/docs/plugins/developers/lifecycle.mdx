@@ -1,0 +1,156 @@
+---
+title: 插件运行机制
+description: 正确处理延迟激活、取消、停用、更新和运行失败。
+icon: RefreshCcw
+---
+
+NoteGen 按需启动插件，并可在禁用、更新、工作区切换或失败时回收运行时。插件不能假设自己一直驻留，也不能依赖 `deactivate` 一定执行。
+
+## 状态变化
+
+~~~text
+已安装且禁用
+    │ 启用并完成必需权限审核
+    ▼
+未激活 ──匹配 activationEvent──▶ 激活中 ──成功──▶ 运行中
+   ▲                              │                 │
+   │                              └─失败──▶ failed  │
+   │                                                │
+   └──────── 禁用、更新、切换工作区或回收运行时 ────┘
+
+尚未清除的运行时失败累计 3 次
+    └──▶ quarantined，并自动禁用
+~~~
+
+安装阶段只检查 manifest、兼容性和文件完整性；市场包还检查索引与发布者签名。开发目录可以不含签名。安装不会执行入口代码。
+
+启用后，NoteGen 先注册 manifest 中的静态命令、菜单、设置和状态栏声明，匹配激活事件时才执行代码。一次运行时崩溃会清除动态状态栏状态，但静态命令和菜单仍在，下次触发可以再次尝试激活；禁用、卸载或进入隔离后会移除贡献。
+
+## 市场与开发运行时
+
+官方插件与社区插件都是签名市场包。官方身份只来自根签名索引中登记的 NoteGen 发布者，不会获得额外宿主能力。
+
+每个活动的市场或开发插件使用独立 Dedicated Worker 和 QuickJS-WASM runtime。插件代码不进入 NoteGen 页面上下文，也没有 DOM、网络、Node.js、Tauri 或原始文件系统。
+
+当前主要限制为：
+
+| 限制 | 数值 |
+| --- | --- |
+| QuickJS 内存 | 32 MiB |
+| QuickJS 调用栈 | 512 KiB |
+| 入口源码 | 5 MiB |
+| 激活超时 | 45 秒 |
+| 单次命令超时 | 45 秒 |
+| 同时等待的宿主 API | 64 |
+| 同时等待的命令 | 16 |
+| 宿主调用频率 | 每秒 120 次 |
+| 通知频率 | 每 10 秒 5 次 |
+| 单条桥接 JSON | 约 2.125 MiB |
+
+配额用于保护主应用。插件不能通过拆分大量请求规避速率或数据范围限制。
+
+45 秒包含一次最长 30 秒的受控网络请求及宿主桥接余量；这不是建议插件长期占用命令。可取消的工作应监听 `ctx.signal`，耗时计算应拆分或移出交互命令。
+
+## activate
+
+入口导出 `activate`：
+
+~~~js
+export async function activate(ctx) {
+  ctx.commands.handle("com.example.selection-info.show", async () => {
+    if (ctx.signal.aborted) return;
+
+    const selection = await ctx.editor.getSelection();
+    if (!selection) return;
+
+    await ctx.ui.showNotice("Selected: " + selection.text.length);
+  });
+}
+~~~
+
+`activate` 应只建立命令处理器和事件监听，然后尽快返回。不要在激活期间扫描大量内容、等待用户交互或做长计算。
+
+NoteGen 自动跟踪命令处理器以及工作区、笔记、编辑器和设置事件 API 返回的 disposable。插件上下文没有 timer API；如果运行环境中偶然存在未约定的全局能力，也不要依赖它。
+
+## 取消
+
+`ctx.signal.aborted` 在运行时被停止时变为 true，例如：
+
+- 用户禁用插件；
+- 安装状态或已授权身份发生变化；
+- 更新、回滚或开发插件重新加载；
+- 工作区切换；
+- NoteGen 回收当前插件宿主。
+
+公开 API 当前不接收 `signal` 参数。插件应在长循环、解析步骤和相邻异步调用之间主动检查：
+
+~~~js
+if (ctx.signal.aborted) return;
+const snapshot = await ctx.editor.getTextSnapshot(options);
+if (ctx.signal.aborted) return;
+~~~
+
+停止后新调用会被拒绝。已经进入宿主原子提交阶段的文件写入仍可能完成；不要把 `Cancelled` 当作操作未发生的证明。
+
+## 事件与 revision
+
+编辑器事件可能合并、迟到或在计算期间被新事件取代：
+
+- 使用事件中的 `editorId` 与 `revision` 请求快照；
+- 遇到 `StaleRevision` 时读取新的活动编辑器状态，而不是覆盖结果；
+- 在异步计算结束后再次比较 revision；
+- 创建文件使用稳定的 `idempotencyKey`；
+- 不依赖插件之间的激活顺序；
+- 不把唯一的重要状态只放在模块全局变量中。
+
+## deactivate
+
+入口可以导出：
+
+~~~js
+export async function deactivate() {
+  // 只做可以快速完成的尽力清理。
+}
+~~~
+
+NoteGen 先撤销上下文和投递，再通知插件停用，并在很短的宽限期后终止插件 Worker。停用通知是尽力而为：崩溃、强制回收或设备断电时可能来不及完成。
+
+需要持久化的数据应在产生时写入。不要等到 `deactivate` 才保存唯一副本，也不要在停用时发起新的长期任务。
+
+## 工作区切换与权限变化
+
+切换工作区会停止旧运行时。旧工作区 ID、编辑器 ID、revision 和工作区 KV 分区不能继续用于新调用。新工作区只有在插件启用且完成权限审核后才重新激活。
+
+权限撤销和 manifest 身份变化会立即阻止新的宿主能力调用，并重新协调运行时。原子提交例外仍然适用。
+
+## 失败、清除与隔离
+
+入口错误、协议错误、超额、超时和 Worker 崩溃通常映射为 `RuntimeFailure`、`QuotaExceeded` 或 `Timeout`。公开错误码中没有 `ActivationFailed`、`OutOfMemory` 或 `ProtocolViolation`。
+
+一次失败把本次运行状态设为 `failed`。主窗口中尚未清除的失败累计达到三次时，插件进入 `quarantined` 并禁用。一次成功激活会清除先前失败记录；用户也可在插件详情手动清除，再关闭并重新开启插件。
+
+单个插件失败不会停止 Markdown 编辑和保存。
+
+## 市场更新与开发重载
+
+市场更新的顺序是：
+
+1. 用新鲜的签名索引下载并验证包；
+2. 原子切换本地 active version，记录 previous version；
+3. 停止旧运行时并按新的激活事件启动新版本；
+4. 将候选标记保存在原生安装状态中；主窗口首次激活成功后清除，失败则自动回滚 previous version；
+5. 候选版本确认或回滚前拒绝继续安装另一版本，避免覆盖最后一份已验证版本。
+
+因此“安装成功”不等于入口已经运行成功。回滚切换程序版本及其对应的 KV 副本，不回退贡献设置、Markdown 或远端副作用。
+
+开发者模式下，已启用的开发插件在构建产物变化后自动校验并重新导入。它会产生新的内容哈希快照，但没有与市场更新相同的首次激活自动回滚承诺。
+
+## 开发检查清单
+
+- 为命令型功能使用 `onCommand`；
+- 让 `activate` 快速返回；
+- 在异步步骤间检查 `ctx.signal.aborted`；
+- 用 revision 丢弃过时计算；
+- 用幂等键创建文件；
+- 不依赖 `deactivate` 持久化唯一状态；
+- 为权限拒绝、超时、冲突和平台不支持给出可操作提示。

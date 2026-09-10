@@ -1,0 +1,136 @@
+---
+title: 界面组件参考
+description: 插件可用的宿主组件、参数、交互事件与限制。
+icon: PanelsTopLeft
+---
+
+本页面面向插件开发者，对应当前源码中的插件 API **0.1.1**。使用这些能力前，请确认目标 NoteGen 和 SDK 支持该 API；源码支持不代表所有已发布客户端都已包含。插件通过 JSON 描述界面，由 NoteGen 使用自身组件和主题渲染，不能直接导入任意 shadcn/React 组件。
+
+## 放在哪里
+
+同一份 `{ blocks }` 文档可用于 `ctx.ui.views.update(viewId, document)`、`ctx.ui.openDialog({ title, content: document })` 和 `ctx.ui.updateDialog(dialogId, { title, content: document })`。视图需先在 manifest 声明，位置为 `left-sidebar`、`right-sidebar` 或 `editor-tab`。下面的 `tabs` 是视图内部的标签组，与编辑区插件标签入口不同。
+
+所有交互命令必须在当前插件的 `contributes.commands` 中声明，并用 `ctx.commands.handle` 注册。界面不会自动授予笔记、编辑器或网络权限。入口声明、状态栏、菜单、设置与对话框生命周期见[扩展应用界面](/cn/docs/plugins/developers/ui-contributions)。
+
+## 组件清单
+
+表中 `?` 表示可选字段；每个 block 都必须提供对应的 `type`。
+
+| type | 用途与字段 | 限制或默认值 |
+| --- | --- | --- |
+| `heading` | 标题：`text` | 最多 2,000 字符 |
+| `text` | 纯文本：`text`、`tone?` | 最多 20,000 字符；tone 为 `default`、`muted`、`warning` |
+| `markdown` | Markdown 展示：`text` | 最多 20,000 字符；禁用 HTML、图片、链接与自动链接解析 |
+| `list` | 文本列表：`items: string[]` | 最多 100 项，每项 2,000 字符 |
+| `key-value` | 键值信息：`items: [{ label, value }]` | 最多 100 项；label 500、value 2,000 字符 |
+| `separator` | 分隔线 | 无其他字段 |
+| `callout` | 提示框：`title`、`text`、`tone?` | title 1–240、text 最多 20,000 字符；tone 为 `default` 或 `destructive` |
+| `badge` | 徽标：`text`、`tone?` | text 1–160 字符；tone 为 `default`、`secondary`（默认）、`outline`、`destructive` |
+| `loading` | 加载指示：`label` | label 1–160 字符，用于可访问状态文字 |
+| `empty` | 空状态：`title`、`description?`、`icon?` | title 1–240、description 1–2,000 字符 |
+| `progress` | 进度条：`label`、`value` | label 1–160 字符；value 为 0–100 的有限数字 |
+| `actions` | 基础按钮组：`actions` | 最多 20 个，详见下文 |
+| `toolbar` | 工具栏：`id`、`label`、`actions` | 最多 20 个，支持图标和确认对话框 |
+| `layout` | 容器：`id`、`direction?`、`gap?`、`blocks` | direction 为 `row` 或 `column`（默认）；gap 为 `small`、`medium`（默认）、`large` |
+| `section` | 标题分组：`id`、`title`、`collapsible?`、`defaultOpen?`、`blocks` | 默认不可折叠；可折叠时默认展开；title 1–240 字符 |
+| `tabs` | 标签组：`id`、`label`、`tabs: [{ id, label, blocks }]` | 1–12 个标签，标签 ID 唯一；默认选中第一个 |
+| `form` | 表单：`id`、`fields`、`submitLabel`、`command` | 1–30 个字段，详见下文 |
+| `table` | 表格：`columns`、`rows`、`id?`、`rowIds?` | 1–20 列、最多 100 行，每行单元格数必须等于列数 |
+| `tree` | 树：`items: [{ id, parentId?, label, command?, argument? }]` | 最多 100 节点、8 层；父节点必须存在，不能循环 |
+| `item-list` | 可交互列表：`id`、`generation`、`label`、`emptyText`、`items`，以及可选命令和操作 | 最多 100 项；支持摘要、勾选、排序和菜单 |
+| `navigation-list` | 兼容旧开发包的导航列表 | 新界面可用 `item-list` 与 `toolbar` 组合 |
+
+`layout` 的行布局允许换行，不提供任意宽度、栅格或 CSS。`section` 的 `defaultOpen` 是初始值；内部 `tabs` 的选择由宿主维护，没有选择回调或受控选中字段。保持稳定的类型、ID 与结构，避免无意重建交互状态。
+
+扩展组件的 block ID 通常为 1–160 字符；`label` 为 1–160 字符。图标是宿主识别的名称字符串（最多 80 字符），不能传 SVG 或图标组件，命名规则见[扩展应用界面](/cn/docs/plugins/developers/ui-contributions)。
+
+## 按钮、工具栏与确认
+
+基础 `actions` 中每项需要 `id`、`label`、`command`，可选 `argument`、`disabled`、`variant`。variant 只支持 `default`、`secondary`、`destructive`。
+
+`toolbar.actions` 和 `item-list.actions` 使用扩展操作结构，额外支持 `icon`、`iconOnly`、`confirmation`，variant 还可用 `ghost`、`outline`。同一操作数组内 ID 必须唯一。`iconOnly: true` 必须同时提供 icon，label 仍必填。工具栏默认使用 ghost 按钮；列表操作使用菜单呈现，不按按钮 variant 渲染。
+
+`confirmation` 必填 `title`、`confirmLabel`、`cancelLabel`，可选 `description`。title 最多 240 字符、description 最多 2,000 字符，按钮文案最多 160 字符。确认后才执行命令。工具栏将 `argument` 原样传给命令，列表操作的参数见下一节。
+
+## 可交互列表
+
+`item-list` 的每项需要 `id`、`label`，可选 `description`、`metadata`、`icon`、`checked`、`disabled`。项 ID 在列表内唯一，最长 1,024 字符；label 最长 500，description 最长 2,000，metadata 最长 1,024 字符。block 的 `generation` 是插件提供的非空数据版本标记，最长 160 字符；数据变化后更新它并在命令中核对，避免旧界面操作覆盖新数据。
+
+| 可选字段 | 交互与命令参数 |
+| --- | --- |
+| `openCommand` | 点击项目：`{ generation, itemId }` |
+| `toggleCommand` | 同时提供 item.checked 时显示复选框：`{ generation, itemId, checked }` |
+| `reorderCommand`、`reorderLabel` | 启用拖拽和键盘排序，两者配套提供：`{ generation, itemIds }`，itemIds 为完整新顺序 |
+| `actions` | 最多 20 个菜单操作：`{ generation, itemId, actionId, argument? }`，自定义参数放在内层 argument |
+
+宿主只派发命令。插件需先验证参数、保存变更，再发布新文档；排序不会自动持久化。拖动期间 generation 改变时会丢弃旧拖动结果。列表内部执行期间会阻止重复操作。
+
+`navigation-list` 保留旧结构：必填 `id`、`generation`、`label`、`emptyText`、`addLabel`、`removeLabel`、`reorderLabel`、`items: [{ id, label }]`、`openCommand`、`addCommand`、`removeCommand`、`reorderCommand`。添加收到 `{ generation }`，打开收到 `{ generation, itemId }`，排序收到 `{ generation, itemIds }`；当前兼容渲染器把删除转换为列表操作，还会传入 `actionId: "remove"`。
+
+## 表单字段
+
+所有字段必填 `id`、`label`，可选 `description`、`required`、`disabled`、`visibleWhen: { field, equals }`。ID 以字母开头，只含字母、数字、下划线、连字符，最长 64 字符，同一表单内唯一。
+
+| type | 值与额外字段 | 行为 |
+| --- | --- | --- |
+| `text` | string；`value?`、`placeholder?`、`maxLength?` | 单行文本 |
+| `textarea` | 同 text | 多行文本 |
+| `search` | 同 text | 搜索输入框；不会自动执行笔记搜索，可用 changeCommand 联动 |
+| `date` | 同 text | 日期输入；非空提交值必须是有效的 `YYYY-MM-DD` |
+| `number` | number；`value?`、`min?`、`max?` | 有限数字，范围包含边界 |
+| `select` | string；`value?`、`options: [{ label, value }]` | 1–100 项，label 和 value 均为 1–160 字符 |
+| `note-picker` | string；`value?`、`options: [{ label, value }]` | 0–100 项，label 1–160、value 1–1,024 字符；可搜索候选标签和值 |
+| `checkbox` | boolean；`value?` | 必填时必须勾选 |
+
+文本字段最多 10,000 字符，placeholder 最多 500 字符；maxLength 为 1–10,000 的整数。select 和 note-picker 的选项值不能重复或为空，初始 value 必须属于 options。note-picker 只筛选插件给出的选项，不自动遍历工作区；需要笔记列表时由插件在授权范围内调用 `notes.list` 后生成 options，选择也不会自动打开文件。
+
+form 还支持 `resetKey`、`changeCommand`、`submitDisabled`。提交命令收到 `{ formId, values, dialogId? }`，可返回 `{ fieldErrors, message }`。隐藏或禁用字段不参与提交；表单草稿、约 250 ms 的输入变更通知、异步更新的 expectedForm 条件和重置规则见[扩展应用界面](/cn/docs/plugins/developers/ui-contributions)。
+
+## 表格与树的操作
+
+表格单元格可以是最多 2,000 字符的字符串，也可以是 `{ text, command, argument?, disabled? }`。操作文字为 1–160 字符；命令接收 argument，不会自动附加行号。动态表格建议提供稳定 id 和 rowIds；rowIds 与 rows 数量一致、值唯一且各为 1–160 字符。列标题最多 500 字符。
+
+树的 id、parentId 最长 160 字符，label 最长 500 字符。节点点击执行 command 并传递 argument。它是插件的数据展示树，不会自动读取或修改工作区文件树。
+
+## 组合示例
+
+以下内容放入插件的 `activate(ctx)`。先在 manifest 的 `contributes.commands` 声明 `com.example.tools.refresh`；注册处理器后打开对话框。示例不读写笔记。
+
+~~~ts
+ctx.commands.handle('com.example.tools.refresh', async () => {
+  await ctx.ui.showNotice('Refresh requested');
+});
+
+await ctx.ui.openDialog({
+  title: 'Workspace overview',
+  content: { blocks: [
+    { type: 'toolbar', id: 'tools', label: 'Tools', actions: [
+      { id: 'refresh', label: 'Refresh', icon: 'refresh-cw',
+        command: 'com.example.tools.refresh' },
+    ] },
+    { type: 'section', id: 'overview', title: 'Overview',
+      collapsible: true, blocks: [
+        { type: 'layout', id: 'summary', direction: 'row', blocks: [
+          { type: 'badge', text: 'Ready' },
+          { type: 'text', text: 'Choose a tab below.', tone: 'muted' },
+        ] },
+      ] },
+    { type: 'tabs', id: 'details', label: 'Details', tabs: [
+      { id: 'help', label: 'Help', blocks: [
+        { type: 'markdown', text: '**Tip:** use commands to update this view.' },
+      ] },
+      { id: 'results', label: 'Results', blocks: [
+        { type: 'empty', title: 'No results', description: 'Run a command first.' },
+      ] },
+    ] },
+  ] },
+});
+~~~
+
+## 配额与边界
+
+每个 blocks 数组最多 50 项，整份文档含嵌套内容最多 200 个 block，根数组深度为 0、最大嵌套深度为 6，序列化内容最多 128 KiB。所有标签页内容都计入配额，包括当前未选中的标签。整份文档中相同类型的 block ID 不可重复，表单字段 ID 则在各自表单内唯一。未知字段会被拒绝；不要传函数、DOM、React 元素或自定义样式。
+
+Markdown 仅由宿主解析文字格式；HTML 不执行，图片不加载，链接不导航。插件仍不能提供 iframe、WebView、任意 CSS 或 Tiptap 扩展。组件中出现操作按钮不表示自动具备相应权限，也不会替插件完成文件写入或业务校验。
+
+本页依据 [SDK 类型与扩展校验](https://github.com/codexu/note-gen-plugin-sdk/blob/main/packages/plugin-api/src/index.ts)、[宿主文档校验](https://github.com/codexu/note-gen/blob/dev/src/lib/plugins/ui-registry.ts) 与[宿主组件实现](https://github.com/codexu/note-gen/tree/dev/src/components/plugins)维护。版本适配应同时核对 SDK 与目标客户端。

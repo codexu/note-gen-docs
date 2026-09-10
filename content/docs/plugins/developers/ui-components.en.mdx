@@ -1,0 +1,136 @@
+---
+title: UI component reference
+description: Host-rendered plugin components, fields, interaction payloads, and limits.
+icon: PanelsTopLeft
+---
+
+This reference targets plugin developers and API **0.1.1** in the current source. Confirm that your target NoteGen client and SDK support it; source support does not mean every published client includes these features. Plugins describe UI as JSON, and NoteGen renders its own components and theme. Plugins cannot import arbitrary shadcn or React components.
+
+## Where components appear
+
+Use the same `{ blocks }` document with `ctx.ui.views.update(viewId, document)`, `ctx.ui.openDialog({ title, content: document })`, or `ctx.ui.updateDialog(dialogId, { title, content: document })`. Declare views in the manifest with location `left-sidebar`, `right-sidebar`, or `editor-tab`. The `tabs` block below creates tabs inside a view, separate from an editor-area plugin tab.
+
+Declare interaction commands in the current plugin's `contributes.commands` and register handlers with `ctx.commands.handle`. UI does not grant note, editor, or network permissions. See [Extend the app interface](/en/docs/plugins/developers/ui-contributions) for entry points, settings, menus, status bars, and dialog lifecycle.
+
+## Component catalog
+
+`?` marks optional fields. Every block requires its corresponding `type`.
+
+| type | Purpose and fields | Limits or defaults |
+| --- | --- | --- |
+| `heading` | Heading: `text` | Up to 2,000 characters |
+| `text` | Plain text: `text`, `tone?` | Up to 20,000 characters; tone: `default`, `muted`, `warning` |
+| `markdown` | Markdown: `text` | Up to 20,000 characters; HTML, image, link, and autolink parsing disabled |
+| `list` | Text list: `items: string[]` | Up to 100 items, 2,000 characters each |
+| `key-value` | Properties: `items: [{ label, value }]` | Up to 100 items; label 500, value 2,000 characters |
+| `separator` | Divider | No other fields |
+| `callout` | Alert: `title`, `text`, `tone?` | Title 1–240, text up to 20,000 characters; tone: `default` or `destructive` |
+| `badge` | Badge: `text`, `tone?` | Text 1–160 characters; tone: `default`, `secondary` (default), `outline`, `destructive` |
+| `loading` | Spinner: `label` | Accessible status label, 1–160 characters |
+| `empty` | Empty state: `title`, `description?`, `icon?` | Title 1–240, description 1–2,000 characters |
+| `progress` | Progress bar: `label`, `value` | Label 1–160 characters; finite value from 0 to 100 |
+| `actions` | Basic buttons: `actions` | Up to 20; see below |
+| `toolbar` | Toolbar: `id`, `label`, `actions` | Up to 20; supports icons and confirmation |
+| `layout` | Container: `id`, `direction?`, `gap?`, `blocks` | Direction: `row` or `column` (default); gap: `small`, `medium` (default), `large` |
+| `section` | Group: `id`, `title`, `collapsible?`, `defaultOpen?`, `blocks` | Non-collapsible by default; collapsible sections start open; title 1–240 characters |
+| `tabs` | Tab group: `id`, `label`, `tabs: [{ id, label, blocks }]` | 1–12 tabs with unique IDs; first tab selected initially |
+| `form` | Form: `id`, `fields`, `submitLabel`, `command` | 1–30 fields; see below |
+| `table` | Table: `columns`, `rows`, `id?`, `rowIds?` | 1–20 columns, up to 100 rows; each row must match the column count |
+| `tree` | Tree: `items: [{ id, parentId?, label, command?, argument? }]` | Up to 100 nodes, 8 levels; parents must exist, cycles forbidden |
+| `item-list` | Interactive list: `id`, `generation`, `label`, `emptyText`, `items`, plus optional commands and actions | Up to 100 items; descriptions, checkboxes, sorting, and menus |
+| `navigation-list` | Compatibility list for older development packages | Use `item-list` with `toolbar` for new interfaces |
+
+Row layouts wrap; arbitrary widths, grids, and CSS are not exposed. `section.defaultOpen` is an initial value. Internal tabs maintain selection in the host and expose no selection callback or controlled selection field. Keep types, IDs, and structure stable to avoid rebuilding interaction state.
+
+Extended block IDs are generally 1–160 characters; labels are 1–160 characters. Icons are host-recognized names up to 80 characters, not SVG or component objects. See [Extend the app interface](/en/docs/plugins/developers/ui-contributions) for naming.
+
+## Buttons, toolbars, and confirmation
+
+Basic `actions` entries require `id`, `label`, `command` and optionally accept `argument`, `disabled`, `variant`. Variants are limited to `default`, `secondary`, `destructive`.
+
+`toolbar.actions` and `item-list.actions` use extended actions, adding `icon`, `iconOnly`, `confirmation`, and the `ghost` and `outline` variants. IDs must be unique within each action array. `iconOnly: true` requires icon; label is still required. Toolbars default to ghost buttons. List actions render as menu items rather than buttons styled by variant.
+
+`confirmation` requires `title`, `confirmLabel`, `cancelLabel` and optionally accepts `description`. Title is limited to 240 characters, description to 2,000, and button labels to 160. Commands run only after confirmation. Toolbars pass argument directly; list actions wrap it as described below.
+
+## Interactive lists
+
+Each `item-list` item requires `id`, `label`; optional fields are `description`, `metadata`, `icon`, `checked`, `disabled`. Item IDs must be unique within the list and at most 1,024 characters; label is at most 500, description 2,000, metadata 1,024 characters. The block's generation is a nonempty plugin-defined data version, up to 160 characters. Update it when data changes and validate it in handlers to reject stale operations.
+
+| Optional field | Interaction and command payload |
+| --- | --- |
+| `openCommand` | Item click: `{ generation, itemId }` |
+| `toggleCommand` | With item.checked, displays a checkbox: `{ generation, itemId, checked }` |
+| `reorderCommand`, `reorderLabel` | Provide both for pointer and keyboard sorting: `{ generation, itemIds }`, containing the full new order |
+| `actions` | Up to 20 menu actions: `{ generation, itemId, actionId, argument? }`; custom arguments are nested |
+
+The host dispatches commands. Validate and persist changes before publishing a new document; sorting does not persist automatically. A drag is discarded if generation changes during it. The list blocks repeated operations while its command runs.
+
+`navigation-list` retains the older required fields: `id`, `generation`, `label`, `emptyText`, `addLabel`, `removeLabel`, `reorderLabel`, `items: [{ id, label }]`, `openCommand`, `addCommand`, `removeCommand`, `reorderCommand`. Add receives `{ generation }`, open receives `{ generation, itemId }`, and reorder receives `{ generation, itemIds }`. The current compatibility renderer converts removal into a list action and also supplies `actionId: "remove"`.
+
+## Form fields
+
+Every field requires id and label, with optional description, required, disabled, and `visibleWhen: { field, equals }`. IDs start with a letter, contain only letters, digits, underscores or hyphens, are at most 64 characters, and are unique within the form.
+
+| type | Value and extra fields | Behavior |
+| --- | --- | --- |
+| `text` | string; `value?`, `placeholder?`, `maxLength?` | Single-line input |
+| `textarea` | Same as text | Multiline input |
+| `search` | Same as text | Search input; does not search notes automatically; use changeCommand for updates |
+| `date` | Same as text | Nonempty submissions must be a valid `YYYY-MM-DD` date |
+| `number` | number; `value?`, `min?`, `max?` | Finite number with inclusive bounds |
+| `select` | string; `value?`, `options: [{ label, value }]` | 1–100 options; label and value each 1–160 characters |
+| `note-picker` | string; `value?`, `options: [{ label, value }]` | 0–100 options; label 1–160, value 1–1,024 characters; searches supplied labels and values |
+| `checkbox` | boolean; `value?` | Must be checked if required |
+
+Text fields allow up to 10,000 characters; placeholders up to 500. maxLength is an integer from 1 to 10,000. Select and note-picker option values must be nonempty and unique; an initial value must belong to options. The note picker filters supplied choices rather than scanning the workspace. Call notes.list within granted paths to populate options when needed. Selecting an option does not open a file.
+
+Forms also accept resetKey, changeCommand, and submitDisabled. Submission receives `{ formId, values, dialogId? }` and may return `{ fieldErrors, message }`. Hidden and disabled fields are excluded. See [Extend the app interface](/en/docs/plugins/developers/ui-contributions) for drafts, approximately 250 ms change notifications, expectedForm updates, and reset behavior.
+
+## Table and tree actions
+
+Table cells accept strings up to 2,000 characters or `{ text, command, argument?, disabled? }`. Action text is 1–160 characters. Commands receive argument without an implicit row index. Use stable id and rowIds for dynamic tables; rowIds must match the row count, be unique, and contain 1–160 characters each. Column titles allow up to 500 characters.
+
+Tree id and parentId allow up to 160 characters; label up to 500. Clicking a node invokes command with argument. This is plugin data, not an automatic workspace file-tree reader or editor.
+
+## Composition example
+
+Place this in activate(ctx). First declare `com.example.tools.refresh` under contributes.commands in the manifest. Register the handler before opening the dialog. This example does not read or write notes.
+
+~~~ts
+ctx.commands.handle('com.example.tools.refresh', async () => {
+  await ctx.ui.showNotice('Refresh requested');
+});
+
+await ctx.ui.openDialog({
+  title: 'Workspace overview',
+  content: { blocks: [
+    { type: 'toolbar', id: 'tools', label: 'Tools', actions: [
+      { id: 'refresh', label: 'Refresh', icon: 'refresh-cw',
+        command: 'com.example.tools.refresh' },
+    ] },
+    { type: 'section', id: 'overview', title: 'Overview',
+      collapsible: true, blocks: [
+        { type: 'layout', id: 'summary', direction: 'row', blocks: [
+          { type: 'badge', text: 'Ready' },
+          { type: 'text', text: 'Choose a tab below.', tone: 'muted' },
+        ] },
+      ] },
+    { type: 'tabs', id: 'details', label: 'Details', tabs: [
+      { id: 'help', label: 'Help', blocks: [
+        { type: 'markdown', text: '**Tip:** use commands to update this view.' },
+      ] },
+      { id: 'results', label: 'Results', blocks: [
+        { type: 'empty', title: 'No results', description: 'Run a command first.' },
+      ] },
+    ] },
+  ] },
+});
+~~~
+
+## Quotas and boundaries
+
+Each blocks array allows up to 50 entries. The entire document allows 200 blocks including descendants, nesting depth up to 6 with the root at depth 0, and 128 KiB of serialized content. All tabs count, including inactive tabs. Block IDs must be unique per block type throughout the document; field IDs are unique within each form. Unknown fields are rejected. Do not pass functions, DOM nodes, React elements, or custom styles.
+
+Markdown is formatted by the host: HTML does not execute, images do not load, and links do not navigate. Plugins still cannot supply iframe, WebView, arbitrary CSS, or Tiptap extensions. Buttons do not grant permissions or perform file writes and business validation on the plugin's behalf.
+
+Maintained against [SDK types and extension validation](https://github.com/codexu/note-gen-plugin-sdk/blob/main/packages/plugin-api/src/index.ts), [host document validation](https://github.com/codexu/note-gen/blob/dev/src/lib/plugins/ui-registry.ts), and [host components](https://github.com/codexu/note-gen/tree/dev/src/components/plugins). Check both the SDK and target client when adapting versions.

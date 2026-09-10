@@ -1,0 +1,443 @@
+---
+title: 功能调用与权限
+description: 使用 PluginContext 安全访问工作区、日期、笔记、编辑器、存储和宿主界面。
+icon: ShieldCheck
+---
+
+NoteGen 把一个冻结的 `PluginContext` 传给入口的 `activate`。插件不会获得 React、Tiptap、数据库或宿主 JavaScript 对象；官方插件也没有例外。工作区、笔记、编辑器、存储和宿主界面等能力通过消息桥调用；命令注册、本地化和设置读取由隔离运行时提供。宿主会在敏感操作前后重新检查插件身份、当前工作区和授权范围。
+
+[接口与类型参考](/cn/docs/plugins/developers/plugin-api) 是这套公开契约的类型来源。它的源码由独立的 [NoteGen Plugin SDK 仓库](https://github.com/codexu/note-gen-plugin-sdk)维护。目标版本在 npm 发布后，TypeScript 插件应直接导入包中的类型，不要手抄一份容易漂移的 `PluginContext`。
+
+## PluginContext
+
+~~~ts
+import type { PluginActivate } from "@notegen/plugin-api";
+
+export const activate: PluginActivate = async (ctx) => {
+  const workspace = await ctx.workspace.getCurrent();
+  await ctx.ui.showNotice("Workspace: " + workspace.name);
+};
+~~~
+
+`PluginContext` 包含 `log`、`commands`、`workspace`、`calendar`、`notes`、`attachments`、`editor`、`storage`、`ui`、`network`、`i18n` 和 `settings` 命名空间，以及生命周期用的 `signal`。本页说明它们的行为；完整签名以包导出的 `PluginContext` 及相关类型为准。
+
+`ctx.plugin.id` 和 `ctx.plugin.version` 来自当前插件 manifest。`ctx.plugin.apiVersion` 不是 manifest 中的兼容范围，而是宿主实际提供的 API 版本；当前为 `"0.1.0"`。manifest 可继续声明兼容范围 `"apiVersion": "^0.1.0"`。
+
+参数和返回值必须可 JSON 序列化。一次桥接消息约有 2.125 MiB 上限；超限返回 `QuotaExceeded`。
+
+## 权限模型
+
+权限有三道检查：
+
+1. `plugin.json` 声明插件可能使用的最大能力；
+2. 用户在当前工作区授予或拒绝，并填写文件或目录范围；
+3. 宿主在需要授权的操作前后再次校验插件仍启用、工作区未切换、权限未撤销。
+
+| 权限 | scope | 可调用能力 |
+| --- | --- | --- |
+| `editor.read` | `active-editor` | 活动编辑器信息、选区、Markdown 快照和编辑器事件 |
+| `editor.write` | `active-editor` | 在指定 revision 的活动编辑器光标或选区写入文本 |
+| `notes.read` | `workspace-file`、`workspace-files`、`workspace-folder` | 读取获准 Markdown |
+| `notes.list` | `workspace-folder` | 枚举获准目录下的 Markdown |
+| `notes.create` | `workspace-folder` | 原子创建 Markdown |
+| `notes.open` | `workspace-folder` | 让 NoteGen 打开获准 Markdown |
+| `notes.write` | 文件或目录 scope | 创建或按 revision 覆盖 Markdown |
+| `notes.delete` | 文件或目录 scope | 按 revision 删除 Markdown |
+| `notes.move` | `workspace-folder` | 在获准目录之间移动 Markdown，不覆盖目标 |
+| `attachments.read` | 文件或目录 scope | 读取支持格式的附件，返回 Base64 |
+| `attachments.create` | `workspace-folder` | 创建新附件，不覆盖目标 |
+| `network.fetch` | `network-origins` | 访问用户逐项授权的公开 HTTPS origin |
+
+权限彼此不隐含。`notes.open` 不能读取正文；`notes.create` 不能覆盖已有文件；`editor.read` 不能枚举后台标签。
+
+撤销后新调用会失败，运行时也会被重新协调。已经进入宿主原子提交阶段的写入仍可能完成，所以 `Cancelled` 或 `PermissionDenied` 不能被当成事务回滚证明。
+
+## 工作区和日期
+
+~~~js
+const workspace = await ctx.workspace.getCurrent();
+
+const day = await ctx.calendar.resolveDay({
+  timeZone: "Asia/Shanghai",
+  dayStartsAt: "04:00"
+});
+~~~
+
+`WorkspaceInfo` 只有不透明 `id` 和展示 `name`，不会暴露设备绝对路径。
+
+`resolveDay` 接受 `system` 或 IANA 时区；`dayStartsAt` 使用 24 小时 `HH:mm`。返回：
+
+~~~ts
+interface ResolvedDay {
+  instant: string;
+  logicalDate: string;
+  timeZone: string;
+  localDateTime: string;
+}
+~~~
+
+工作区切换后，旧 ID 和工作区范围调用会返回 `WorkspaceChanged`。不要缓存 UTC offset 自行处理夏令时。
+
+## 命令
+
+~~~js
+const disposable = ctx.commands.handle(
+  "com.example.daily.open-today",
+  async (argument) => {
+    // 处理用户动作。
+  }
+);
+~~~
+
+命令必须已在 manifest 声明且属于插件命名空间。重复注册返回 `AlreadyRegistered`。命令可由插件命令面板或声明的菜单、状态栏入口触发；当前没有插件快捷键绑定 API。
+
+处理器的参数和返回值需要可序列化。
+
+## 搜索已保存笔记（API 0.1.0）
+
+~~~ts
+const result = await ctx.notes.search({
+  query: "项目", folder: "Journal", caseSensitive: false, limit: 50
+});
+for (const match of result.matches) {
+  // path、revision、从 1 开始的 line、最多 500 字符的 preview
+  await ctx.ui.showNotice(`${match.path}:${match.line} ${match.preview}`);
+}
+~~~
+
+需要同时授予 `notes.list` 与 `notes.read`。搜索按字面字符串逐行匹配已保存的 Markdown，不包含未保存编辑器内容，不支持正则、跨行或语义搜索。同一行最多返回一条。`query` 为非空字符串，最长 500 字符；`limit` 为 1–100，默认 50；省略 `folder` 表示工作区根目录，仍需对应目录授权。
+
+每次递归枚举最多 200 篇笔记、扫描最多 16 MiB，单篇超过 2 MiB 跳过；无读取授权的文件也跳过。达到枚举、扫描或结果上限时检查 `truncated`，可缩小目录或查询范围；当前没有分页游标，不保证工作区所有文件都已被检索。结果 revision 是读取该文件时的版本，不是整个查询的一致性快照。
+
+## 附件（API 0.1.0）
+
+~~~json
+{
+  "permissions": {
+    "attachments.read": { "scope": "workspace-folder" },
+    "attachments.create": { "scope": "workspace-folder" }
+  }
+}
+~~~
+
+~~~ts
+// 用户需要单独授权 Assets 目录。Base64 对应 hello 加换行。
+const created = await ctx.attachments.create({ path: "Assets/hello.txt", base64: "aGVsbG8K" });
+const attachment = await ctx.attachments.read({ path: created.path });
+// attachment: { path, size, base64 }，size 为解码后的字节数。
+~~~
+
+路径始终相对工作区，拒绝目录穿越、符号链接和内部保留路径。扩展名仅支持 `png`、`jpg`、`jpeg`、`gif`、`webp`、`pdf`、`txt`、`csv`，大小写不敏感；不接收 HTML、SVG、脚本或可执行文件。内容使用标准带填充 Base64，不是 data URL；单个文件解码后最多 1 MiB，超限返回 `QuotaExceeded`。
+
+`create` 返回 `{ path, size }`，可创建父目录，但目标已存在时返回 `InvalidPath`，绝不覆盖。提交使用同目录暂存文件和原子硬链接；不支持硬链接的文件系统会失败，不会退化为覆盖写入。API 不自动打开或预览附件，也不提供列举、删除、重命名、任意文件访问或内容安全认证；扩展名校验不代表内容可信。`notes.*` 授权不包含附件授权。
+
+如创建后失去权限或工作区发生变化，错误可能携带 `details.committed: true`，表示文件已经创建，不要把错误当成回滚或直接重试同名创建。
+
+## 源码范围编辑（API 0.1.0）
+
+~~~ts
+const editor = await ctx.editor.getActiveEditor();
+if (editor?.mode === "source") {
+  const snapshot = await ctx.editor.getTextSnapshot({ editorId: editor.editorId, expectedRevision: editor.revision, format: "markdown" });
+  await ctx.editor.applyEdits({
+    editorId: editor.editorId, expectedRevision: snapshot.revision,
+    edits: [{ from: 0, to: 0, text: "# 标题\n\n" }]
+  });
+  // 修改后重新读取 revision，再设置选区。
+  const updated = await ctx.editor.getActiveEditor();
+  if (updated?.editorId === editor.editorId) {
+    await ctx.editor.setSelection({ editorId: updated.editorId, expectedRevision: updated.revision, from: 0, to: 4 });
+  }
+}
+~~~
+
+读取需要 `editor.read`，两种新操作需要 `editor.write`。`from`、`to` 是规范 Markdown 的 UTF-16 偏移量，采用左闭右开区间，不能截断代理对。`applyEdits` 接收 1–100 项，所有范围均基于同一个原始 revision；区间重叠或共享插入起点返回 `Conflict`，插入文本总计最多 1 MiB。整批修改是一个编辑器事务、一次撤销步骤。
+
+`setSelection` 只移动选区，不修改正文；`from === to` 表示光标。当前两种操作只支持源码模式，富文本/分段模式、输入法正在组合或编辑器尚未就绪时返回 `EditorBusy`。revision 过期返回 `StaleRevision`，编辑器已切换返回 `NotFound`。不要将富文本的 ProseMirror 位置作为 Markdown 偏移量；原有 `applyEdit` 仍用于宿主支持模式下的光标插入或选区替换。
+
+## 读取笔记
+
+~~~js
+const note = await ctx.notes.read({
+  path: "Templates/Daily.md"
+});
+~~~
+
+~~~ts
+interface NoteSnapshot {
+  id: string;
+  path: string;
+  revision: number;
+  content: string;
+}
+~~~
+
+路径相对当前工作区并必须以 `.md` 结尾。正文最多 2 MiB，返回值不含绝对路径。调用前后都会检查 `notes.read` 及路径授权。
+
+## 原子打开或创建
+
+~~~js
+const result = await ctx.notes.openOrCreate({
+  workspaceId: workspace.id,
+  path: "Daily/2026/09/2026-09-07.md",
+  initialContent: "# 2026年9月7日\n\n",
+  conflict: "open-existing",
+  open: true,
+  idempotencyKey: "daily:2026-09-07:path-hash"
+});
+~~~
+
+~~~ts
+interface OpenOrCreateNoteOptions {
+  workspaceId: string;
+  path: string;
+  initialContent: string;
+  conflict: "open-existing";
+  open: boolean;
+  idempotencyKey: string;
+}
+
+interface OpenOrCreateResult {
+  status: "created" | "opened-existing";
+  workspaceId: string;
+  path: string;
+  opened: boolean;
+}
+~~~
+
+此操作始终需要 `notes.create`；仅当 `open: true` 时还需要 `notes.open`。目标存在时不覆盖内容。相同工作区与路径的并发调用由宿主串行处理，只会创建一个完整文件。初始内容最多 2 MiB。
+
+文件已经创建、但编辑器无法安全切换时，插件会收到 `CreatedNotOpened`。不要自动删除或覆盖已创建的文件；可结合错误的可选 `details` 核对结果，用相同幂等键重试，或提示用户从文件列表打开。
+
+独立编辑器窗口不支持 `open: true`，会返回 `EditorBusy`。
+
+## 活动编辑器
+
+~~~ts
+interface ActiveEditorContext {
+  windowId: string;
+  editorId: string;
+  documentId: string;
+  kind: "markdown";
+  mode: "visual" | "source" | "sectioned";
+  revision: number;
+  composing: boolean;
+  size: {
+    utf16Length: number;
+    bytes: number;
+    lines: number;
+  };
+}
+~~~
+
+`getActiveEditor()` 没有活动 Markdown 时返回 `null`。`documentId`、`editorId` 和 `windowId` 都是不透明身份。
+
+~~~ts
+interface EditorSelection {
+  editorId: string;
+  revision: number;
+  from?: number;
+  to?: number;
+  offsetsAvailable: boolean;
+  empty: boolean;
+  text: string;
+}
+~~~
+
+`getSelection()` 也可能返回 `null`。在分段编辑等模式中，选区文本可用，但精确 offset 可能没有；先检查 `offsetsAvailable`，再读取 `from` 和 `to`。
+
+## Markdown 快照和事件
+
+~~~js
+const active = await ctx.editor.getActiveEditor();
+if (!active) return;
+
+const snapshot = await ctx.editor.getTextSnapshot({
+  editorId: active.editorId,
+  expectedRevision: active.revision,
+  format: "markdown"
+});
+~~~
+
+~~~ts
+interface EditorTextSnapshot {
+  editorId: string;
+  documentId: string;
+  revision: number;
+  format: "markdown";
+  text: string;
+}
+~~~
+
+API 一次返回完整 Markdown，没有 `signal` 或 `chunkSize` 参数，也没有分块迭代器。正文与桥消息上限共同限制可读取大小。请求期间 revision 变化时返回 `StaleRevision`；收到结果后仍应确认它属于你正在处理的 editor 和 revision。
+
+可订阅：
+
+~~~js
+ctx.editor.onDidChangeActiveEditor((event) => {
+  // event.previous / event.current
+});
+
+ctx.editor.onDidChangeContent((event) => {
+  // editorId、documentId、revision、composing、size
+});
+~~~
+
+事件可能合并或迟到，不要依赖每次按键必有一个事件。`composing` 会在输入法合成状态变化时更新；即使 revision 没有变化，`true` 变为 `false` 也会发送事件。需要读取稳定快照的插件应等待 `composing: false`，并用 revision 与 composing 状态共同去重。
+
+## 列举、写入、移动与删除笔记
+
+`write`、`move` 和 `delete` 只能在主窗口中修改未打开的文件。操作前请关闭源文件与目标文件的所有标签、分栏及独立编辑器窗口；任意一处仍打开这些文件，都会返回 `EditorBusy`。独立编辑器窗口中的插件不能执行文件修改，编辑当前正文应使用 `ctx.editor.applyEdit`。宿主会先完成关闭文件的待保存内容，再检查 `expectedRevision`；因此先前读取的 revision 可能失效，需要重新读取后再决定如何修改。
+
+~~~ts
+const page = await ctx.notes.list({ folder: "Projects", recursive: true, limit: 200 });
+const current = await ctx.notes.read({ path: "Projects/demo.md" });
+await ctx.notes.write({ path: current.path, content: current.content + "\n完成", expectedRevision: current.revision });
+await ctx.notes.move({ from: "Projects/demo.md", to: "Archive/demo.md" });
+const archived = await ctx.notes.read({ path: "Archive/demo.md" });
+await ctx.notes.delete({ path: archived.path, expectedRevision: archived.revision });
+~~~
+
+`list` 最多返回 1000 项，只枚举 `.md` 文件并跳过符号链接；`truncated` 表示仍有更多结果。`write` 的 `create: true` 允许新建，否则目标必须存在。修改和删除已有文件必须传入读取到的 `expectedRevision`，缺失或不匹配会返回 `StaleRevision`；即使传了 `create: true`，也不能无 revision 覆盖已有文件。移动永不覆盖目标。桌面端删除会移入系统废纸篓，失败时不会退回永久删除；移动端暂不支持可恢复删除，返回 `UnavailableOnPlatform`。`ctx.notes.onDidChange` 返回 `created`、`changed`、`deleted` 或 `moved` 事件，事件可能合并，收到后应重新读取所需状态。
+
+## 修改活动编辑器
+
+~~~ts
+const editor = await ctx.editor.getActiveEditor();
+if (editor && !editor.composing) {
+  await ctx.editor.applyEdit({ editorId: editor.editorId, expectedRevision: editor.revision, target: "selection", text: "新内容" });
+}
+~~~
+
+只能修改当前活动编辑器。revision 不一致返回 `StaleRevision`，输入法合成或编辑器无法安全提交时返回 `EditorBusy`。`target: "cursor"` 在光标插入，`"selection"` 替换当前选区；一次文本最多 1 MiB。
+
+## 受限网络请求
+
+manifest 声明 `"network.fetch": { "scope": "network-origins" }` 后，用户需要逐项填写 HTTPS origin，例如 `https://api.example.com`。调用使用 `ctx.network.fetch({ url, method, headers, body, timeoutMs })`。宿主拒绝 HTTP、凭据、localhost、IP 字面量、重定向以及危险请求头；请求和响应各最多 100 个 header，名称最多 100 字节、值最多 8,192 个 UTF-8 字节；请求与 UTF-8 文本响应正文各最多 2 MiB，超时必须在 1–30 秒内。每个运行中的插件实例最多同时进行 4 个网络请求，超限会立即返回 `QuotaExceeded`。插件不能读取浏览器 Cookie，也没有通配域名授权。
+
+## 工作区与笔记事件
+
+`ctx.workspace.onDidChange` 在运行实例绑定到工作区时提供当前工作区快照；NoteGen 切换工作区会停止旧实例并按激活规则创建新实例。使用 `onWorkspace:open` 可在工作区打开时激活，使用 `onNotes:change` 可在笔记发生变化时激活。订阅返回的 disposable 应在不需要时释放。
+
+## 设置和插件存储
+
+`ctx.settings` 读取 manifest 的 `contributes.settings` 值，并接收当前运行中的变化：
+
+~~~js
+const enabled = ctx.settings.get("com.example.stats.enabled");
+
+ctx.settings.onDidChange((key, value) => {
+  // 更新插件自己的运行状态。
+});
+~~~
+
+贡献设置的 `device` 或 `workspace` scope 都保存在应用数据目录下的 `plugins/host-state.json`，当前不跨设备同步。
+
+`ctx.storage` 是插件私有 JSON KV：
+
+~~~js
+await ctx.storage.workspace.set("cache-v1", {
+  revision: 12,
+  value: "..."
+});
+const cached = await ctx.storage.workspace.get("cache-v1");
+~~~
+
+- `device` 是本机插件命名空间；
+- `workspace` 仍在本机，只按当前不透明 workspace ID 分区；
+- 两个区域合计每个插件最多 256 个键、1 MiB JSON 数据；
+- key 长度为 1–128，只能含字母、数字、点、下划线和连字符，并以字母或数字开头；
+- 值必须可 JSON 序列化；
+- 两个区域当前都不跨设备同步。
+
+## 通知、状态栏和本地化
+
+状态栏更新签名为 `update(id: string, state: PluginStatusBarUpdate): Promise<void>`。等待 Promise 可以接收工作区切换、生命周期结束、项目未声明或参数无效等失败：
+
+~~~js
+await ctx.ui.showNotice(ctx.i18n.t("notice.complete"));
+
+await ctx.ui.statusBar.update("com.example.stats.summary", {
+  visible: true,
+  text: "1,248 characters",
+  compactText: "1,248",
+  tooltip: "Writing statistics",
+  accessibleLabel: "1,248 characters",
+  busy: false
+});
+~~~
+
+通知最多保留 500 个 UTF-16 code units，并限制为每 10 秒 5 次。状态栏 ID 必须在 manifest 声明，文字字段最多 160 个 UTF-16 code units。同一项目 100 毫秒内的后续更新会合并，在窗口结束时应用最后一次状态。Promise 完成表示更新已被接受，不保证已绘制；插件停止、禁用或替换时尚未应用的状态会取消。内容只允许纯文本。
+
+`ctx.i18n.t` 从插件语言文件读取字符串，并替换 `{name}` 形式的值；缺少 key 时返回 key 本身。
+
+## 错误码
+
+| 错误码 | 含义 |
+| --- | --- |
+| `PermissionDenied` | 未声明、未授权、超出路径范围或授权已失效 |
+| `AlreadyRegistered` | 重复注册命令 |
+| `UnavailableOnPlatform` | 平台或窗口不支持 |
+| `QuotaExceeded` | 正文、存储、消息、内存或调用额度超限 |
+| `StaleRevision` | 编辑器或笔记文件的 revision 已变化 |
+| `Conflict` | 冲突策略、状态或路径冲突 |
+| `NotFound` | 获准范围内的目标不存在 |
+| `InvalidTimeZone` | 时区或 `dayStartsAt` 无效 |
+| `InvalidPath` | 工作区 Markdown 相对路径无效 |
+| `EditorBusy` | 编辑器不能安全切换；文件仍在任意标签、分栏或独立窗口打开；或当前窗口不支持该文件操作 |
+| `WorkspaceChanged` | 操作期间工作区变化 |
+| `CreatedNotOpened` | 文件已创建但没有打开 |
+| `ReadOnly` | 目标不可写 |
+| `NoSpace` | 存储空间不足 |
+| `Timeout` | 激活、命令或操作超过时限 |
+| `Cancelled` | 生命周期或用户操作取消 |
+| `InvalidManifest` | manifest、参数或存储 key 不合法 |
+| `Incompatible` | API、应用版本或平台不兼容 |
+| `RuntimeFailure` | 入口、协议或运行时执行失败 |
+| `SignatureInvalid` | Ed25519 身份或签名验证失败 |
+| `IntegrityMismatch` | 包内容、摘要或安装状态不一致 |
+
+插件运行时通常只收到与当前 API 调用有关的错误；安装层错误显示在 NoteGen 管理界面。
+
+消息桥会保留错误的 `code`、`message`，以及可安全序列化且不超过 16 KiB 的可选 `details`。`details` 缺失不代表操作一定没有发生；不要仅凭字段缺失直接重试有副作用的操作。
+
+文件修改返回错误时，先检查 `error.details?.committed`。如果为 `true`，磁盘修改已经完成，只是工作区切换或界面刷新失败；不要直接重复写入、移动或删除，应先重新读取文件状态。`EditorBusy` 应提示用户关闭所有相关编辑器，或改用编辑器 API；不要无间隔重试。
+
+## 分页读取笔记
+
+`notes.list` 默认每页 200 条，`limit` 支持 1–1,000 的整数。还有下一页时返回 `truncated: true` 和 `nextCursor`，将游标原样传回即可继续：
+
+~~~ts
+let cursor: string | undefined;
+do {
+  ctx.signal.throwIfAborted();
+  const page = await ctx.notes.list({ folder: 'Projects', recursive: true, limit: 100, cursor });
+  for (const entry of page.entries) {
+    // 按需读取并处理 entry.path，不必把整个工作区放入内存。
+  }
+  cursor = page.nextCursor;
+} while (cursor);
+~~~
+
+游标不能跨目录、递归选项或工作区复用，不要解析、拼接或长期存储。游标文件已删除或移动时返回 `StaleRevision`，请重新扫描。分页不是固定快照：扫描期间的新增或移动可能需要从头扫描并按路径去重。单次宿主扫描最多检查 100,000 个目录项；超出返回 `QuotaExceeded`，应缩小目录范围。`notes.search` 仍然是有配额的文本搜索，不因列表分页而自动遍历全库。
+
+## 当前未开放的能力
+
+API 0.1.0 不提供 AI、secret、网络二进制响应、原始文件系统、SQL、进程、Tauri command、自定义 HTML/WebView 或原生能力。附件通过单独的受控 Base64 接口传输，不意味着开放原始文件系统。声明未知权限会让插件安装失败。
+
+## 日志与数据恢复
+
+使用 `ctx.log.info(message)`、`ctx.log.warning(message)`、`ctx.log.error(message)` 写入本地诊断。每条最多 1,000 字符；每个 QuickJS 实例每 10 秒最多接收 50 条，超额丢弃。不自动捕获 `console` 或提取堆栈，堆栈需显式传入；不要记录密钥或笔记正文。日志只在内存中，退出前通过“开发者 → 导出诊断”保存当前筛选的插件资料与日志。
+
+~~~ts
+ctx.log.info("开始刷新");
+try {
+  // 执行插件操作。
+} catch (error) {
+  ctx.log.error(error instanceof Error ? error.stack ?? error.message : String(error));
+}
+~~~
+
+生产 KV 按包内容指纹隔离。新包首次复制当前包 KV；回滚选择旧包副本；已存在的同指纹副本复用。贡献设置、Markdown 和远端副作用不在回滚范围内。作者应保存显式数据 schema 版本，不要假设新版数据会合并回旧版。
+
+管理备份以 `plugin-user-data.json` 保存 KV，恢复时重绑归档工作区，但不恢复程序或权限，需先重新安装授权。进程内测试宿主不能证明原生备份、包回滚或迁移正确，这些需要桌面宿主验证。

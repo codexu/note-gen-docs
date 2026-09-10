@@ -1,0 +1,373 @@
+---
+title: Command-line tools
+description: Use the official CLI to create, validate, build, package, sign, and verify NoteGen plugins.
+icon: Terminal
+---
+
+`@notegen/plugin-cli` is NoteGen's official authoring tool for plugins. It runs in Node.js on a developer machine and provides project scaffolding, strict validation, single-file builds, deterministic archives, and Ed25519 key and signature operations. It is not part of the plugin runtime.
+
+> Updated 2026-09-10: all four SDK packages are published on npm and the signed official marketplace is live; community submissions remain closed. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
+
+## Requirements and installation
+
+- Node.js 20 or newer;
+- pnpm 10 when working in the SDK repository;
+- use the CLI only as a development tool; never bundle it into the entry loaded by NoteGen.
+
+Install it in a plugin project:
+
+~~~bash
+pnpm add -D @notegen/plugin-cli
+pnpm exec notegen-plugin --help
+~~~
+
+To use the SDK source, run it from source:
+
+~~~bash
+git clone https://github.com/codexu/note-gen-plugin-sdk.git
+cd note-gen-plugin-sdk
+pnpm install
+pnpm build
+node packages/plugin-cli/dist/bin.js --help
+~~~
+
+The examples below use `notegen-plugin`. When running from source, replace it with the absolute path to the built `packages/plugin-cli/dist/bin.js`.
+
+## Standard workflow
+
+~~~text
+source project
+  │ validate / build
+  ▼
+.notegen/package                 local development import directory
+  │ pack
+  ▼
+<id>-<version>.unsigned.notegen-plugin
+  │ sign
+  ▼
+<id>-<version>.notegen-plugin   publisher-signed archive
+  │ verify
+  ▼
+locally verified package
+~~~
+
+`build`, `validate`, and `verify` never execute the plugin entry. `pack` never reads a private key. `sign` accepts only an already-built unsigned archive and does not read source code or start a build. The CLI has no upload, publisher-registration, or marketplace-submission command.
+
+## `create`
+
+~~~text
+notegen-plugin create <directory> [options]
+~~~
+
+Creates a TypeScript plugin project. An existing target must be a real, empty directory. The command does not overwrite a non-empty directory or follow a target symlink.
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `--id <plugin-id>` | None | Reverse-domain plugin ID; may be prompted for in a terminal and is required with `--yes` or `--json` |
+| `--name <name>` | Title derived from the directory | Display name; prompted for in interactive mode |
+| `--description <text>` | Template description | Initial manifest description |
+| `--template <template>` | `command` | `command` or `editor-statistics` |
+| `--min-app-version <version>` | `0.37.0` | Minimum NoteGen version written to the manifest |
+| `--api-version <range>` | `^0.1.0` | Plugin API compatibility range written to the manifest |
+| `--package-manager <manager>` | `pnpm` | `pnpm` or `npm` |
+| `--install` | Off | Run the selected package manager's `install` after creating files |
+| `--yes` | Off | Disable prompts; `--id` is required |
+| `--json` | Off | Disable prompts and emit one JSON document; `--id` is required |
+
+The generated project contains:
+
+~~~text
+<directory>/
+├── .gitignore
+├── package.json
+├── plugin.json
+├── tsconfig.json
+└── src/
+    └── main.ts
+~~~
+
+The generated `package.json#notegen.source` defaults to `src/main.ts` and includes `build`, `validate`, and `pack` scripts. Dependency installation is opt-in because a package manager may execute third-party lifecycle scripts.
+
+### `create-notegen-plugin`
+
+`create-notegen-plugin` is a small executable-only package. It forwards its arguments to `notegen-plugin create`:
+
+~~~bash
+npx create-notegen-plugin my-plugin \
+  --id com.example.my-plugin \
+  --name "My Plugin"
+~~~
+
+It supports every option in the table above and has no separate JavaScript library export. To use the SDK source, run:
+
+~~~bash
+node packages/create-notegen-plugin/dist/bin.js ../my-plugin \
+  --id com.example.my-plugin \
+  --name "My Plugin"
+~~~
+
+## `validate`
+
+~~~text
+notegen-plugin validate [path] [options]
+~~~
+
+`path` defaults to the current directory. The command classifies the input by its contents:
+
+| Input | Validation behavior |
+| --- | --- |
+| Source project | Checks `plugin.json` and `package.json#notegen.source`, then confirms that the source entry and declared locale files exist and are safe to read; it neither builds nor parses locale message contents (`build` performs that check) |
+| Development directory | Reads the payload declared by `integrity.json`; source and documentation files outside the snapshot may remain in the directory |
+| `.unsigned.notegen-plugin` | Checks the complete archive and requires `signature.sig` to be absent |
+| Final `.notegen-plugin` | Checks the complete archive and always requires `signature.sig` |
+
+| Option | Purpose |
+| --- | --- |
+| `--api-version <version>` | Check the manifest's `apiVersion` range against a concrete host API version |
+| `--app-version <version>` | Check `minAppVersion` against a concrete NoteGen version |
+| `--public-key <file>` | Verify with a publisher public-key JSON file or a UTF-8 file containing only Base64 key text |
+| `--require-signature` | Reject development directories and unsigned input that have no `signature.sig` |
+| `--json` | Emit a machine-readable result or diagnostics |
+
+By default, `validate` accepts unsigned source projects and development directories. Passing `--public-key` or `--require-signature` for a source project fails because a source project has no package signature to verify.
+
+Path collision checks include parent directories, even when a ZIP does not list them explicitly. For example, `A/x.json` and `a/y.json` cannot coexist in one package: they would produce different results on case-sensitive and case-insensitive filesystems. Use one consistent spelling for each directory.
+
+## `build`
+
+~~~text
+notegen-plugin build [directory] [options]
+~~~
+
+`directory` defaults to the current directory. The builder reads `package.json#notegen.source`, which defaults to `src/main.ts`, and then:
+
+1. strictly validates the manifest and declared locales;
+2. bundles source and dependencies into one self-contained JavaScript ESM entry;
+3. rejects residual relative, package, remote, or dynamic imports;
+4. generates `integrity.json`;
+5. validates the complete payload and atomically replaces `.notegen/package`.
+
+| Option | Purpose |
+| --- | --- |
+| `--api-version <version>` | Validate against a concrete host API version |
+| `--app-version <version>` | Validate against a concrete NoteGen version |
+| `--json` | Emit a machine-readable result or diagnostics |
+
+The output is always `.notegen/package` under the project. There is no custom output option. Import the absolute path to this directory from NoteGen's Settings → Plugins → Developer page.
+
+## `pack`
+
+~~~text
+notegen-plugin pack [directory] [options]
+~~~
+
+Runs the same build and complete validation, then writes a deterministic unsigned ZIP archive. The default output is:
+
+~~~text
+.notegen/releases/<id>-<version>.unsigned.notegen-plugin
+~~~
+
+| Option | Purpose |
+| --- | --- |
+| `--output <file>` | Select an output ending in `.unsigned.notegen-plugin` |
+| `--force` | Replace only the selected existing output file |
+| `--api-version <version>` | Validate against a concrete host API version |
+| `--app-version <version>` | Validate against a concrete NoteGen version |
+| `--json` | Emit a machine-readable result or diagnostics |
+
+`pack` neither accepts nor searches for a private key and cannot directly create a final marketplace-ready signed package.
+
+## `keygen`
+
+~~~text
+notegen-plugin keygen [options]
+~~~
+
+Generates an Ed25519 publisher key pair. The default files are:
+
+~~~text
+.notegen/keys/publisher-private.pem
+.notegen/keys/publisher-public.json
+~~~
+
+| Option | Purpose |
+| --- | --- |
+| `--output <directory>` | Change the base directory for both default filenames |
+| `--private-key <file>` | Select the PKCS#8 PEM private-key path |
+| `--public-key <file>` | Select the public-key JSON path |
+| `--passphrase-env <name>` | Read a passphrase from this environment variable and encrypt the private key |
+| `--force` | Replace both existing key files as a recoverable transaction |
+| `--json` | Emit a machine-readable result; private-key contents are never printed |
+
+The public JSON contains `algorithm: "Ed25519"`, a `keyId`, and the raw 32-byte public key in standard Base64. Never place a private key or passphrase in a repository, plugin package, synced directory, or command argument. `keygen` creates publisher keys, not NoteGen's marketplace root key.
+
+## `sign`
+
+~~~text
+notegen-plugin sign <unsigned-archive> --private-key <pem> [options]
+~~~
+
+The input must end in `.unsigned.notegen-plugin` and must not already contain `signature.sig`. The command validates the archive, canonicalizes signed documents with RFC 8785 JCS, adds an Ed25519 `signature.sig`, and by default replaces `.unsigned.notegen-plugin` with `.notegen-plugin` in the output name.
+
+| Option | Purpose |
+| --- | --- |
+| `--private-key <file>` | Required publisher PKCS#8 PEM private key |
+| `--output <file>` | Select a final path ending in `.notegen-plugin` but not in the unsigned suffix |
+| `--passphrase-env <name>` | Read the private-key passphrase from this environment variable |
+| `--force` | Replace the selected existing final file |
+| `--api-version <version>` | Validate against a concrete host API version |
+| `--app-version <version>` | Validate against a concrete NoteGen version |
+| `--json` | Emit a machine-readable result or diagnostics |
+
+The output cannot overwrite the unsigned input. `sign` does not scan source, install dependencies, or run a build.
+
+## `verify`
+
+~~~text
+notegen-plugin verify <archive-or-directory> [options]
+~~~
+
+Accepts only a complete development directory or archive, not a source project. Unlike `validate`, which reads the declared payload from a development directory, `verify` traverses a complete directory and rejects undeclared files, symbolic links, special files, and other unsafe entries.
+
+| Option | Purpose |
+| --- | --- |
+| `--public-key <file>` | Verify publisher identity with a public-key JSON file or a UTF-8 file containing only Base64 key text |
+| `--api-version <version>` | Validate against a concrete host API version |
+| `--app-version <version>` | Validate against a concrete NoteGen version |
+| `--require-signature` | Reject development directories and unsigned input that have no signature |
+| `--json` | Emit a machine-readable result or diagnostics |
+
+Without `--public-key`, signed input proves only that its signature encoding and integrity structure are valid; it does not prove publisher identity. Local verification also does not validate a marketplace root index, publisher registration, reproducible source build, license, or human review status.
+
+## Compatibility options
+
+`create --api-version` writes a SemVer range to the manifest. Every other command's `--api-version` is a concrete host API version used for validation. Do not interchange those two values.
+
+`--app-version` is also a concrete NoteGen version. When it is omitted, the CLI validates the format of `minAppVersion` but does not compare it with an application release:
+
+- text output explicitly says compatibility was not checked;
+- JSON output sets `appCompatibilityChecked` to `false` and includes `appCompatibilityNote`;
+- release validation should always pass the target application version explicitly.
+
+## Signature and filename rules
+
+The final `.notegen-plugin` suffix inherently requires `signature.sig`; a programmatic caller cannot disable that rule. `--require-signature` rejects other unsigned input. Because the `.unsigned.notegen-plugin` suffix also forbids an embedded `signature.sig`, using that option with such an archive fails by design; run `sign` first to produce an archive with the final suffix.
+
+`--public-key` does more than check for a signature: it verifies the publisher signature against the supplied key and fails when the input is unsigned. The key file may be the strict JSON generated by `keygen` or raw public-key Base64 text.
+
+## `--json` contract
+
+All seven commands support a command-level `--json` option. In this mode, the CLI:
+
+- disables interactive prompts;
+- writes exactly one JSON document to stdout;
+- uses the same stdout JSON channel for success and failure;
+- sends package-manager logs from `create --install` to stderr;
+- still requires callers to use the process exit code to determine success.
+
+Diagnostics have this shape:
+
+~~~ts
+interface Diagnostic {
+  severity: "error" | "warning";
+  code: string;
+  message: string;
+  path?: string;
+  hint?: string;
+}
+~~~
+
+A failure is `{ ok: false, diagnostics: Diagnostic[] }`. Help and version requests in JSON mode return `{ ok: true, command: "help" | "version", output: string }`.
+
+Command success fields are listed below. A path field's base depends on its meaning: filesystem targets such as `target`, output directories, and archive paths are resolved by the CLI, while `create.files` and manifest `entry` or locale paths remain project- or package-relative. Automation must not assume that every path-like string is absolute.
+
+| command | Additional fields |
+| --- | --- |
+| `create` | `directory`, `files`, `packageManager`, `installed` |
+| `validate`, `verify` | `kind`, `target`, `manifest`, `signed`, `signatureVerified`, `appCompatibilityChecked`, `appCompatibilityNote`; archives also include `archiveSha256` and `archiveSize` |
+| `build` | `pluginId`, `version`, `outputDirectory`, `appCompatibilityChecked`, `appCompatibilityNote` |
+| `pack` | `path`, `pluginId`, `version`, `sha256`, `size`, `developmentDirectory`, and compatibility fields |
+| `keygen` | `privateKeyPath`, `publicKeyPath`, `keyId`, `publicKey`; never private-key contents |
+| `sign` | `path`, `pluginId`, `version`, `keyId`, `publicKey`, `sha256`, `size`, and compatibility fields |
+
+Diagnostic `code` is currently a string rather than a closed enum. Automation should branch on the exit code first, handle only the individual codes it needs, and retain a fallback for unknown codes.
+
+## Exit codes
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | Success |
+| `1` | Project, manifest, build, package, integrity, key, or signature validation failed |
+| `2` | Invalid command, argument, or option usage |
+| `3` | An unsafe or potentially destructive operation was refused, such as a non-empty scaffold target, an existing output, an escaping path, or a symlink |
+| `70` | Unexpected internal failure |
+| `130` | Interrupted |
+
+Text mode writes normal results to stdout and formatted diagnostics to stderr. In every output mode, treat `{ ok: false }` or a non-zero exit code as failure.
+
+## Programmatic Node.js API
+
+The package root of `@notegen/plugin-cli` also exposes a programmatic Node.js API. These functions use the filesystem, paths, cryptography, ZIP handling, and build tooling. They belong only in authoring tools, CI, or release workflows and must never be imported by a plugin entry. The package is ESM-only, so use `import`; CommonJS `require()` is unsupported. It exposes only its root and `./package.json`; do not depend on deep paths such as `dist/lib/*`.
+
+~~~ts
+import {
+  isDiagnosticError,
+  validatePluginTarget,
+} from "@notegen/plugin-cli";
+
+try {
+  const result = await validatePluginTarget({
+    target: ".notegen/package",
+    appVersion: "0.37.0",
+  });
+  console.log(result.manifest.id);
+} catch (error) {
+  if (isDiagnosticError(error)) {
+    console.error(error.diagnostics);
+  }
+}
+~~~
+
+The current package-root exports are grouped below:
+
+| Category | Exports |
+| --- | --- |
+| CLI embedding | `PLUGIN_CLI_VERSION`, `CliIo`, `CreateCliProgramOptions`, `createCliProgram`, `runCli`, `runCreateCli` |
+| Project creation | `PluginTemplate`, `PackageManager`, `CreatePluginProjectOptions`, `CreatedPluginProject`, `createPluginProject` |
+| Project builds | `BuildPluginProjectOptions`, `BuiltPluginProject`, `ValidatedPluginProjectSource`, `buildPluginProject`, `validatePluginProjectSource` |
+| High-level tasks | `ValidateTargetOptions`, `ValidationResult`, `PackPluginOptions`, `PackPluginResult`, `GenerateKeysOptions`, `GeneratedKeysResult`, `SignPluginOptions`, `SignPluginResult`, `readPublisherPublicKey`, `validatePluginTarget`, `packPluginProject`, `generatePublisherKeys`, `signPluginArchive` |
+| Manifest | `ManifestValidationOptions`, `satisfiesPluginApiRequirement`, `validateLocaleMessages`, `validatePluginManifest`, `parsePluginManifest` |
+| Complete packages | `PackageValidationOptions`, `ValidatedPluginPackage`, `validatePackageFiles`, `readPackageDirectory`, `readCompletePackageDirectory` |
+| Integrity | `INTEGRITY_VERSION`, `INTEGRITY_ALGORITHM`, `MAX_SIGNATURE_FILE_BYTES`, `IntegrityFileV1`, `IntegrityManifestV1`, `PackageFileMap`, `sha256Hex`, `isLowercaseSha256`, `createIntegrityManifest`, `serializeIntegrityManifest`, `validateIntegrityManifest`, `parseIntegrityManifest` |
+| Archives | `PackageFile`, `PackageArchive`, `readPackageArchive`, `writePackageArchive` |
+| Package paths | `MAX_PACKAGE_PATH_BYTES`, `MAX_PACKAGE_SEGMENT_BYTES`, `MAX_PACKAGE_PATH_DEPTH`, `PackagePathOptions`, `PackagePathEntry`, `utf8ByteLength`, `hasControlCharacter`, `packagePathCollisionKey`, `isForbiddenPackageFilePath`, `validatePackagePath`, `assertUniquePackagePaths`, `countPackageEntries` |
+| Signing | `ED25519_PUBLIC_KEY_BYTES`, `ED25519_SIGNATURE_BYTES`, `PrivateKeySource`, `PublicKeySource`, `PrivateKeyOptions`, `GeneratedPublisherKeyPair`, `canonicalJsonBytes`, `createPackageSignatureMessage`, `decodePublisherPublicKey`, `decodePackageSignature`, `publisherPublicKeyFromPrivate`, `publisherKeyId`, `generatePublisherKeyPair`, `signPackage`, `verifyPackageSignature`, `assertPackageSignature` |
+| Diagnostics | `DiagnosticSeverity`, `Diagnostic`, `DiagnosticInput`, `diagnostic`, `DiagnosticError`, `fail`, `isDiagnosticError`, `hasDiagnosticErrors`, `formatDiagnostic`, `diagnosticsFromError` |
+| Path and exit constants | `PACKAGE_EXTENSION`, `UNSIGNED_PACKAGE_EXTENSION`, `DEVELOPMENT_OUTPUT_DIRECTORY`, `RELEASE_OUTPUT_DIRECTORY`, `EXIT_SUCCESS`, `EXIT_PROJECT_FAILURE`, `EXIT_USAGE`, `EXIT_UNSAFE_REFUSAL`, `EXIT_UNEXPECTED`, `EXIT_INTERRUPTED` |
+
+Use `parsePluginManifest` for raw `plugin.json` bytes so strict-JSON, duplicate-key, and integer-token checks can run. `validatePluginManifest` accepts a value that has already been parsed. `readPackageDirectory` reads a development snapshot according to `integrity.json`, while `readCompletePackageDirectory` traverses and checks every directory entry.
+
+Filesystem transaction helpers and the low-level strict-JSON parser are not exported from the package root. `create-notegen-plugin` is executable-only; code that needs to create a project should import `createPluginProject` from `@notegen/plugin-cli`.
+
+## Related documentation
+
+- [Build your first plugin](/en/docs/plugins/developers/getting-started)
+- [Plugin configuration](/en/docs/plugins/developers/manifest)
+- [Packaging and verification](/en/docs/plugins/developers/package-verify)
+- [Testing plugins](/en/docs/plugins/developers/testing)
+
+## Watch mode and automatic reload
+
+Run inside the plugin source project:
+
+~~~bash
+pnpm exec notegen-plugin dev
+~~~
+
+New scaffolds also provide `pnpm dev`. The command builds once, then polls project files every second and serially rebuilds. A staging directory replaces `.notegen/package`; compile or package-validation failures leave the previous output in place. It does not run TypeScript type checking or tests. Run your project checks separately when needed. `--json` prints one result per line. Ctrl+C stops watching; an already-running build may finish.
+
+Ignored directories: `node_modules`, `.git`, `.notegen`, `dist`, `build`, `.next`; symlinks are skipped. Scans are limited to 10,000 entries and 32 levels. Restart the command after changes to external dependencies or ignored directories. Do not put source entries in output directories.
+
+Enable Developer mode, import `.notegen/package`, and enable the plugin. The main window automatically compares installed and source integrity manifests every two seconds, validating and importing changed output. No Reload button or Auto-reload switch is needed. Watching continues after closing settings and resumes after restarting the host. Disabled plugins are not reloaded; turning off Developer mode clears watchers.
+
+No local scripts are executed by the host. Expanded permissions still require review. Failures appear in logs; identical failed output is not retried indefinitely. Produce changed output or restart the host to retry. Reload recreates the runtime and UI, including form drafts; it is not state-preserving hot module replacement.

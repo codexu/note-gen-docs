@@ -1,0 +1,154 @@
+---
+title: 开发工具概览
+description: 选择并使用 NoteGen 的插件 API、脚手架、命令行工具和测试宿主。
+icon: Boxes
+---
+
+NoteGen Plugin SDK 是面向官方、社区与本地开发插件作者的公开 TypeScript 工具链。它负责描述宿主契约、创建项目、构建可导入快照、制作签名发布包并在 Node.js 进程中测试插件行为。
+
+SDK 不需要连接 NoteGen 服务器，也不会成为插件运行时依赖。插件在 NoteGen 中启动后，只能使用宿主传给 `activate` 的 `PluginContext`。
+
+> 更新日期：2026-09-10。四个 SDK 包已发布 npm，官方插件签名市场已上线；社区投稿尚未开放。接口说明以当前开发分支为准，未发布的新增能力需使用对应源码版本。远程安装还要求 NoteGen 支持插件系统并内置正式根公钥。
+
+## 选择需要的包
+
+| 包 | 安装位置 | 用途 |
+| --- | --- | --- |
+| [`@notegen/plugin-api`](https://www.npmjs.com/package/@notegen/plugin-api) | 插件项目的开发依赖 | manifest、生命周期、权限、贡献点、`PluginContext` 和稳定错误类型 |
+| [`@notegen/plugin-cli`](https://www.npmjs.com/package/@notegen/plugin-cli) | 插件项目或发布工具环境的开发依赖 | 创建、严格校验、构建、打包、密钥生成、签名和验签 |
+| [`create-notegen-plugin`](https://www.npmjs.com/package/create-notegen-plugin) | 通过 `npx` 临时运行 | 创建带 TypeScript 配置和构建脚本的新项目 |
+| [`@notegen/plugin-test`](https://www.npmjs.com/package/@notegen/plugin-test) | 插件测试环境的开发依赖 | 在进程内模拟生命周期、命令、权限、笔记、编辑器、设置和存储 |
+
+一般插件会安装 `@notegen/plugin-api` 与 `@notegen/plugin-cli`。只有编写自动化行为测试时才需要 `@notegen/plugin-test`。不要把 CLI 或测试宿主打进插件入口。
+
+## 环境与支持范围
+
+| 项目 | 当前要求 |
+| --- | --- |
+| Node.js | 20 或更高版本 |
+| SDK 仓库开发 | pnpm 10 |
+| 模块格式 | 仅 ESM；Node.js 代码使用 `import`，不支持 CommonJS `require()` |
+| 插件 API 协议 | `0.1.0` |
+| 市场插件运行平台 | NoteGen 桌面端 |
+| 开发导入 | NoteGen 桌面端开发者模式 |
+
+manifest schema 可以表示 `desktop`、`ios` 和 `android`，但当前市场与开发运行时只开放桌面端。不要把尚未在真实设备验证的平台列为支持平台。
+
+## 使用 npm 快速开始
+
+创建一个项目：
+
+~~~bash
+npx create-notegen-plugin my-plugin \
+  --id com.example.my-plugin \
+  --name "My Plugin"
+cd my-plugin
+pnpm install
+~~~
+
+构建并校验开发快照：
+
+~~~bash
+pnpm build
+pnpm validate
+pnpm exec notegen-plugin validate .notegen/package
+~~~
+
+然后在 NoteGen 桌面端启用开发者模式，从“设置 → 插件 → 开发者”导入 `.notegen/package` 的绝对路径。详细过程见[开发第一个插件](/cn/docs/plugins/developers/getting-started)。
+
+脚手架生成的脚本会先检查 TypeScript，再调用 CLI：
+
+~~~json
+{
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit && notegen-plugin build",
+    "validate": "tsc -p tsconfig.json --noEmit && notegen-plugin validate"
+  }
+}
+~~~
+
+因此，`pnpm build` 和 `pnpm validate` 都会先拦截不符合 `PluginContext`、命令 JSON 边界或其他 SDK 类型契约的源码。CLI 随后负责 manifest、入口、locale 与制品结构；两层检查不能互相替代。
+
+`@notegen/plugin-api` 还导出 `@notegen/plugin-api/plugin-manifest-v1.schema.json`，可用于编辑器中的 `plugin.json` 自动补全和结构诊断。安装后的实际 schema 文件位于 `node_modules/@notegen/plugin-api/schema/plugin-manifest-v1.schema.json`；完整配置示例见 [接口与类型参考](/cn/docs/plugins/developers/plugin-api#manifest-json-schema)。
+
+## 从 SDK 源码使用
+
+先构建 SDK 工作区：
+
+~~~bash
+git clone https://github.com/codexu/note-gen-plugin-sdk.git
+cd note-gen-plugin-sdk
+pnpm install
+pnpm build
+~~~
+
+直接运行生成器或 CLI：
+
+~~~bash
+node packages/create-notegen-plugin/dist/bin.js ../my-plugin \
+  --id com.example.my-plugin \
+  --name "My Plugin"
+
+node /绝对路径/note-gen-plugin-sdk/packages/plugin-cli/dist/bin.js \
+  build /绝对路径/my-plugin
+~~~
+
+可以直接使用 SDK checkout 中已构建的 CLI。脚手架安装的是 npm 依赖；测试未发布 SDK 改动时需要显式链接本地依赖。
+
+## 从源码到发布制品
+
+| 阶段 | 命令或操作 | 结果 |
+| --- | --- | --- |
+| 源码预检 | `notegen-plugin validate` | 校验 manifest 与源码配置，确认入口及 locale 文件可安全读取；locale 内容在 `build` 时校验 |
+| 开发构建 | `notegen-plugin build` | 原子生成 `.notegen/package` |
+| 真实宿主测试 | NoteGen 开发者页导入或重新加载 | 在 QuickJS 隔离运行时验证权限和界面行为 |
+| 无签名打包 | `notegen-plugin pack` | 生成 `.unsigned.notegen-plugin` |
+| 发布者密钥 | `notegen-plugin keygen` | 生成 Ed25519 私钥与公开身份文件 |
+| 离线签名 | `notegen-plugin sign` | 生成含 `signature.sig` 的 `.notegen-plugin` |
+| 本地验签 | `notegen-plugin verify` | 校验归档、完整性和指定发布者签名 |
+
+`pack` 与 `sign` 被刻意分开：构建机不需要读取私钥，签名机也不会读取源码、安装依赖或执行构建。完整参数见 [命令行工具](/cn/docs/plugins/developers/cli)。
+
+## 版本模型
+
+SDK 包版本、插件 API 协议和 NoteGen 应用版本是三种不同的值：
+
+| 值 | 示例 | 作用 |
+| --- | --- | --- |
+| npm 包版本 | `@notegen/plugin-api@0.1.0` | 选择 TypeScript 包发布版本 |
+| `PLUGIN_API_VERSION` | `0.1.0` | 表示这版包描述的具体宿主协议 |
+| manifest `apiVersion` | `^0.1.0` | 声明插件接受的宿主 API SemVer 范围 |
+| manifest `minAppVersion` | `0.37.0` | 声明插件可运行的最低 NoteGen 应用版本 |
+| `ctx.plugin.apiVersion` | `0.1.0` | 运行时宿主实际提供的具体 API 版本 |
+
+破坏宿主契约的变化需要新的 API major；向后兼容的能力扩展使用 minor；只修复 SDK 包而不改变协议时，可以只升级包 patch。不要用 `minAppVersion` 代替 `apiVersion`，也不要把 manifest 中的范围字符串与运行时具体版本混为一谈。
+
+## 单文件运行时边界
+
+NoteGen 加载 manifest 中指定的一个自包含 JavaScript ESM 文件。运行时不会解析 npm 包、相对模块、Node.js 内置模块或远程模块。
+
+- `import type` 在编译后消失，可以直接用于宿主类型；
+- `PLUGIN_API_VERSION`、`PluginError`、`isPluginError` 等值导入必须由 CLI 打包进入口；
+- 插件依赖的其他源码和 npm 依赖也必须被打进同一个入口；
+- 构建结果中残留静态或动态 import 会被拒绝；
+- 插件没有 DOM、Node.js、Tauri、任意文件系统或通用网络能力；网络请求只能通过 `network.fetch` 发往用户明确授权的 HTTPS origin。
+
+SDK 不是用于远程读写 NoteGen 数据的客户端 SDK，也不提供市场上传、根索引签名或发布者登记服务。
+
+## 文档地图
+
+| 目标 | 继续阅读 |
+| --- | --- |
+| 完成第一个可导入插件 | [开发第一个插件](/cn/docs/plugins/developers/getting-started) |
+| 查询 API 包导出与版本规则 | [接口与类型参考](/cn/docs/plugins/developers/plugin-api) |
+| 查询所有 CLI 命令、选项和退出码 | [命令行工具](/cn/docs/plugins/developers/cli) |
+| 编写 `plugin.json` | [插件配置](/cn/docs/plugins/developers/manifest) |
+| 使用 `PluginContext` | [功能调用与权限](/cn/docs/plugins/developers/api-permissions) |
+| 测试插件行为 | [插件测试](/cn/docs/plugins/developers/testing) |
+| 理解归档和签名格式 | [打包与验证](/cn/docs/plugins/developers/package-verify) |
+
+## SDK 发布与插件发布
+
+四个 npm 包均已完成首发。SDK 维护者提升受影响的包版本及依赖范围后，从 `main` 通过 **Publish npm packages** 工作流发布，使用 npm Trusted Publishing（OIDC）。工作流会打包并检查四个包：已有版本只有在完整性一致时才跳过，未发布版本按依赖顺序上传。
+
+插件作者修改自己的插件不需要发布 SDK，只需提升插件版本并按[发布到插件市场](/cn/docs/plugins/developers/publishing)处理。npm 包版本、插件自身版本、兼容的宿主 API 范围各有作用。维护者环境配置以 [SDK README](https://github.com/codexu/note-gen-plugin-sdk#maintainer-release-procedure)为准。

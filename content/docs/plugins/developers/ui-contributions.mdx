@@ -1,0 +1,395 @@
+---
+title: 扩展应用界面
+description: 使用宿主渲染的命令、设置、菜单和状态栏扩展 NoteGen。
+icon: PanelBottom
+---
+
+本页介绍如何为 NoteGen 添加命令、设置项、菜单、状态栏、侧边栏和编辑区标签页。命令是插件注册的可执行操作，例如“打开每日笔记”；菜单和按钮等界面入口负责触发这些操作。
+
+插件在 `plugin.json` 的 `contributes` 字段中声明这些扩展入口。NoteGen 使用自己的组件、主题、国际化和无障碍规则渲染；包括官方插件在内的插件代码都不能直接操作 DOM 或挂载框架组件。
+
+声明的扩展入口在入口代码运行前注册。禁用、卸载、更新重建或累计三次失败进入隔离时，NoteGen 会按插件身份移除它们。单次运行时崩溃只清除运行时和动态状态栏状态，静态命令和菜单仍可用于下一次激活尝试。
+
+## 命令
+
+~~~json
+{
+  "contributes": {
+    "commands": [
+      {
+        "id": "com.example.journal.open-today",
+        "title": "%command.openToday.title%",
+        "description": "%command.openToday.description%",
+        "icon": "calendar-days",
+        "suggestedShortcut": "Mod+Shift+D"
+      }
+    ]
+  }
+}
+~~~
+
+每个命令 ID 必须以插件 ID 加点号开头，且不能重复。运行时注册处理器：
+
+~~~js
+export async function activate(ctx) {
+  ctx.commands.handle("com.example.journal.open-today", async (argument) => {
+    // 使用公开 API 完成用户动作。
+  });
+}
+~~~
+
+用户按 Command/Ctrl + Shift + P 打开插件命令面板。命令可以按标题、说明和插件名搜索。
+
+`suggestedShortcut` 只是命令面板右侧的提示文字，不会注册按键。当前没有插件快捷键绑定、冲突检查或设置页面；插件也不能监听宿主全局键盘事件。
+
+`icon` 是可选宿主图标名称。未识别名称会显示通用插件图标，不会加载插件提供的图标脚本或字体。
+
+## 设置
+
+~~~json
+{
+  "contributes": {
+    "settings": [
+      {
+        "key": "com.example.journal.enabled",
+        "type": "boolean",
+        "scope": "workspace",
+        "title": "%setting.enabled.title%",
+        "default": false
+      },
+      {
+        "key": "com.example.journal.folder",
+        "type": "workspace-folder",
+        "scope": "workspace",
+        "title": "%setting.folder.title%",
+        "default": "Journal"
+      }
+    ]
+  }
+}
+~~~
+
+支持：
+
+| type | scope | 主要字段 |
+| --- | --- | --- |
+| `boolean` | `device` 或 `workspace` | `default` |
+| `string` | `device` 或 `workspace` | `default`、`placeholder`、`maxLength` |
+| `number` | `device` 或 `workspace` | `default`、`min`、`max`、`step` |
+| `select` | `device` 或 `workspace` | `default`、`options` |
+| `workspace-file` | 只能 `workspace` | 相对路径字符串 |
+| `workspace-folder` | 只能 `workspace` | 相对路径字符串 |
+
+每个 key 必须位于插件命名空间。密码、Token 和私钥不能放入普通设置。
+
+`workspace-file` 和 `workspace-folder` 当前渲染为普通文本输入，只校验安全相对路径，不会打开文件选择器。保存设置也不会自动推导、增加或扩大权限；插件必须在 manifest 预先声明权限，用户在权限对话框中另外审核路径。
+
+插件设置的 `device` 与 `workspace` 都保存在本机。`workspace` 只表示按工作区 ID 分区，当前不跨设备同步。
+
+运行时使用 `ctx.settings.get` 和 `ctx.settings.onDidChange`，不能直接修改设置。
+
+## 状态栏
+
+声明：
+
+~~~json
+{
+  "contributes": {
+    "statusBar": [
+      {
+        "id": "com.example.stats.summary",
+        "alignment": "right",
+        "priority": 100,
+        "command": "com.example.stats.show-details"
+      }
+    ]
+  }
+}
+~~~
+
+`command` 可省略；填写时必须引用已声明命令。`alignment` 为 `left` 或 `right`，`priority` 控制同一侧排序。
+
+更新：
+
+~~~js
+await ctx.ui.statusBar.update("com.example.stats.summary", {
+  visible: true,
+  text: "1,248 characters · 5 min",
+  compactText: "1,248",
+  tooltip: "Writing statistics",
+  accessibleLabel: "1,248 characters, 5 minutes reading time",
+  busy: false
+});
+~~~
+
+`update` 返回 `Promise<void>`；等待它可以接收生命周期结束或参数无效等失败。每个文字字段最多 160 个 UTF-16 code units，内容为纯文本。同一项目 100 毫秒内的后续更新会合并，在窗口结束时应用最后一次状态。Promise 完成表示更新已被接受，不保证已绘制；插件停止、禁用或替换会取消待应用的状态。`compactText` 用于较窄界面，`accessibleLabel` 应完整表达数值和状态。
+
+状态栏项目属于当前插件宿主窗口。异步计算结束前，应核对 editor ID 与 revision，避免旧结果覆盖新窗口或新文档。
+
+## 菜单
+
+~~~json
+{
+  "contributes": {
+    "menus": [
+      {
+        "location": "editor/slash",
+        "command": "com.example.journal.open-today",
+        "when": "editor == markdown",
+        "group": "journal"
+      },
+      {
+        "location": "file/context",
+        "command": "com.example.files.inspect"
+      }
+    ]
+  }
+}
+~~~
+
+当前位置：
+
+| location | 用户入口 |
+| --- | --- |
+| `editor/slash` | Markdown 编辑器斜杠菜单 |
+| `editor/context` | 按住 Alt/Option 后右键编辑器；普通右键保留系统拼写、复制和粘贴菜单 |
+| `file/context` | 文件树中文件、目录或多选项目的右键菜单 |
+| `mobile/writing/overflow` | 移动端写作页更多操作 |
+
+`file/context` 的命令参数可能包含 `kind`、单个 `relativePath` 和 `selectedPaths`；参数是不受信任的可序列化输入，仍需依赖公开 API 和权限执行操作。
+
+插件当前只在桌面运行，因此 `mobile/writing/overflow` 是为未来移动端插件支持保留的菜单位置，当前不会显示市场或开发插件的这个菜单项。
+
+`when` 不是通用表达式语言。当前只接受语义完全等价于 `editor == markdown` 的字符串（等号两侧可有空白）；其他表达式会使 manifest 被拒绝。
+
+`group` 是可选的分组元数据，非空且最多 80 个 UTF-8 字节。当前界面不会保证按自定义 group 分区或排序，因此不能把它当作布局 API。
+
+## 本地化
+
+静态文案使用 `%key%`：
+
+~~~json
+{
+  "command.openToday.title": "打开今天的记录",
+  "command.openToday.description": "打开或创建今天的记录",
+  "setting.enabled.title": "启用日记命令"
+}
+~~~
+
+运行时通知使用 `ctx.i18n.t("key", values)`。缺少当前语言时回退到 manifest 的默认语言；缺少 key 时返回 key 本身。
+
+## 声明式侧边栏与对话框
+
+插件可以声明宿主渲染的左、右侧边栏视图，以及 `editor-tab` 编辑区标签页：
+
+~~~json
+{ "contributes": { "views": [{ "id": "com.example.stats.details", "title": "统计详情", "location": "right-sidebar", "icon": "chart-bar" }] } }
+~~~
+
+运行时通过 `ctx.ui.views.update(id, { blocks })` 更新内容，通过 `ctx.ui.views.open(id)` 打开。`ctx.ui.openDialog(options)` 可显示对话框，通过 `ctx.ui.closeDialog(id)` 关闭自己的对话框。支持 `heading`、`text`、`list`、`key-value`、`actions`、`form`、`table`、`tree`；所有按钮、表单和树节点只能调用当前插件 manifest 已声明的命令。当前 API 0.1.1 还支持布局、工具栏、交互列表等组件，完整字段见 [界面组件参考](/cn/docs/plugins/developers/ui-components)。每个 blocks 数组最多 50 项，整份文档最多 200 个 block、嵌套深度 6、128 KiB。Markdown 只能通过宿主渲染的 `markdown` block 展示，不能注入 HTML、脚本或样式。禁用、更新、卸载或运行失败时动态内容会被清除。
+
+### 交互表单
+
+以下代码放在插件的 `activate(ctx)` 内。manifest 需要声明 `com.example.tools.submit` 命令，并通过 `onWorkspace:open` 或相应命令激活插件。
+
+~~~ts
+ctx.commands.handle("com.example.tools.submit", async (argument) => {
+  if (!argument || typeof argument !== "object" || !("values" in argument)) return;
+  const values = argument.values;
+  if (!values || typeof values !== "object" || !("title" in values)) return;
+  const title = typeof values.title === "string" ? values.title.trim() : "";
+  if (!title) return { fieldErrors: { title: "请输入标题" } };
+  await ctx.storage.workspace.set("lastTitle", title);
+  return { message: "已保存" };
+});
+
+await ctx.ui.openDialog({
+  title: "保存标题",
+  content: { blocks: [{
+    type: "form", id: "title-form",
+    fields: [{ type: "text", id: "title", label: "标题", required: true, maxLength: 120 }],
+    submitLabel: "保存", command: "com.example.tools.submit"
+  }] }
+});
+~~~
+
+字段支持 `text`、`textarea`、`search`、`date`、`number`、`select`、`note-picker`、`checkbox`，各字段参数与差异见 [界面组件参考](/cn/docs/plugins/developers/ui-components)。公共字段包括 `id`、`label`、`description`、`required`、`value`。文本支持 `placeholder`、`maxLength`；数字支持 `min`、`max`；下拉框必须提供 `options: [{ label, value }]`，选项值不能重复或为空。字段 ID 使用字母开头的字母、数字、下划线、连字符，最长 64 字符。同一表单字段 ID、同一文档表单 ID 必须唯一。
+
+每个表单最多 30 个字段；文本最多 10,000 字符，下拉框最多 100 项。必填复选框必须勾选。提交期间控件禁用，防止重复提交；处理器收到 `{ formId, values }`，其中数字为 number、复选框为 boolean，未填写的可选数字和下拉字段省略。宿主先检查必填和取值范围，处理器仍需验证业务规则。
+
+处理器可返回 `{ fieldErrors: { 字段ID: "提示" }, message: "结果" }`；未知字段错误会被忽略。抛出的错误显示在表单底部。对话框打开后立即返回，不会等待用户填写；用户可直接关闭。只有提交动作进入命令执行时限。更新表单定义默认保留输入；主动重置请使用新的 `resetKey`。切换侧边栏和仍打开的编辑区标签保留输入，关闭视图或重建插件不保留。
+
+### 视图生命周期
+
+显示视图会激活插件，加载失败时可以在视图内重试。事件转发在激活开始前建立，初始化过程中发生的可见性变化也会传给运行时。异步打开期间若用户点击其他位置、输入、切换视图或工作区，过期请求返回 `Cancelled`，不会在等待保存后抢回焦点。
+
+`ctx.ui.views.close(id)` 关闭视图；`focus(id)` 打开并把焦点移入视图；`getState(id)` 返回 `{ id, location, visible }`。`onDidChange(listener)` 通知可见性变化，返回可释放的订阅，不自动发送初始状态，订阅后可主动读取 `getState`。
+
+`editor-tab` 在编辑区显示独立插件标签；用户可在笔记编辑器与插件标签间切换、关闭插件标签。打开前会等待当前编辑器安全保存，无法切换时返回 `EditorBusy`。当前不支持拖拽拆分、跨窗口移动或重启后恢复插件标签；`visible: false` 也可能只是切换到了其他标签，不表示卸载插件。
+
+### 表格与树
+
+~~~ts
+await ctx.ui.views.update("com.example.tools.results", { blocks: [
+  { type: "table", columns: ["名称", "数量"], rows: [["笔记", "12"]] },
+  { type: "tree", items: [
+    { id: "root", label: "分类" },
+    { id: "child", parentId: "root", label: "日记" }
+  ] }
+] });
+~~~
+
+`results` 视图同样需要在 manifest 声明。表格最多 20 列、100 行，每行宽度必须与列数相同。单元格可以是最多 2,000 字符的纯文本，也可以是 `{ text, command, argument?, disabled? }` 行内操作，操作文案为 1–160 字符，命令必须由当前插件声明。按钮执行期间禁用重复点击；插件仍需校验参数和笔记修订号。树最多 100 节点、8 层；ID 唯一，父节点必须存在，禁止循环。节点可增加 `command` 和 JSON `argument`；树不是工作区真实文件树，不能直接改变宿主目录。
+
+例如任务表格的一行可写为：
+
+~~~ts
+['整理笔记', 'Inbox.md', {
+  text: '完成', command: 'com.example.tasks.complete',
+  argument: { path: 'Inbox.md', revision: 123, line: 5 },
+}]
+~~~
+
+这只是命令入口，不会由宿主自动修改文件。可以参考 SDK 仓库的 `examples/task-dashboard`：它按笔记分页加载任务，检查修订号后完成任务，并保留已打开笔记的写入保护。
+
+## 尚不支持的界面扩展
+
+当前 API 不允许插件提供：
+
+- React、Vue、Svelte 或 Tiptap/ProseMirror 扩展；
+- HTML、iframe、WebView 或 DOM 回调；
+- 全局 CSS、主题覆盖或图标字体；
+- 自定义设置页面或声明式 schema 之外的任意组件树；
+- 原生窗口、系统托盘或移动端原生页面。
+
+需要更复杂的交互时，应组合命令、宿主设置字段、通知、菜单、状态栏和声明式 block。
+
+### 稳定的表单状态
+
+表单以视图（或对话框实例）和 `form.id` 定位，字段以 `field.id` 定位。调整标题、描述、顺序、按钮文字和选项不会清空已输入的值。新增字段使用默认值；删除字段会删除其草稿；修改字段类型会重新初始化该字段。更新选项或校验范围后，旧输入若已不合法，会在下一次提交时提示用户修改。
+
+主动重置时，在表单 block 中设置新的 `resetKey`（最长 160 字符），例如 `resetKey: "new-note-2"`。重置也会清除提交反馈；旧提交的返回结果不会写入新表单。移除表单、关闭视图或对话框、禁用或重建插件时清理草稿。草稿只保存在内存中，不写磁盘；切换侧边栏或仍打开的编辑区标签会保留草稿和提交状态。
+
+### 对话框实例与关闭事件
+
+~~~ts
+const subscription = ctx.ui.onDidCloseDialog(({ id, reason }) => {
+  // reason: "user" | "programmatic" | "replaced" | "disposed"
+  // 清理与该 id 绑定的插件状态；停止运行时不保证还能执行 disposed 回调。
+});
+const first = await ctx.ui.openDialog({
+  title: "第一步", content: { blocks: [{ type: "text", text: "准备开始" }] }
+});
+const second = await ctx.ui.openDialog({
+  replaceId: first.id,
+  title: "第二步", content: { blocks: [{ type: "text", text: "继续操作" }] }
+});
+await ctx.ui.closeDialog(first.id); // 旧 ID 不会关闭第二步。
+await ctx.ui.closeDialog(second.id);
+subscription.dispose();
+~~~
+
+`openDialog` 返回 `{ id }`，不会等待用户操作。已有对话框时，必须通过 `replaceId` 显式替换自己的当前实例，否则返回 `Conflict`；不能替换其他插件的对话框。指定的替换目标已经关闭时返回 `NotFound`。`closeDialog(id)` 只关闭自己的匹配实例，关闭旧 ID 是无副作用的操作。
+
+对话框里的表单提交参数还包含 `dialogId`。命令处理器应在异步操作前保存这个 ID，完成后关闭该实例，不要读取一个可能已经指向新对话框的全局变量。
+
+## 动态表单
+
+### 防止异步联动覆盖新输入
+
+将变更命令参数中的 `formId`、`generation`、`revision` 保存为快照，网络请求结束后放进 UI 文档的 `expectedForm`：
+
+~~~ts
+await ctx.ui.views.update('com.example.tool.results', {
+  expectedForm: { formId, generation, revision },
+  blocks: updatedBlocks,
+});
+// 对话框同样支持：
+await ctx.ui.updateDialog(dialogId, {
+  title: '选项',
+  content: { expectedForm: { formId, generation, revision }, blocks: updatedBlocks },
+});
+~~~
+
+快照对应目标视图或对话框中的表单。用户继续输入、表单重置、移除或关闭后，旧快照更新返回 `StaleRevision`，且不会修改界面。应丢弃旧结果，不要去掉条件后重试。这个字段是可选的请求前置条件，不保存在视图内容中；新建对话框不能携带它。它只保护界面更新，不会撤销处理器已经发出的网络请求或文件写入，也不保证同一输入快照的多个后台请求按发起顺序返回。
+
+### 表格身份与防重复操作
+
+动态表格建议同时提供稳定的 `id` 和 `rowIds`。`rowIds` 与 `rows` 一一对应，在同一表格中唯一，每项 1–160 字符；排序后仍使用相同的记录 ID，不要使用当前行号。表格 `id` 在文档内唯一。
+
+普通操作按钮、表格单元格和树节点共用执行状态：同一个命令执行期间，其他调用该命令的这些按钮也会禁用，即使参数不同。切换视图不会解除正在执行的锁；完成或失败后自动恢复。这不取代处理器的数据校验，也不对表单提交、快捷键等其他命令入口提供全局事务保证。
+
+字段支持 `disabled` 和 `visibleWhen: { field, equals }`；条件引用同一表单中的另一个字段，按严格相等比较。隐藏字段保留草稿，但隐藏或禁用的字段不参与提交和必填校验。条件不是权限边界，命令处理器仍应校验参数。
+
+~~~ts
+const form = {
+  type: 'form' as const,
+  id: 'options',
+  command: 'com.example.tool.submit',
+  changeCommand: 'com.example.tool.changed',
+  submitLabel: '执行',
+  submitDisabled: false,
+  fields: [
+    { id: 'advanced', type: 'checkbox' as const, label: '高级选项' },
+    { id: 'prefix', type: 'text' as const, label: '前缀',
+      visibleWhen: { field: 'advanced', equals: true } },
+  ],
+};
+~~~
+
+`changeCommand` 必须在 manifest 中声明并注册处理器。用户输入停止约 250 毫秒后，处理器收到 `{ formId, fieldId, values, revision, generation, dialogId? }`。这是草稿快照，不进行提交校验，包含隐藏和禁用字段；空数字输入可能是空字符串。初始渲染和程序更新不触发通知，返回值被忽略。
+
+变更命令可通过 `views.update` 或 `updateDialog` 更新选项和按钮状态。相同字段 ID 和类型保留值；新选项不包含旧值时，由提交校验提示用户重新选择。需要同时重置值时使用新的 `resetKey`。
+
+异步联动应在处理器中记录最新请求标记，等待网络结果后再次比较，只应用最新结果。不要只比较 `revision`：表单重置会更换 `generation`，并重新从零计数。变更通知不是后台订阅；表单卸载会取消尚未发出的通知，重新显示后可发送未通知的最新草稿。已经开始的命令不会因此自动取消。
+
+## 原地更新对话框
+
+~~~ts
+const dialog = await ctx.ui.openDialog({
+  title: '工具', content: { blocks: [form] },
+});
+await ctx.ui.updateDialog(dialog.id, {
+  title: '工具 · 已就绪',
+  content: { blocks: [
+    { type: 'callout', title: '提示', text: '填写选项后执行。' },
+    form,
+  ] },
+});
+~~~
+
+`updateDialog(id, options)` 接收完整的新标题和内容，不是局部补丁；可选描述和关闭按钮文案未传时恢复默认。不能传 `replaceId`。更新保留实例 ID，不触发关闭事件，同 ID 表单保留草稿；移除表单会清理其草稿。目标已关闭或不属于当前插件时返回 `NotFound`。
+
+## 提示、进度与操作状态
+
+支持以下非交互内容块，不执行 HTML、脚本或远程资源请求：
+
+~~~ts
+const blocks = [
+  { type: 'callout', title: '注意', text: '请先检查输入。', tone: 'destructive' },
+  { type: 'separator' },
+  { type: 'progress', label: '处理进度', value: 50 },
+];
+~~~
+
+进度值范围为 0–100，必须提供可访问的文字标签。`callout.tone` 支持 `default` 和 `destructive`。操作按钮支持 `disabled: true`；表单提交按钮使用 `submitDisabled`。
+
+## 调用宿主导航命令
+
+~~~ts
+await ctx.commands.executeHost('app.openSearch');
+await ctx.commands.executeHost('app.openSettings');
+await ctx.commands.executeHost('app.openPluginSettings');
+~~~
+
+三个命令分别打开文件侧边栏搜索、通用设置、插件设置，只在桌面主窗口可用。其他命令名返回 `PermissionDenied`，移动端和独立编辑器窗口返回 `UnavailableOnPlatform`。请在用户明确操作时调用，避免在激活或后台更新中抢占界面。该接口不执行任意内部命令，不提供文件修改、Shell 执行或权限授权能力。SDK 模拟环境记录调用，但不模拟真实导航。
+
+## 离线使用说明
+
+在源码项目根目录提供 `USAGE.md`。CLI 会自动收集 `USAGE*.md`，复制到包根目录并写入 `integrity.json`，无需额外 assets 配置；最多 50 份说明文件。多语言文件可以是 `USAGE.<locale>.md` 和 `USAGE.<language>.md`，宿主依次查找它们，最后回退到 `USAGE.md`；`zh` 会规范为 `zh-CN`。README 不能替代该文件。每份说明必须是 UTF-8，最多 128 KiB。
+
+已安装详情离线显示说明：禁用 HTML、图片只显示文字、链接不跳转，下方没有通用启动按钮。说明应包含准确的命令/菜单/视图入口、权限与目录、首次操作、设置、失败恢复和卸载后的数据去向。可执行操作通过命令面板或声明式视图按钮提供。
+
+## 用户自定义视图名称
+
+当前宿主约定：声明 key 为 `<view.id>.title` 的工作区 string 设置，可让用户自定义该视图的导航标题。该设置必须使用 `scope: "workspace"`；空字符串或纯空白回退到视图的本地化 `title`。左侧栏、右侧栏和编辑器标签共用此规则；不会更改插件 ID、命令名称或笔记文件名。视图内容中的标题由插件通过设置读取并更新。

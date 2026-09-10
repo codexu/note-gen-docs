@@ -1,0 +1,426 @@
+---
+title: Capabilities and permissions
+description: Use PluginContext to access workspaces, dates, notes, editors, storage, and host UI safely.
+icon: ShieldCheck
+---
+
+NoteGen passes a frozen `PluginContext` to the entry module's `activate` function. Plugins do not receive React, Tiptap, database, or host JavaScript objects; official plugins are no exception. Workspace, note, editor, storage, and host-UI capabilities cross a message bridge; command registration, localization, and setting reads are provided inside the isolated runtime. The host rechecks plugin identity, the current workspace, and the approved scope around sensitive operations.
+
+[API and type reference](/en/docs/plugins/developers/plugin-api) is the type source for this public contract. Its source is maintained in the independent [NoteGen Plugin SDK repository](https://github.com/codexu/note-gen-plugin-sdk). Once the required version is published to npm, TypeScript plugins should import these types directly instead of maintaining a copy of `PluginContext` that can drift.
+
+## `PluginContext`
+
+~~~ts
+import type { PluginActivate } from "@notegen/plugin-api";
+
+export const activate: PluginActivate = async (ctx) => {
+  const workspace = await ctx.workspace.getCurrent();
+  await ctx.ui.showNotice("Workspace: " + workspace.name);
+};
+~~~
+
+`PluginContext` contains the `log`, `commands`, `workspace`, `calendar`, `notes`, `attachments`, `editor`, `storage`, `ui`, `network`, `i18n`, and `settings` namespaces, together with the lifecycle `signal`. This page documents their behavior; use the package's `PluginContext` and related exports as the complete signature source.
+
+`ctx.plugin.id` and `ctx.plugin.version` come from the current plugin manifest. `ctx.plugin.apiVersion` is the concrete host API version, currently `"0.1.0"`; a manifest may keep the compatible range `"apiVersion": "^0.1.0"`.
+
+Arguments and return values must be JSON-serializable. One bridge message is limited to approximately 2.125 MiB; an oversized message returns `QuotaExceeded`.
+
+## Permission model
+
+Three checks define what a plugin may do:
+
+1. `plugin.json` declares the maximum set of capabilities the plugin may use.
+2. The user approves or denies those capabilities in the current workspace and supplies any file or folder scopes.
+3. Before and after operations that require authorization, the host verifies that the plugin remains enabled, the workspace has not changed, and the grant has not been revoked.
+
+| Permission | Scope | Available capabilities |
+| --- | --- | --- |
+| `editor.read` | `active-editor` | Active-editor metadata, selection, Markdown snapshots, and editor events |
+| `editor.write` | `active-editor` | Insert text at the cursor or replace the selection at a specified revision |
+| `notes.read` | `workspace-file`, `workspace-files`, `workspace-folder` | Read approved Markdown files |
+| `notes.list` | `workspace-folder` | Enumerate Markdown files under approved folders |
+| `notes.create` | `workspace-folder` | Atomically create Markdown files |
+| `notes.open` | `workspace-folder` | Ask NoteGen to open approved Markdown files |
+| `notes.write` | file or folder scope | Create or revision-check and replace Markdown files |
+| `notes.delete` | file or folder scope | Revision-check and delete Markdown files |
+| `notes.move` | `workspace-folder` | Move Markdown files between approved folders without overwrite |
+| `attachments.read` | File or folder scopes | Read supported attachments as Base64 |
+| `attachments.create` | `workspace-folder` | Create new attachments without overwrite |
+| `network.fetch` | `network-origins` | Reach individually approved public HTTPS origins |
+
+Permissions do not imply one another. `notes.open` cannot read note contents, `notes.create` cannot overwrite an existing file, and `editor.read` cannot enumerate background tabs.
+
+After revocation, new calls fail and NoteGen reconciles the runtime. A write already in the host's atomic commit stage may still complete, so neither `Cancelled` nor `PermissionDenied` proves that a transaction was rolled back.
+
+## Workspace and calendar
+
+~~~js
+const workspace = await ctx.workspace.getCurrent();
+
+const day = await ctx.calendar.resolveDay({
+  timeZone: "Asia/Shanghai",
+  dayStartsAt: "04:00"
+});
+~~~
+
+Workspace information contains only an opaque `id` and display `name`; it never exposes an absolute device path.
+
+`resolveDay` accepts `system` or an IANA time-zone name. `dayStartsAt` uses 24-hour `HH:mm` notation. It returns:
+
+~~~ts
+interface ResolvedDay {
+  instant: string;
+  logicalDate: string;
+  timeZone: string;
+  localDateTime: string;
+}
+~~~
+
+After a workspace switch, calls using the old ID or workspace scope return `WorkspaceChanged`. Do not cache a UTC offset and attempt to handle daylight saving time yourself.
+
+## Commands
+
+~~~js
+const disposable = ctx.commands.handle(
+  "com.example.daily.open-today",
+  async (argument) => {
+    // Handle the user action.
+  }
+);
+~~~
+
+The command must be declared in the manifest and belong to the plugin namespace. Registering the same handler twice returns `AlreadyRegistered`. Commands may be invoked from the plugin command palette or from declared menu and status-bar entry points. There is currently no plugin key-binding API.
+
+Handler arguments and return values must be serializable.
+
+## Search saved notes (API 0.1.0)
+
+~~~ts
+const result = await ctx.notes.search({ query: "project", folder: "Journal", caseSensitive: false, limit: 50 });
+// matches: { path, revision, line, preview }[]; truncated: boolean
+~~~
+
+Both `notes.list` and `notes.read` grants are required. Search performs literal, per-line matching of saved Markdown, not unsaved editor content, regular expressions, multiline patterns, or semantic search. Each matching line produces one result. Line numbers start at 1; previews contain at most 500 characters. Queries must be nonblank and at most 500 characters. `limit` is 1–100, default 50. Omitting `folder` means the workspace root, which still requires an appropriate folder grant.
+
+Each call recursively enumerates at most 200 notes and scans at most 16 MiB. Files larger than 2 MiB or without read permission are skipped. Inspect `truncated` when enumeration, scanning, or result limits are reached, then narrow the folder or query. There is no pagination cursor or guarantee that all workspace files were searched. A result's revision belongs to that individual read, not a transaction-wide snapshot.
+
+## Attachments (API 0.1.0)
+
+~~~json
+{ "permissions": {
+  "attachments.read": { "scope": "workspace-folder" },
+  "attachments.create": { "scope": "workspace-folder" }
+} }
+~~~
+
+~~~ts
+// The user must grant access to Assets. This Base64 encodes hello plus a newline.
+const created = await ctx.attachments.create({ path: "Assets/hello.txt", base64: "aGVsbG8K" });
+const attachment = await ctx.attachments.read({ path: created.path });
+// { path, size, base64 }; size is the decoded byte count.
+~~~
+
+Paths are workspace-relative. Traversal, symlinks, and reserved internal paths are rejected. Supported extensions, case-insensitively: `png`, `jpg`, `jpeg`, `gif`, `webp`, `pdf`, `txt`, `csv`. HTML, SVG, scripts, and executable extensions are not accepted. Use standard padded Base64, not a data URL. Each file is limited to 1 MiB decoded; larger files return `QuotaExceeded`.
+
+Creation returns `{ path, size }` and may create parent directories. An existing target returns `InvalidPath` and is never overwritten. A staging file and an atomic hard link commit the complete bytes; filesystems without hard-link support fail rather than fall back to overwriting. These APIs do not preview, open, list, delete, or rename attachments, expose arbitrary files, or certify content as safe. Extension validation is not a trust guarantee. `notes.*` grants do not include attachments.
+
+If context changes after creation, an error may contain `details.committed: true`. The file already exists in that case; do not assume rollback or blindly retry the same path.
+
+## Source-mode range edits (API 0.1.0)
+
+~~~ts
+const editor = await ctx.editor.getActiveEditor();
+if (editor?.mode === "source") {
+  const snapshot = await ctx.editor.getTextSnapshot({ editorId: editor.editorId, expectedRevision: editor.revision, format: "markdown" });
+  await ctx.editor.applyEdits({ editorId: editor.editorId, expectedRevision: snapshot.revision,
+    edits: [{ from: 0, to: 0, text: "# Title\n\n" }] });
+  const updated = await ctx.editor.getActiveEditor();
+  if (updated?.editorId === editor.editorId) {
+    await ctx.editor.setSelection({ editorId: updated.editorId, expectedRevision: updated.revision, from: 0, to: 7 });
+  }
+}
+~~~
+
+Reads require `editor.read`; the two new operations require `editor.write`. Offsets are UTF-16 positions in canonical Markdown, with an inclusive `from` and exclusive `to`; splitting a surrogate pair is rejected. A batch contains 1–100 edits, all based on the same original revision. Overlapping ranges or shared insertion starts return `Conflict`; inserted text is limited to 1 MiB in total. A batch is one transaction and one undo step.
+
+`setSelection` changes only the selection; equal offsets place a cursor. Both new methods currently require source mode. Visual/sectioned modes, IME composition, or an unready editor return `EditorBusy`; a stale revision returns `StaleRevision`; a switched editor returns `NotFound`. Never use ProseMirror positions as Markdown offsets. The existing `applyEdit` remains available for cursor insertion or selection replacement in host-supported modes.
+
+## Read a note
+
+~~~js
+const note = await ctx.notes.read({
+  path: "Templates/Daily.md"
+});
+~~~
+
+~~~ts
+interface NoteSnapshot {
+  id: string;
+  path: string;
+  revision: number;
+  content: string;
+}
+~~~
+
+The path is relative to the current workspace and must end in `.md`. Note content is limited to 2 MiB, and the result contains no absolute path. NoteGen checks `notes.read` and the approved path both before and after the read.
+
+## Atomically open or create a note
+
+~~~js
+const result = await ctx.notes.openOrCreate({
+  workspaceId: workspace.id,
+  path: "Daily/2026/09/2026-09-07.md",
+  initialContent: "# September 7, 2026\n\n",
+  conflict: "open-existing",
+  open: true,
+  idempotencyKey: "daily:2026-09-07:path-hash"
+});
+~~~
+
+~~~ts
+interface OpenOrCreateNoteOptions {
+  workspaceId: string;
+  path: string;
+  initialContent: string;
+  conflict: "open-existing";
+  open: boolean;
+  idempotencyKey: string;
+}
+
+interface OpenOrCreateResult {
+  status: "created" | "opened-existing";
+  workspaceId: string;
+  path: string;
+  opened: boolean;
+}
+~~~
+
+The operation always requires `notes.create`; it also requires `notes.open` when `open` is true. Existing content is never overwritten. The host serializes concurrent calls for the same workspace and path, so it creates at most one complete file. `initialContent` is limited to 2 MiB.
+
+If the file was created but the editor could not switch safely, the plugin receives `CreatedNotOpened`. Do not delete or overwrite the created file automatically. Use the optional error `details` to help confirm the outcome, retry with the same idempotency key, or tell the user to open it from the file list.
+
+Standalone editor windows do not support `open: true` and return `EditorBusy`.
+
+## Active editor
+
+~~~ts
+interface ActiveEditorContext {
+  windowId: string;
+  editorId: string;
+  documentId: string;
+  kind: "markdown";
+  mode: "visual" | "source" | "sectioned";
+  revision: number;
+  composing: boolean;
+  size: {
+    utf16Length: number;
+    bytes: number;
+    lines: number;
+  };
+}
+~~~
+
+`getActiveEditor()` returns `null` when no Markdown editor is active. `documentId`, `editorId`, and `windowId` are opaque identifiers.
+
+~~~ts
+interface EditorSelection {
+  editorId: string;
+  revision: number;
+  from?: number;
+  to?: number;
+  offsetsAvailable: boolean;
+  empty: boolean;
+  text: string;
+}
+~~~
+
+`getSelection()` may also return `null`. In modes such as sectioned editing, the selected text may be available while exact offsets are not. Check `offsetsAvailable` before using `from` or `to`.
+
+## Markdown snapshots and events
+
+~~~js
+const active = await ctx.editor.getActiveEditor();
+if (!active) return;
+
+const snapshot = await ctx.editor.getTextSnapshot({
+  editorId: active.editorId,
+  expectedRevision: active.revision,
+  format: "markdown"
+});
+~~~
+
+~~~ts
+interface EditorTextSnapshot {
+  editorId: string;
+  documentId: string;
+  revision: number;
+  format: "markdown";
+  text: string;
+}
+~~~
+
+The API returns the complete Markdown document in one response. It has no `signal` or `chunkSize` argument and no chunk iterator. The document-size and bridge-message limits jointly bound how much text can be returned. If the revision changes during the request, it returns `StaleRevision`; after receiving a snapshot, still verify that it belongs to the editor and revision you are processing.
+
+Subscribe to editor changes with:
+
+~~~js
+ctx.editor.onDidChangeActiveEditor((event) => {
+  // event.previous / event.current
+});
+
+ctx.editor.onDidChangeContent((event) => {
+  // editorId, documentId, revision, composing, size
+});
+~~~
+
+Events may be coalesced or delivered late, so do not assume there is one event per keystroke. `composing` is updated when IME composition changes; a `true` to `false` transition is emitted even when the revision is unchanged. Plugins that need a stable snapshot should wait for `composing: false` and deduplicate by both revision and composition state.
+
+## List, write, move, and delete notes
+
+`write`, `move`, and `delete` can mutate only closed files from the main window. Close every tab, pane, and separate editor window containing either the source or destination note first; an open note returns `EditorBusy`. Plugins in separate editor windows cannot perform file mutations. Use `ctx.editor.applyEdit` to edit the active document instead. The host drains pending saves for closed files before checking `expectedRevision`, so an earlier revision may become stale; re-read the note before deciding how to update it.
+
+~~~ts
+const page = await ctx.notes.list({ folder: "Projects", recursive: true, limit: 200 });
+const current = await ctx.notes.read({ path: "Projects/demo.md" });
+await ctx.notes.write({ path: current.path, content: current.content + "\ndone", expectedRevision: current.revision });
+await ctx.notes.move({ from: "Projects/demo.md", to: "Archive/demo.md" });
+const archived = await ctx.notes.read({ path: "Archive/demo.md" });
+await ctx.notes.delete({ path: archived.path, expectedRevision: archived.revision });
+~~~
+
+`list` returns at most 1,000 Markdown files, skips symlinks, and reports `truncated` when more remain. `write` creates only with `create: true`; otherwise the target must exist. Modifying or deleting an existing note requires its last-read `expectedRevision`; a missing or mismatched revision returns `StaleRevision`. Even `create: true` cannot overwrite existing content without a revision. Move never overwrites. Desktop deletion moves the note to system trash and never falls back to permanent deletion. Recoverable deletion is currently unavailable on mobile and returns `UnavailableOnPlatform`. `ctx.notes.onDidChange` emits `created`, `changed`, `deleted`, and `moved` hints; re-read authoritative state after an event.
+
+## Edit the active editor
+
+Use `ctx.editor.applyEdit({ editorId, expectedRevision, target, text })`. It only edits the active editor; stale state returns `StaleRevision`, while composition or an unsafe editor state returns `EditorBusy`. `target` is `cursor` or `selection`, and one edit is limited to 1 MiB.
+
+## Restricted network requests
+
+Declare `"network.fetch": { "scope": "network-origins" }`; the user approves exact HTTPS origins such as `https://api.example.com`. `ctx.network.fetch` supports text requests and UTF-8 text responses. The host rejects HTTP, credentials, localhost, literal IPs, redirects, and dangerous headers. Requests and responses may each contain at most 100 headers; names are limited to 100 bytes and values to 8,192 UTF-8 bytes. Request and UTF-8 response bodies are limited to 2 MiB, and timeouts must be 1–30 seconds. Each running plugin instance may have at most four network requests in flight; excess calls fail immediately with `QuotaExceeded`. Browser cookies and wildcard grants are unavailable.
+
+## Workspace and note events
+
+`ctx.workspace.onDidChange` provides the workspace bound to the new runtime. Switching workspaces stops the old runtime and may activate a new one. Use `onWorkspace:open` and `onNotes:change` activation events when needed. Dispose subscriptions when no longer required.
+
+## Settings and plugin storage
+
+`ctx.settings` reads values declared in `contributes.settings` and reports changes while the plugin is running:
+
+~~~js
+const enabled = ctx.settings.get("com.example.stats.enabled");
+
+ctx.settings.onDidChange((key, value) => {
+  // Update the plugin's runtime state.
+});
+~~~
+
+Contributed settings with either a `device` or `workspace` scope are stored in `plugins/host-state.json` in the application-data directory and currently do not sync between devices.
+
+`ctx.storage` provides private JSON key-value storage for the plugin:
+
+~~~js
+await ctx.storage.workspace.set("cache-v1", {
+  revision: 12,
+  value: "..."
+});
+const cached = await ctx.storage.workspace.get("cache-v1");
+~~~
+
+- `device` is the plugin's namespace on this device.
+- `workspace` is also local and is merely partitioned by the current opaque workspace ID.
+- The two areas together allow at most 256 keys and 1 MiB of JSON data per plugin.
+- A key is 1–128 characters, contains only letters, digits, dots, underscores, and hyphens, and begins with a letter or digit.
+- Values must be JSON-serializable.
+- Neither area currently syncs between devices.
+
+## Notices, status bar, and localization
+
+The status-bar signature is `update(id: string, state: PluginStatusBarUpdate): Promise<void>`. Await the Promise to receive failures caused by a workspace switch, lifecycle shutdown, an undeclared item, or invalid arguments:
+
+~~~js
+await ctx.ui.showNotice(ctx.i18n.t("notice.complete"));
+
+await ctx.ui.statusBar.update("com.example.stats.summary", {
+  visible: true,
+  text: "1,248 characters",
+  compactText: "1,248",
+  tooltip: "Writing statistics",
+  accessibleLabel: "1,248 characters",
+  busy: false
+});
+~~~
+
+A notice is truncated to 500 UTF-16 code units and limited to five calls per 10 seconds. A status-bar ID must be declared in the manifest, and each text field is limited to 160 UTF-16 code units. Further updates to the same item within 100 milliseconds are coalesced, with the last state applied when the window ends. Promise resolution means the update was accepted, not necessarily painted; pending state is cancelled when the plugin stops, is disabled, or is replaced. All content is rendered as plain text.
+
+`ctx.i18n.t` reads the plugin's locale files and substitutes values written as `{name}`. It returns the key itself when the key is missing.
+
+## Error codes
+
+| Error code | Meaning |
+| --- | --- |
+| `PermissionDenied` | Capability undeclared or unapproved, path outside scope, or grant no longer valid |
+| `AlreadyRegistered` | Command registered more than once |
+| `UnavailableOnPlatform` | Platform or window does not support the operation |
+| `QuotaExceeded` | Document, storage, message, memory, or request quota exceeded |
+| `StaleRevision` | Editor or note-file revision changed |
+| `Conflict` | Conflict policy, state, or path conflict |
+| `NotFound` | Approved target does not exist |
+| `InvalidTimeZone` | Time zone or `dayStartsAt` is invalid |
+| `InvalidPath` | Workspace-relative Markdown path is invalid |
+| `EditorBusy` | The editor cannot switch safely, the note is open in any tab/pane/separate window, or the current window cannot perform the file operation |
+| `WorkspaceChanged` | Workspace changed during the operation |
+| `CreatedNotOpened` | File was created but could not be opened |
+| `ReadOnly` | Target is not writable |
+| `NoSpace` | Device has insufficient storage |
+| `Timeout` | Activation, command, or operation exceeded its time limit |
+| `Cancelled` | Lifecycle or user action cancelled the operation |
+| `InvalidManifest` | Manifest, argument, or storage key is invalid |
+| `Incompatible` | API, application version, or platform is incompatible |
+| `RuntimeFailure` | Entry, protocol, or runtime execution failed |
+| `SignatureInvalid` | Ed25519 identity or signature verification failed |
+| `IntegrityMismatch` | Package contents, digest, or installation state do not match |
+
+The plugin runtime normally receives only errors associated with the current API call. Installation-layer failures appear in the NoteGen management interface.
+
+The message bridge preserves the error `code`, `message`, and optional `details` that are safely JSON-serializable and no larger than 16 KiB. Missing `details` do not prove that an operation had no effect; do not automatically repeat a side-effecting call just because the field is absent.
+
+After a file mutation error, check `error.details?.committed`. When it is `true`, the disk change completed but a workspace switch or UI refresh failed. Re-read the file state before retrying a write, move, or delete. For `EditorBusy`, ask the user to close every affected editor or use the editor API; do not retry in a tight loop.
+
+## Paginated note listing
+
+`notes.list` defaults to 200 entries per page. `limit` accepts integers from 1 to 1,000. When more entries exist, the result includes `truncated: true` and `nextCursor`:
+
+~~~ts
+let cursor: string | undefined;
+do {
+  ctx.signal.throwIfAborted();
+  const page = await ctx.notes.list({ folder: 'Projects', recursive: true, limit: 100, cursor });
+  for (const entry of page.entries) {
+    // Read and process entry.path without retaining the whole workspace.
+  }
+  cursor = page.nextCursor;
+} while (cursor);
+~~~
+
+Keep the folder, recursive option and workspace unchanged. Treat cursors as opaque and short-lived. If the cursor file is deleted or moved, restart after `StaleRevision`. Pagination is not a fixed snapshot: additions and moves during a scan may require restarting and deduplicating by path. Each native scan checks at most 100,000 directory entries; exceeding that returns `QuotaExceeded`, so narrow the folder. `notes.search` remains quota-limited and does not automatically scan all pages.
+
+## Capabilities not available in API v1
+
+API 0.1.0 does not provide AI, secret storage, binary network responses, raw filesystem access, SQL, processes, Tauri commands, custom HTML/WebViews, or native capabilities. Attachments use a separate restricted Base64 API, not raw filesystem access. Declaring an unknown permission makes installation fail.
+
+## Diagnostics and data recovery
+
+Use `ctx.log.info(message)`, `ctx.log.warning(message)` and `ctx.log.error(message)` for local diagnostics. Each message is limited to 1,000 characters; the QuickJS runtime accepts at most 50 messages per 10 seconds and drops excess output. There is no automatic `console` capture or stack extraction. Pass a useful stack explicitly and avoid credentials or note content. Logs are in-memory; Developer → Export diagnostics saves the selected plugin information and messages.
+
+~~~ts
+ctx.log.info("Refresh started");
+try {
+  // Perform a plugin operation.
+} catch (error) {
+  ctx.log.error(error instanceof Error ? error.stack ?? error.message : String(error));
+}
+~~~
+
+Production KV is isolated by package content fingerprint. A new package initially copies the current package's KV; rollback selects the old package's copy. Existing fingerprint snapshots are reused. Settings, Markdown and remote side effects are outside that rollback boundary. Store explicit data schema versions and avoid assuming that data from a newer package will be merged back.
+
+Managed backup stores KV in `plugin-user-data.json`, rebinding the archived workspace on restore without restoring programs or permissions. Reinstall and authorize first. The in-process test host does not prove native backup, package rollback or migration behavior; verify those in the desktop host.

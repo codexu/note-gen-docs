@@ -1,0 +1,252 @@
+---
+title: Build your first plugin
+description: Create, build, validate, and import a desktop plugin with the NoteGen Plugin SDK.
+icon: Rocket
+---
+
+This guide builds a desktop plugin that counts words in the active selection. You will finish with a TypeScript source project and a `.notegen/package` snapshot that can be imported from NoteGen's Developer page.
+
+> Updated 2026-09-10: all four SDK packages are published on npm and the signed official marketplace is live; community submissions remain closed. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
+
+## 1. Create the project
+
+### Create a project with npm
+
+With Node.js 20 or newer, run:
+
+~~~bash
+npx create-notegen-plugin word-count \
+  --id com.example.word-count \
+  --name "Word Count" \
+  --template command
+cd word-count
+pnpm install
+~~~
+
+Replace `com.example` with a reverse-domain namespace you control. Keep the plugin ID stable after publication. `app.notegen` and `app.notegen.*` are reserved for NoteGen host internals and are not used by official marketplace plugins either.
+
+The scaffold does not install dependencies by default. Pass `--install` explicitly if you want it to install after creating the files. Generated projects use npm releases; link local dependencies explicitly when testing unreleased SDK changes.
+
+### Run from SDK source
+
+Build the SDK repository first:
+
+~~~bash
+git clone https://github.com/codexu/note-gen-plugin-sdk.git
+cd note-gen-plugin-sdk
+pnpm install
+pnpm build
+~~~
+
+Then run the built scaffold directly:
+
+~~~bash
+node packages/create-notegen-plugin/dist/bin.js ../word-count \
+  --id com.example.word-count \
+  --name "Word Count" \
+  --template command
+~~~
+
+In the rest of this guide, you can replace `notegen-plugin` with:
+
+~~~text
+node /absolute/path/note-gen-plugin-sdk/packages/plugin-cli/dist/bin.js
+~~~
+
+Use the CLI built in the SDK checkout for source development. Link local dependencies explicitly if the project needs unreleased SDK capabilities. The builder erases `import type` statements and bundles runtime dependencies into the single entry.
+
+## 2. Understand the project
+
+The generated directory is:
+
+~~~text
+word-count/
+├── .gitignore
+├── package.json
+├── plugin.json
+├── tsconfig.json
+└── src/
+    └── main.ts
+~~~
+
+`plugin.json` declares the plugin to the host, while `src/main.ts` is authoring source. `package.json#notegen.source` selects the build entry and defaults to `src/main.ts`.
+
+NoteGen never reads this source tree, installs npm dependencies, or compiles TypeScript on a user's device. Development import uses the complete snapshot produced in a later step.
+
+## 3. Declare the plugin capabilities
+
+Replace `plugin.json` with:
+
+~~~json
+{
+  "manifestVersion": 1,
+  "id": "com.example.word-count",
+  "name": "Word Count",
+  "description": "Count words in the active editor selection.",
+  "version": "0.1.0",
+  "apiVersion": "^0.1.0",
+  "minAppVersion": "0.37.0",
+  "platforms": ["desktop"],
+  "entry": "dist/main.js",
+  "activationEvents": [
+    "onCommand:com.example.word-count.count"
+  ],
+  "permissions": {
+    "editor.read": {
+      "scope": "active-editor",
+      "description": "Read the current selection to count its words."
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "id": "com.example.word-count.count",
+        "title": "Count selected words",
+        "description": "Show the word count for the current selection"
+      }
+    ]
+  },
+  "license": "MIT"
+}
+~~~
+
+Declare only the minimum permissions the plugin actually uses. Command, status-bar, menu-reference, and other contribution IDs must remain inside the plugin's namespace. If the plugin depends on a capability introduced later, set `minAppVersion` to the oldest NoteGen version you actually support.
+
+See [Plugin configuration](/en/docs/plugins/developers/manifest) for every field and constraint.
+
+## 4. Write the entry
+
+Replace `src/main.ts` with:
+
+~~~ts
+import type { PluginActivate } from "@notegen/plugin-api";
+
+export const activate: PluginActivate = async (ctx) => {
+  ctx.commands.handle("com.example.word-count.count", async () => {
+    const selection = await ctx.editor.getSelection();
+
+    if (!selection) {
+      await ctx.ui.showNotice("No active Markdown editor.");
+      return;
+    }
+
+    const value = selection.text.trim();
+    const count = value ? value.split(/\s+/u).length : 0;
+    await ctx.ui.showNotice(`Selected words: ${count}`);
+  });
+};
+~~~
+
+`getSelection()` returns `null` when no Markdown editor is active. This counting expression is deliberately simple; a production multilingual plugin should define and document its own Unicode and CJK rules.
+
+The entry must export a named `activate` function and may also export `deactivate`. A type-only import is erased during the build. Every value import and dependency must be bundled into the entry because the NoteGen runtime does not resolve relative modules, npm packages, or remote modules.
+
+See [API and type reference](/en/docs/plugins/developers/plugin-api) for public types and versioning, and [Capabilities and permissions](/en/docs/plugins/developers/api-permissions) for runtime capabilities.
+
+## 5. Build and validate
+
+After the npm release, use the generated project scripts:
+
+~~~bash
+pnpm build
+pnpm validate
+~~~
+
+You can also call the CLI directly and revalidate the build output:
+
+~~~bash
+notegen-plugin build
+notegen-plugin validate
+notegen-plugin validate .notegen/package
+~~~
+
+When running the SDK from source, pass the absolute plugin-project path:
+
+~~~bash
+node /absolute/path/note-gen-plugin-sdk/packages/plugin-cli/dist/bin.js \
+  build /absolute/path/word-count
+node /absolute/path/note-gen-plugin-sdk/packages/plugin-cli/dist/bin.js \
+  validate /absolute/path/word-count/.notegen/package
+~~~
+
+`build` performs these steps:
+
+1. Strictly validates `plugin.json`.
+2. Bundles the source and dependencies into one UTF-8 JavaScript ESM entry.
+3. Rejects residual static or dynamic module imports.
+4. Copies the manifest and declared locale files.
+5. Generates an `integrity.json` that covers the payload exactly.
+6. Atomically replaces `.notegen/package`.
+
+The output is:
+
+~~~text
+word-count/.notegen/package/
+├── plugin.json
+├── integrity.json
+└── dist/
+    └── main.js
+~~~
+
+`.notegen/package` is the development-import directory, and the scaffold adds `.notegen` to `.gitignore`. Do not import the source directory or `.notegen/releases` as a development plugin.
+
+You can also run `notegen-plugin validate` before building to preflight the source project. Use `--api-version` and `--app-version` to simulate a specific host when needed.
+
+## 6. Import into NoteGen
+
+1. In NoteGen desktop, open Settings → General → Advanced and enable Developer mode.
+2. Open Settings → Plugins → Developer.
+3. Select or enter the absolute path to `word-count/.notegen/package`.
+4. Choose Import.
+5. Find Word Count under Installed and turn it on.
+6. Review the `editor.read` explanation and approve the permission.
+
+Press Command + Shift + P on macOS or Ctrl + Shift + P on Windows and Linux, then search for Count selected words in the plugin command palette.
+
+NoteGen validates the directory again and copies an immutable snapshot. It does not execute source files directly; the development watcher inspects the build output.
+
+## 7. Make changes and reload
+
+Run the watcher in your plugin project:
+
+~~~bash
+pnpm exec notegen-plugin dev
+~~~
+
+Before npm publication, use the locally built SDK CLI path from step 1 with the `dev` command. The CLI rebuilds `.notegen/package` after edits; failed builds leave the previous output intact. Developer mode plus an enabled development plugin is sufficient for automatic host reload. No reload button or switch is required, and watching continues after closing settings or restarting the host.
+
+The host imports an immutable snapshot and recreates the runtime and UI. Same-source updates without broader permissions can preserve grants; source-path changes or expanded permissions require review. Drafts do not survive reload. See [Command-line tools](/en/docs/plugins/developers/cli#watch-mode-and-automatic-reload).
+
+## 8. Diagnose a failure
+
+Developer shows warnings and errors recorded by the NoteGen host. The Installed card shows runtime state, failure code, message, and accumulated failure count. Neither view is a plugin `console`; output written to `console` by plugin code is not currently collected.
+
+Check these items in order:
+
+- `plugin.json` is strict JSON with valid IDs, permission scopes, and contribution references;
+- `entry` is a UTF-8 `.js` file no larger than 5 MiB;
+- the bundle contains no external, relative, or dynamic module imports;
+- `integrity.json` covers every payload exactly once with correct hashes and sizes;
+- the current workspace has the required grants;
+- the dev watcher produced new output and the plugin is enabled.
+
+`notegen-plugin validate <path> --json` writes exactly one JSON result to stdout for scripts. The command inspects input without executing plugin code. To check `minAppVersion`, also pass the target `--app-version`; otherwise `appCompatibilityChecked` is `false`.
+
+Use `ctx.log.info/warning/error` for explicit local diagnostics, and export them from Developer before closing the app. [Capabilities and permissions](/en/docs/plugins/developers/api-permissions#diagnostics-and-data-recovery) describes limits and data handling.
+
+## Runtime boundary
+
+Marketplace and development plugins cannot use the DOM, `window`, `document`, global `fetch`, WebSocket, Node.js built-ins, child processes, native extensions, Tauri APIs, SQLite, or raw file paths. Official plugins follow the same boundary.
+
+`eval` and `new Function` are not part of the supported contract. A plugin can use only the capabilities exposed through its `ctx` argument.
+
+## Next steps
+
+- [Development tools overview](/en/docs/plugins/developers/sdk)
+- [Plugin configuration](/en/docs/plugins/developers/manifest)
+- [API and type reference](/en/docs/plugins/developers/plugin-api)
+- [Command-line tools](/en/docs/plugins/developers/cli)
+- [Extend the app interface](/en/docs/plugins/developers/ui-contributions)
+- [How plugins run](/en/docs/plugins/developers/lifecycle)
+- [Packaging and verification](/en/docs/plugins/developers/package-verify)
+- [Publish to the plugin marketplace](/en/docs/plugins/developers/publishing)

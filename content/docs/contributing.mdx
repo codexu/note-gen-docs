@@ -72,6 +72,19 @@ pnpm sync-version         # 将 Tauri 版本同步到 iOS 工程
 - 修改模型、同步、隐私或用户操作路径时，同时更新官网文档。
 - 不提交 API Key、Token、签名文件、个人路径或真实用户数据。
 
+## 核心功能还是插件
+
+在决定代码放在哪里之前，先区分三类工作：
+
+- NoteGen 宿主、插件运行时、权限代理和当前官方内置插件源码属于 [`note-gen`](https://github.com/codexu/note-gen)；
+- [`note-gen-plugin-sdk`](https://github.com/codexu/note-gen-plugin-sdk) 维护公开插件 API 契约及其 npm 发布；首次发布后，宿主将通过精确版本实现并验证这套契约；
+- [`note-gen-plugins`](https://github.com/codexu/note-gen-plugins) 维护官方插件源码、行为测试、签名索引和静态发布流水线，目前尚未发布首批远程制品，也未开放社区投稿；
+- 社区插件源码应由作者维护在自己的仓库，市场开放后再按正式规则登记版本与不可变发布产物。
+
+需要应用启动、编辑保存、数据迁移或安全恢复才能成立的能力，应留在核心。能够通过公开 API 独立启用、禁用和回滚的工作流更适合插件。官方插件也不得调用社区作者无法使用的 NoteGen 私有模块。
+
+准备插件提案前，请先阅读[插件系统概览](/cn/docs/plugins)和[开发第一个插件](/cn/docs/plugins/developers/getting-started)。
+
 ## Pull Request
 
 PR 标题采用 `fix(#issue): 描述` 或 `feat(#issue): 描述`。正文应说明问题、方案、影响平台、验证方式和界面截图。提交前至少确认相关构建、类型检查或测试通过。

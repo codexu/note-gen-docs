@@ -1,0 +1,236 @@
+---
+title: 打包与验证
+description: 准备开发目录，理解 .notegen-plugin 的完整性和签名规则。
+icon: PackageCheck
+---
+
+市场插件使用 ZIP 格式的 `.notegen-plugin` 文件。NoteGen 不在用户设备上安装依赖、执行脚本或编译源码；归档必须已经包含可执行的单文件 JavaScript 入口。
+
+本地开发模式读取目录快照，不接受任意本地归档安装。开发目录可以不签名，市场归档必须含发布者签名。
+
+> 更新日期：2026-09-10。四个 SDK 包已发布 npm，官方插件签名市场已上线；社区投稿尚未开放。接口说明以当前开发分支为准，未发布的新增能力需使用对应源码版本。远程安装还要求 NoteGen 支持插件系统并内置正式根公钥。
+
+## CLI 可用性
+
+在插件项目中安装已发布的 npm 包 CLI：
+
+~~~bash
+pnpm add -D @notegen/plugin-cli
+pnpm exec notegen-plugin --help
+~~~
+
+需要使用 SDK 源码时，克隆并构建 [NoteGen Plugin SDK](https://github.com/codexu/note-gen-plugin-sdk)，然后把本文的 `notegen-plugin` 替换成：
+
+~~~text
+node /绝对路径/note-gen-plugin-sdk/packages/plugin-cli/dist/bin.js
+~~~
+
+从源码安装与创建项目的完整步骤见[开发第一个插件](/cn/docs/plugins/developers/getting-started)。
+
+## 开发构建
+
+在插件源码项目运行：
+
+~~~bash
+notegen-plugin validate
+notegen-plugin build
+notegen-plugin validate .notegen/package
+~~~
+
+第一次 `validate` 对源码项目做预检。`build` 把入口与依赖构建成单文件 ESM，生成 `integrity.json`，并固定输出可导入的 `.notegen/package`。第二次 `validate` 校验完整开发载荷。这些命令都不会执行插件代码。
+
+`validate [path]` 可以检查源码项目、已构建目录或归档，默认允许未签名输入。`verify <archive-or-directory>` 只面向完整目录或归档；它不会为源码项目补文件或触发构建。
+
+`create`、`validate`、`build`、`pack`、`keygen`、`sign` 和 `verify` 都支持 `--json`。该模式不会交互，并把成功结果或诊断错误作为唯一一份 JSON 写到 stdout；`create --install` 的包管理器日志会改写到 stderr。无人值守地创建项目时传入 `--id <id> --json` 即可；未传 name 时使用目录名生成默认名称，`--yes` 可省略。
+
+未传 `--app-version` 时，CLI 会校验 manifest，但不会把 `minAppVersion` 与某个具体 NoteGen 版本比较。文本输出会明确提示，JSON 中的 `appCompatibilityChecked` 为 `false`。发布前请始终传入目标应用版本。
+
+## 从源码到签名包
+
+发布制品分为两个明确阶段：
+
+~~~bash
+notegen-plugin pack
+notegen-plugin sign \
+  .notegen/releases/com.example.word-count-0.1.0.unsigned.notegen-plugin \
+  --private-key /安全路径/publisher-private.pem
+notegen-plugin verify \
+  .notegen/releases/com.example.word-count-0.1.0.notegen-plugin \
+  --public-key ./publisher-public.json \
+  --require-signature
+~~~
+
+`pack [directory]` 构建并验证源码项目，默认输出：
+
+~~~text
+.notegen/releases/<id>-<version>.unsigned.notegen-plugin
+~~~
+
+`pack` 不接受也不读取私钥。`sign` 只读取已经构建的 unsigned 归档，重新校验后加入 `signature.sig`，默认生成去掉 `.unsigned` 的最终 `.notegen-plugin`；它不会读取源码、安装依赖或执行构建。这一边界允许把 unsigned 包复制到隔离设备完成签名。
+
+首次创建发布者密钥时，可显式指定两个输出文件：
+
+~~~bash
+notegen-plugin keygen \
+  --private-key /安全路径/publisher-private.pem \
+  --public-key ./publisher-public.json
+~~~
+
+私钥是 PKCS#8 PEM，只能离线保管和备份，不能进入源码仓库、同步笔记目录、插件包或公共 CI 日志。公钥 JSON 可以公开，并通过 `verify --public-key <publisher-public.json>` 使用。需要加密私钥时，用 `--passphrase-env <ENV>` 从环境变量读取口令，不要把口令写进命令参数。
+
+两个密钥文件会先暂存，再作为一组发布。使用 `--force` 替换已有密钥时，旧文件会保留到新私钥和公钥都已就绪；任一写入失败都会回滚整组，避免留下不匹配的密钥对。
+
+`keygen` 生成的是发布者密钥，不是 NoteGen 市场根密钥；CLI 不能签署市场索引、登记发布者或上传包。本地 `verify` 成功只证明 manifest、完整性清单、归档限制与给定发布者签名相符，不代表插件已被 NoteGen 审核、信任或收录。
+
+## 最小结构
+
+源码项目：
+
+~~~text
+word-count/
+├── package.json
+├── plugin.json
+└── src/
+    └── main.ts
+~~~
+
+本地开发目录：
+
+~~~text
+word-count/.notegen/package/
+├── plugin.json
+├── integrity.json
+└── dist/
+    └── main.js
+~~~
+
+市场归档：
+
+~~~text
+com.example.word-count-0.1.0.notegen-plugin
+├── plugin.json
+├── integrity.json
+├── signature.sig
+└── dist/
+    └── main.js
+~~~
+
+客户端硬性要求：
+
+- 根目录存在 `plugin.json` 和 `integrity.json`；
+- manifest 的 `entry` 存在且为 UTF-8 `.js`；
+- manifest 声明的每个 locale 文件存在；
+- `integrity.json` 精确覆盖全部载荷；
+- 市场包内存在有效 `signature.sig`。
+
+README、LICENSE 和作者图片不是运行时必需文件，但公开项目应在源码仓库提供说明与许可证。只有真正放入包内的文件才进入完整性清单；API v1 没有通用包资源读取接口，不要携带无用资产。
+
+## 完整性清单
+
+~~~json
+{
+  "version": 1,
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "dist/main.js",
+      "size": 18432,
+      "sha256": "<64-character-lowercase-hex>"
+    },
+    {
+      "path": "plugin.json",
+      "size": 902,
+      "sha256": "<64-character-lowercase-hex>"
+    }
+  ]
+}
+~~~
+
+规则：
+
+- `version` 只能为 `1`，`algorithm` 只能为 `sha256`；
+- path 使用 NFC 规范化的正斜杠相对路径；
+- size 是实际文件字节数；
+- sha256 是 64 位小写十六进制；
+- 清单必须列出 `plugin.json`、入口、声明的 locale 和每个其他载荷；
+- 清单不能列出自身或 `signature.sig`；
+- 实际载荷与清单必须一一相等，不能多文件或少文件；
+- 路径不能重复，也不能仅靠大小写区分。
+
+通常不需要手工生成该文件；`notegen-plugin build` 会按实际载荷生成并立即校验。若使用自定义构建流程，仍必须完全遵守以上规则。
+
+## 市场包签名格式
+
+市场包使用 Ed25519。发布者签署以下字节序列：
+
+~~~text
+"NOTEGEN_PLUGIN_SIGNATURE_V1\0"
++ uint64_be(canonical_plugin_json_length)
++ canonical_plugin_json
++ uint64_be(canonical_integrity_json_length)
++ canonical_integrity_json
+~~~
+
+`canonical_plugin_json` 与 `canonical_integrity_json` 必须使用 [RFC 8785 JSON Canonicalization Scheme（JCS）](https://www.rfc-editor.org/rfc/rfc8785) 生成。JCS 规定对象属性排序、字符串转义和数字序列化；不能用普通的 `JSON.stringify` 加 key 排序替代。`signature.sig` 是 64 字节签名的 Base64 文本；发布者公钥是 32 字节 Ed25519 公钥的 Base64 文本。
+
+签名覆盖规范化后的 `plugin.json` 与 `integrity.json`，而完整性清单覆盖其余载荷。插件包的整体 SHA-256 还必须与签名市场索引中的 `packageSha256` 相同。
+
+`signature.sig` 必须在包内。市场 schema 虽保留可选 `signatureUrl`，当前客户端不会下载它代替包内签名。
+
+## 被拒绝的路径和文件
+
+客户端拒绝：
+
+- 绝对路径、反斜杠、`..`、空段、双斜杠、控制字符和未规范化 Unicode；
+- 尾随点或空格、Windows 保留文件名、只靠大小写区分的冲突路径；
+- 符号链接、特殊文件和带可执行位的开发目录文件；
+- `.notegen`、`node_modules`、`.git`、`.hg`、`.svn`、`.cache`；
+- `.env` 和 `.env.*`；
+- 原生库、可执行文件、安装包、Shell 脚本、Java class/JAR、WASM、source map、PEM/P12/PFX 等敏感后缀；
+- `package.json` 中的 `install`、`preinstall` 或 `postinstall` 脚本。
+
+客户端不能替作者判断普通文本里是否含 API key、个人路径、真实用户数据或远程代码字符串。发布前仍需人工检查，私钥和用户数据绝不能进入源码或包。
+
+## 大小与归档限制
+
+| 项目 | 限制 |
+| --- | --- |
+| 压缩归档 | 20 MiB |
+| 解压后全部文件 | 50 MiB |
+| 单个文件 | 10 MiB |
+| JavaScript 入口 | 5 MiB |
+| ZIP entries | 256 |
+| 路径深度 | 12 段 |
+| 大于 1 MiB 的单个文件压缩比 | 100:1 |
+
+压缩比限制只应用于解压后大于 1 MiB 的条目；非空条目的压缩大小为 0 也会被拒绝。归档路径还受 1,024 个 UTF-8 字节总长和 240 个 UTF-8 字节单段限制，路径深度最多 12 段。中文、Emoji 等字符通常占多个字节；超过任一限制会在执行代码前被拒绝。
+
+## 客户端安装顺序
+
+市场安装会：
+
+1. 强制取得仍有效的根签名索引；
+2. 校验索引 generation、有效期、发布者和 release 元数据；
+3. 从允许的 HTTPS 主机下载最多 20 MiB 的包；
+4. 对比整个包的 `packageSha256`；
+5. 在随机暂存目录安全解压；
+6. 校验路径、文件类型、大小、manifest 和兼容性；
+7. 完整对比 `integrity.json`；
+8. 使用索引中的发布者公钥验证包内 `signature.sig`；
+9. 原子写入安装状态并切换 active version。
+
+安装事务不执行 JavaScript。入口随后在匹配激活事件时启动；带 pending update 标记的新市场版本首次激活失败时，主窗口才自动回滚 previous version。
+
+## 开发目录快照
+
+开发导入要求：
+
+- 开发者模式已启用；
+- 输入真实目录的绝对路径，目录本身和载荷链路不能是符号链接；
+- 有有效 `plugin.json`、`integrity.json` 和入口；
+- manifest 必须包含 `desktop`；
+- 目录不能覆盖同 ID 的市场插件或使用宿主内部保留 ID。
+
+NoteGen 只复制清单列出的载荷及清单本身，按内容哈希保存不可变快照。源码、README 或构建配置可以留在开发目录且不进入快照。
+
+授权身份包括插件 ID、版本、内容哈希、来源类型和规范化源路径。换目录、改内容或改版本后需要重新核对。开发插件没有自动更新，也没有市场版本的自动激活回滚。

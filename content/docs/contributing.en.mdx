@@ -72,6 +72,19 @@ Some modules use Node's built-in test runner or colocated specifications. Search
 - Update the website docs when changing models, sync, privacy, or user workflows.
 - Never commit API keys, tokens, signing files, personal paths, or real user data.
 
+## Core feature or plugin
+
+Before deciding where code belongs, separate three kinds of work:
+
+- the NoteGen host, plugin runtime, permission broker, and current official built-in plugin source live in [`note-gen`](https://github.com/codexu/note-gen);
+- [`note-gen-plugin-sdk`](https://github.com/codexu/note-gen-plugin-sdk) maintains the public plugin API contract and its npm releases; after the first release, the host will implement and verify an exact published version of that contract;
+- [`note-gen-plugins`](https://github.com/codexu/note-gen-plugins) maintains official plugin source, behavior tests, signed-index generation, and static-release workflows; the first remote artifacts have not been published and community submissions are not open yet;
+- community authors maintain plugin source in their own repositories and will register versions and immutable release artifacts once the marketplace opens.
+
+A capability that is required for application startup, editor saving, data migration, or safety recovery should remain in core. A workflow that can be independently enabled, disabled, and rolled back through public APIs is a better plugin candidate. Official plugins must not call private NoteGen modules unavailable to community authors.
+
+Before proposing a plugin, read the [plugin system overview](/en/docs/plugins) and [Build your first plugin](/en/docs/plugins/developers/getting-started).
+
 ## Pull requests
 
 Use `fix(#issue): description` or `feat(#issue): description`. Explain the problem, solution, affected platforms, validation, and UI screenshots. Run the relevant build, type checks, or tests first.

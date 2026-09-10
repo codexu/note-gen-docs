@@ -1,0 +1,200 @@
+---
+title: Plugin system
+description: Use and manage NoteGen plugins to extend the editor and note workflows within controlled boundaries.
+icon: Blocks
+---
+
+Plugins add commands, menus, status information, settings, and note workflows to NoteGen without changing the Markdown file format.
+
+On desktop, open Settings → Plugins to access Installed, Discover, Updates, and (in Developer mode) Developer. Permissions are inside each installed plugin’s expanded settings. Plugin installation and execution are currently desktop-only; mobile does not run plugins yet.
+
+Desktop writing statistics retain a built-in fallback. When the official statistics plugin displays its status item, the fallback is hidden to avoid duplicate counters. Mobile retains its native character counter, controlled by Settings → Editor → Writing statistics; no plugin installation is required.
+
+> Updated 2026-09-10: all four SDK packages are published on npm and the signed official marketplace is live; community submissions remain closed. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
+
+## Plugins, Skills, and MCP
+
+| Type | Scope | Typical use |
+| --- | --- | --- |
+| NoteGen plugin | Extends the local NoteGen interface and note workflows | Custom commands, menus, and writing helpers |
+| Skill | Tells an AI agent how to carry out a class of tasks | Turn meeting notes into a fixed structure |
+| MCP | Lets an AI agent call external tools or data | Connect to a third-party service |
+
+Installing a NoteGen plugin does not create a Skill or grant permissions to a model, agent, or MCP server.
+
+## Supported plugin types
+
+### Official plugins
+
+Official plugins have source maintained by the NoteGen team and are signed by the NoteGen publisher registered in the marketplace root index. They use the same sandbox, permission review, installation, update, rollback, and removal flow as community plugins and receive no internal host privileges.
+
+An official plugin can release independently of the NoteGen application. The Official badge comes from the trusted signed index; never infer it from a plugin name, author string, or ID prefix.
+
+### Community plugins
+
+Community plugins will be installed from a signed marketplace index. NoteGen verifies the package digest and publisher signature, but a plugin can still read content or create files within the scope you approve. Before installing, review the publisher, source repository, license, release history, supported platforms, and permission summary.
+
+Official and community marketplace plugins currently run on desktop only. While the marketplace is closed, NoteGen will not bypass its trust checks to install remote packages from another source.
+
+## Find the right control
+
+Open **Settings → Plugins**:
+
+| Tab | Purpose |
+| --- | --- |
+| Installed | Search and refresh local installations; enable or disable plugins |
+| Discover | Browse and refresh the signed catalog, review and install packages |
+| Updates | Only marketplace plugins with a compatible newer release |
+| Developer | Local imports, logs and diagnostic export; visible in Developer mode |
+
+Choose Settings on an Installed row to expand its details. These contain activation scope, usage instructions, settings and permissions. Update, rollback and uninstall controls appear directly at the bottom. Permissions is not a separate top-level tab.
+
+## Install and use
+
+1. Find a plugin in Discover and choose Install.
+2. Review its version, publisher, key identifier, license, source links, package digest and permissions.
+3. Confirm. NoteGen fetches a fresh signed index and checks the downloaded package digest, integrity manifest and publisher signature.
+4. Enable the installed plugin and approve its permissions. Installation alone does not activate or authorize it.
+5. Read the usage instructions in its details. Use the command palette, menus, status bar, sidebar or editor tabs that the plugin provides.
+
+Open the plugin command palette with **Command + Shift + P** on macOS or **Ctrl + Shift + P** on Windows/Linux. There is no generic “Use now” button below usage instructions.
+
+An unavailable market or failure to fetch a fresh signed index blocks installation and updates. Stale caches are for browsing only. If the program was installed but saving settings failed, refresh Installed and enable/review the plugin again before attempting another installation.
+
+## Activation scope
+
+| Scope | Behavior |
+| --- | --- |
+| Disabled | Stops execution and retains the program and data |
+| Current workspace | Runs in this workspace only |
+| All workspaces | Runs in workspaces with valid activation records and required reviews |
+
+All workspaces does not approve future workspaces. Enable and review the plugin when entering a new workspace. Even a plugin with no declared permissions needs a valid workspace activation record.
+
+## Approve permissions
+
+Each permission card contains its name, explanation, required/optional badge and any folder, path or network fields.
+
+- On the first review, declared permissions are preselected. Optional permissions can be cleared; required permissions cannot.
+- Select all at the lower left selects or clears optional permissions, retaining required permissions. A mixed selection shows an indeterminate state.
+- Later reviews retain previous choices. New optional permissions are not preselected when an existing grant record is present.
+- A `workspace-folder` grant with no saved paths defaults to the entire workspace. Narrow it if needed; existing paths are retained.
+- File-level permissions still need file paths. Network permissions still need explicit HTTPS origins; there is no default unrestricted network grant.
+- Preselection is only a form default. Grants are saved when you choose Authorize and enable; cancelling adds no grants.
+
+The entire workspace is represented by `.`. Paths are workspace-relative, with no absolute paths or `..`. Expand the advanced-path control to enter multiple comma-separated paths. A plugin may bind required permissions to one shared folder setting; that folder is selected once in the dialog.
+
+Changing workspace or package during review invalidates the dialog. Reopen it and check the current workspace and version before approving.
+
+### Permission capabilities
+
+A plugin can use only capabilities declared in its manifest and granted for the current workspace. The public permission set currently contains:
+
+| Permission | Capability |
+| --- | --- |
+| `editor.read` | Read the active Markdown editor or selection |
+| `editor.write` | Change the active Markdown editor after its revision is checked |
+| `notes.read` | Read approved Markdown files in the workspace |
+| `notes.list` | List Markdown files under approved folders |
+| `notes.create` | Create Markdown files in approved folders |
+| `notes.open` | Open Markdown files in approved folders |
+| `notes.write` | Change approved Markdown files |
+| `notes.delete` | Delete approved Markdown files |
+| `notes.move` | Move a Markdown file between approved source and destination paths |
+| `network.fetch` | Request an HTTPS origin that you explicitly approved |
+
+`network.fetch` is not general network access. A plugin can reach only HTTPS origins declared in its manifest and individually approved by you; it cannot expand that set on its own. Plugins also have no shell, database, Tauri, DOM, or arbitrary file-system access.
+
+### Inspect or revoke
+
+Open Installed → plugin Settings → Permissions to inspect grants by workspace. Only the current workspace can be changed. Revoking an optional permission rejects new calls; revoking a required permission also disables the plugin. A write already in the host's atomic commit stage may finish. Revocation does not undo completed file changes.
+
+## Settings
+
+Toggles and selects save immediately. Single-line text and numbers save on Enter or blur; multiline text saves on blur. Enter used to confirm an input-method composition does not submit a setting.
+
+Device and Workspace are local scopes, not synchronization promises. Editing a folder setting does not expand grants automatically. Review its paths again when calls are denied. A shared-folder selection inside the permission dialog explicitly updates the bound setting as part of confirmation.
+
+## Why a published update may not appear
+
+1. In **Installed**, check the plugin's actual version and installation-source badge. **Development** imports do not receive marketplace updates. A **Marketplace** installation can update to a newer compatible release.
+2. In **Discover**, click **Refresh**, then return to **Updates**. The current client may reuse an unexpired catalog; opening Updates alone does not fetch a fresh index.
+3. If the update is still absent, compare the installed version with the catalog version and check the new release's minimum NoteGen version, API range and supported platform.
+
+Discover displays the market version. Its **Installed** button only means the same plugin ID exists locally; it does not prove that version is installed. To move from a development import to a marketplace installation, uninstall the development version first, then install from Discover. Review the uninstall data options before confirming.
+
+To test a specific upgrade such as `0.1.0 → 0.1.1`, install the older version through the marketplace before the newer version is published. Installing the latest version directly does not test that upgrade path.
+
+## Updates, rollback and revoked releases
+
+Marketplace updates require confirmation. Updates lists compatible new releases; controls also appear at the bottom of plugin details. Same-source updates without broader permissions can preserve valid activation and grants. Added or broader permissions require review. Publisher IDs cannot change silently; key rotation requires registration in the root-signed index and a new review of the package.
+
+A new marketplace version remains pending until its first successful main-window activation, including across restarts. Failed first activation restores the previous version. Another version cannot be installed until confirmation or rollback. Roll back appears only when a previous version is available.
+
+Rollback restores the previous package and its `storage.device/workspace` snapshot. It does not roll back contributed settings, Markdown changes or remote operations. Writes made by the newer package are not merged into the older snapshot.
+
+A signed index can mark a release `revoked`. Once the host receives that marker it stops the affected version, blocks loading/installing/rolling back to it and shows the reason. Removing a release from the index is not revocation; offline devices cannot learn new markers immediately.
+
+## Development plugins
+
+In Developer mode, import the absolute path to a built `.notegen/package` directory and enable the plugin. Watching is automatic: there is no Reload button or Auto-reload toggle. It continues after closing settings and resumes after restarting the host. Disabling the plugin pauses reload; turning off Developer mode stops watching.
+
+The author runs `notegen-plugin dev` in the source project. Source changes produce a new package, which NoteGen validates and copies into an immutable snapshot. Reload rebuilds the runtime and UI; form drafts do not survive and expanded permissions still need review. See [Build your first plugin](/en/docs/plugins/developers/getting-started).
+
+## Failures and diagnostics
+
+Plugin details show runtime state, failure code and count. Successful activation clears earlier failures. Three uncleared runtime failures quarantine and disable the plugin. Clear the record and re-enable, update, roll back or uninstall it.
+
+Developer logs include host messages and explicit `ctx.log.info/warning/error` calls, not automatic `console` capture. Filter by plugin and export diagnostic JSON before exiting: logs are not persistent. Exports include versions, runtime states and log text. Review author-supplied messages for private content before sharing.
+
+## Uninstall
+
+Choose Uninstall at the bottom of Installed → plugin Settings:
+
+- **Keep data** removes the program, disables it in all workspaces and clears grants, retaining contributed settings and KV.
+- **Remove data** also removes device settings, workspace settings and KV for that plugin.
+
+Neither option deletes Markdown created by the plugin or reverses completed operations. A cleanup warning means execution and grants have stopped but some data remains. Do not delete shared storage files containing other plugins' data to dismiss the warning.
+
+## Sync, backup and restore
+
+Plugin programs, grants and activation records do not sync with a workspace. Markdown follows ordinary workspace sync rules.
+
+Managed backups include KV in a separate `plugin-user-data.json`. Restoring the archived workspace rebinds its KV workspace ID, but does not restore programs, publisher trust, old grants or activation credentials. Reinstall and authorize plugins before using restored data. Contributed settings retain the destination device's state; other workspace data is not rebound to an unrelated directory.
+
+Local `plugins/*.json.bak` files are corruption-recovery copies, not cross-device backups. Preserve the whole plugin data directory and contact maintainers if state is damaged. Older hosts are not guaranteed to read the new storage format.
+
+### Storage locations
+
+| Data | Storage and behavior |
+| --- | --- |
+| Plugin program | NoteGen application-data directory; never stored in the Markdown workspace |
+| Activation scope, grants, and contributed settings | `plugins/host-state.json` in the application-data directory; currently not synced between devices |
+| `storage.device` and `storage.workspace` | `plugins/storage.json` in the application-data directory; workspace storage is only partitioned by workspace ID and is not synced |
+| Markdown created or changed by a plugin | Ordinary workspace files, covered by your existing workspace sync and backup rules |
+
+Syncing the same workspace to another device does not install, enable, or authorize a community plugin there. Uninstalling a plugin also leaves any Markdown it created intact.
+
+The native host serializes writes, atomically replaces each file through a temporary file in the same directory, and maintains a valid `.json.bak` recovery copy. Both copies are updated to the committed state before a save succeeds, so recovery does not reinstate revoked grants or restore deleted data after a successful save. It attempts to recover a damaged file from a valid backup. If neither copy can be read, it reports an error instead of silently resetting grants or data. The legacy top-level `plugins.json` and `plugin-data.json` serve only as initial migration sources and no longer receive new settings or key-value writes.
+
+## Troubleshooting
+
+| Symptom | Next step |
+| --- | --- |
+| Installed but no entry point | Check activation and pending permissions in this workspace, then read usage instructions |
+| No Developer tab | Enable Developer mode under Settings → General → Advanced |
+| Updates is empty; no uninstall control | Open the installed plugin's details and scroll to the bottom |
+| Source edits do not appear | Check the dev watcher, imported `.notegen/package` path, Developer mode and plugin activation |
+| Automatic reload stopped after a failure | Fix and produce different output, or restart the host; identical failed output is not retried indefinitely |
+| Selected permissions still fail | File-level permissions need files and network permissions need origins; check workspace and paths |
+| Plugin does not run on a synced device | Install, enable and authorize it there; note synchronization does not copy plugin trust |
+
+## Security boundary
+
+Official, community, and local development plugins all run in a QuickJS sandbox inside their own Worker and request host capabilities through a controlled message bridge. On every call, NoteGen checks plugin identity, permissions, and path scope, and applies limits to memory, execution time, message size, request rate, and local storage.
+
+These controls reduce the attack surface; they are not an endorsement of a plugin's behavior or privacy practices. Install only from publishers you trust and grant the narrowest path scope the plugin needs.
+
+## Developer reading path
+
+Start with [Build your first plugin](/en/docs/plugins/developers/getting-started), then use [Development tools overview](/en/docs/plugins/developers/sdk) and [Command-line tools](/en/docs/plugins/developers/cli). Declare [Plugin configuration](/en/docs/plugins/developers/manifest), consult [API and type reference](/en/docs/plugins/developers/plugin-api) and [Capabilities and permissions](/en/docs/plugins/developers/api-permissions), and design [Extend the app interface](/en/docs/plugins/developers/ui-contributions). Before distribution, cover [How plugins run](/en/docs/plugins/developers/lifecycle), [Testing plugins](/en/docs/plugins/developers/testing), [Packaging and verification](/en/docs/plugins/developers/package-verify) and [Publish to the plugin marketplace](/en/docs/plugins/developers/publishing).

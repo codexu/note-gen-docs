@@ -1,0 +1,264 @@
+---
+title: Plugin configuration
+description: Declare plugin identity, compatibility, permissions, activation events, and UI contributions in plugin.json.
+icon: FileJson
+---
+
+Every plugin directory or archive must contain `plugin.json` at its root. NoteGen parses the manifest strictly before it runs any entry code. The manifest determines compatibility, registers static contributions, explains permissions to the user, and establishes the identity used to verify marketplace packages. Unknown fields are rejected.
+
+## Complete example
+
+~~~json
+{
+  "manifestVersion": 1,
+  "id": "com.example.word-count",
+  "name": "Word Count",
+  "description": "Count words in the active editor.",
+  "version": "0.1.0",
+  "apiVersion": "^0.1.0",
+  "minAppVersion": "0.37.0",
+  "platforms": ["desktop"],
+  "entry": "dist/main.js",
+  "activationEvents": [
+    "onCommand:com.example.word-count.count"
+  ],
+  "permissions": {
+    "editor.read": {
+      "scope": "active-editor"
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "id": "com.example.word-count.count",
+        "title": "%command.count.title%",
+        "description": "%command.count.description%",
+        "suggestedShortcut": "Mod+Shift+W"
+      }
+    ],
+    "settings": [
+      {
+        "key": "com.example.word-count.includeCodeBlocks",
+        "type": "boolean",
+        "scope": "workspace",
+        "title": "%setting.includeCodeBlocks.title%",
+        "default": false
+      }
+    ]
+  },
+  "defaultLocale": "en",
+  "locales": {
+    "en": "locales/en.json",
+    "zh-CN": "locales/zh-CN.json"
+  },
+  "author": {
+    "name": "Example Studio",
+    "url": "https://example.com"
+  },
+  "repository": "https://github.com/example/notegen-word-count",
+  "license": "MIT"
+}
+~~~
+
+## Top-level fields
+
+| Field | Required | Rule |
+| --- | --- | --- |
+| `manifestVersion` | Yes | The numeric value `1` |
+| `id` | Yes | Lowercase reverse-domain ID, 3–160 ASCII characters |
+| `name` | Yes | 1–100 UTF-8 bytes with no control character |
+| `description` | No | At most 500 UTF-8 bytes with no control character |
+| `version` | Yes | Complete SemVer version |
+| `apiVersion` | Yes | One SemVer version or a range beginning with `^`, `~`, `>=`, `>`, `<=`, or `<` |
+| `minAppVersion` | Yes | Minimum NoteGen SemVer version |
+| `platforms` | Yes | One or more of `desktop`, `ios`, and `android` |
+| `entry` | Yes | Safe package-relative JavaScript path no longer than 240 UTF-8 bytes and ending in `.js` |
+| `activationEvents` | Yes | At most 100 supported events |
+| `permissions` | Yes | Permission declarations; may be empty |
+| `contributes` | Yes | Static contributions; may be empty |
+| `defaultLocale`, `locales` | No | Localization configuration |
+| `author`, `repository`, `license` | No | Author and project metadata |
+
+`0.37.0` is currently planned as the first NoteGen release that includes the plugin system. If the application version changes before release, the SDK default and official plugin manifests must change with it. For your own release, declare the oldest application version you actually tested and support.
+
+## IDs and namespaces
+
+Valid examples include:
+
+~~~text
+com.example.word-count
+org.example.daily-tools
+~~~
+
+Each segment consists of lowercase letters, digits, and hyphens. An ID must contain at least one dot, and every segment must begin and end with a letter or digit.
+
+`app.notegen` and all `app.notegen.*` IDs are reserved for NoteGen host internals. Official and community marketplace packages and development directories using that namespace are rejected. Official status is established by the marketplace publisher signature, not by an ID prefix.
+
+These IDs must begin with `<plugin-id>.` and be unique:
+
+- command IDs;
+- setting keys;
+- status-bar item IDs.
+
+Menus reference a declared command and do not have their own IDs. Do not change a published plugin ID. `author.name` is display metadata, not the plugin's cryptographic publisher identity.
+
+## Versions, API, and platforms
+
+- `version` uses SemVer. A marketplace package for an existing version is immutable.
+- `apiVersion` is the SemVer compatibility range accepted by the plugin and must currently include the host's concrete API `0.1.0`. After activation, `ctx.plugin.apiVersion` is that concrete host version, not this range string.
+- Installation is rejected when `minAppVersion` is newer than the installed NoteGen version.
+- A plugin does not run if `platforms` omits the current platform.
+
+The schema can represent `desktop`, `ios`, and `android`, but official, community, and development plugins currently must include `desktop` and run only on desktop. Mobile does not run plugins yet; do not claim mobile compatibility on the strength of the schema alone.
+
+## Entry file
+
+`entry` must be a safe relative path no longer than 240 UTF-8 bytes to a UTF-8 `.js` file no larger than 5 MiB and containing no NUL byte.
+
+Installation validation checks the file's path, presence, type, encoding, and size. JavaScript syntax and module-resolution errors are reported only when the plugin activates. The entry must be self-contained ESM with all dependencies bundled during authoring. The runtime does not resolve relative, external, package, or remote modules beyond the entry itself.
+
+## Activation events
+
+The schema supports:
+
+| Event | Activation time |
+| --- | --- |
+| `onCommand:<command-id>` | The first time the user runs that command |
+| `onEditor:markdown` | When the current window has an active Markdown editor |
+| `onWorkspace:open` | When the plugin binds to an open workspace |
+| `onNotes:change` | When Markdown notes change in the workspace |
+
+The ID after `onCommand` must appear in `contributes.commands`. Prefer command activation when possible so NoteGen does not keep an unnecessary runtime active.
+
+## Permission declarations
+
+Each permission has this form:
+
+~~~json
+{
+  "editor.read": {
+    "scope": "active-editor",
+    "optional": false,
+    "description": "%permission.editorRead.description%"
+  }
+}
+~~~
+
+| Permission | Allowed scope |
+| --- | --- |
+| `editor.read` | `active-editor` |
+| `editor.write` | `active-editor` |
+| `notes.read` | `workspace-file`, `workspace-files`, `workspace-folder` |
+| `notes.list`, `notes.move` | `workspace-folder` |
+| `notes.create` | `workspace-folder` |
+| `notes.open` | `workspace-folder` |
+| `notes.write`, `notes.delete` | `workspace-file`, `workspace-files`, `workspace-folder` |
+| `network.fetch` | `network-origins` |
+
+`optional` defaults to false. A plugin cannot activate until every required permission is approved. An optional permission may be denied; a corresponding API call then returns `PermissionDenied`.
+
+The manifest is the upper bound of the permission request. The user reviews actual file and folder paths in each workspace. Runtime code cannot request a capability that the manifest did not declare.
+
+## Static contributions
+
+`contributes` supports:
+
+- `commands`, which appear in the plugin command palette and may be referenced by menus or status-bar items;
+- `settings`, rendered by NoteGen;
+- `statusBar`, for host-rendered status items;
+- `menus`, which place declared commands at supported locations.
+- `views`, which add host-rendered `left-sidebar`, `right-sidebar`, or `editor-tab` entries.
+
+`suggestedShortcut` is only a hint shown in the plugin command palette. It does not register a key binding, detect conflicts, or create a user-configurable shortcut.
+
+Contributions contain only JSON accepted by the schema. They cannot include HTML, CSS, React components, or callback source. See [Extend the app interface](/en/docs/plugins/developers/ui-contributions).
+
+## Count and length limits
+
+| Item | Limit |
+| --- | --- |
+| Commands, settings, and menus | At most 100 in each category |
+| Status-bar items | At most 30 |
+| Declarative views | At most 30 |
+| Activation events | At most 100 and no duplicates |
+| Full command, setting, or status ID | At most 220 UTF-8 bytes |
+| Localizable title, description, placeholder, or option label | At most 240 UTF-8 bytes |
+| Permission description | At most 240 UTF-8 bytes |
+| Command `icon` | 1–80 ASCII characters containing only letters, digits, and hyphens |
+| `suggestedShortcut` and menu `group` | At most 80 UTF-8 bytes |
+| Status-bar `priority` | Integer token from `-10000` through `10000` |
+| Select `options` | 1–100 entries; each value is at most 160 UTF-8 bytes and unique |
+| String `maxLength` | 1–65,536, applied to the default value's UTF-8 byte length |
+| `author.name` and `license` | At most 120 and 80 UTF-8 bytes respectively |
+
+Character counts and byte counts are not interchangeable. CJK characters and emoji commonly occupy multiple UTF-8 bytes; at a boundary, the byte length calculated by the CLI and host is authoritative.
+
+## Localization
+
+When `locales` is present, `defaultLocale` is also required and must be a key in that map. Each value is a package-relative JSON path:
+
+~~~json
+{
+  "defaultLocale": "en",
+  "locales": {
+    "en": "locales/en.json",
+    "zh-CN": "locales/zh-CN.json"
+  }
+}
+~~~
+
+Command, setting, permission, and select-option labels may use `%key%`. A locale file maps keys to strings:
+
+~~~json
+{
+  "command.count.title": "Count words",
+  "command.count.description": "Count words in the current selection"
+}
+~~~
+
+If the current language is unavailable, NoteGen falls back to the default locale. Every locale file referenced by the manifest must exist, parse successfully, and appear in `integrity.json`.
+
+Localization also has these hard limits:
+
+- at most 50 locale resources;
+- locale tags contain 2–35 ASCII characters and cannot duplicate another tag case-insensitively;
+- a locale path ends in `.json`, uses at most 240 UTF-8 bytes, and cannot collide by letter case;
+- each locale file contains at most 2,000 messages;
+- a key is non-empty, contains no control character, and uses at most 160 UTF-8 bytes;
+- a message is a string of at most 4,096 UTF-8 bytes with no NUL;
+- the default locale contains every `%key%` referenced by static manifest contributions.
+
+## Common rejection reasons
+
+- An unknown field appears in a top-level or nested object.
+- An optional field is written as `null` instead of omitted, or a setting contains fields belonging to another setting type.
+- An integer field such as `manifestVersion`, `maxLength`, or status-bar `priority` uses a non-integer token such as `1.0`, `1e0`, or `-0`.
+- A plugin, command, setting, or status-bar ID is invalid, outside the plugin namespace, or duplicated.
+- A permission and scope combination is invalid.
+- An activation event names an undeclared command.
+- A status-bar item or menu references an undeclared command.
+- `when` is not one of the currently supported conditions.
+- A select default is absent from its options, or a number default is outside its limits.
+- The locale mapping is incomplete.
+- The entry, integrity manifest, compatibility check, or marketplace signature fails validation.
+
+See [Packaging and verification](/en/docs/plugins/developers/package-verify) for the complete package rules.
+
+## Bind a folder setting to permissions
+
+A single `string` setting with `scope: "workspace"` may declare `permissionPaths`. Each referenced permission must be declared, required and use `workspace-folder`. Only one setting can provide this binding. The permission dialog presents one shared folder choice and updates the setting when explicitly confirmed. This is a generic manifest capability, not a special case for Daily Notes.
+
+~~~json
+{
+  "key": "com.example.plugin.folder",
+  "type": "string",
+  "scope": "workspace",
+  "title": "Note folder",
+  "default": "Journal",
+  "permissionPaths": ["notes.create", "notes.open"]
+}
+~~~
+
+The fragment belongs in `contributes.settings`; declare both permissions with `scope: "workspace-folder"` and omit `optional` or set it to false. The binding itself does not grant access. Ordinary setting changes do not automatically expand existing permissions.
+
+Replace `com.example.plugin` with the manifest ID. All setting keys must use the plugin namespace.

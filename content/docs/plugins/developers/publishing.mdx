@@ -1,0 +1,239 @@
+---
+title: 发布到插件市场
+description: 了解 NoteGen 官方与社区插件的市场发布流程、静态分发架构和信任边界。
+icon: Store
+---
+
+NoteGen 已建立公开仓库 [codexu/note-gen-plugins](https://github.com/codexu/note-gen-plugins)，用于维护官方插件源码、签名市场登记与静态分发。
+
+> 更新日期：2026-09-10。四个 SDK 包已发布 npm，官方插件签名市场已上线；社区登记与发布链路已实现，生产开放待验收。接口说明以当前开发分支为准，未发布的新增能力需使用对应源码版本。远程安装还要求 NoteGen 支持插件系统并内置正式根公钥。
+
+社区插件采用“作者仓库维护源码 → 登记 PR → 人工审核 → 维护者发布”的流程。合并 PR 只完成登记，不代表上架。正式开放还需维护者配置分支与生产环境保护，并用独立发布者完成真实客户端验收。
+
+`@notegen/plugin-cli` 已发布 npm，提供作者侧的 `keygen`、`pack`、`sign` 和 `verify`。也可以从 [SDK 仓库](https://github.com/codexu/note-gen-plugin-sdk)构建对应源码版本。CLI 不提供市场投稿、发布者登记或上传服务。
+
+## 社区作者如何投稿
+
+1. 在自己的公开 GitHub 仓库提供源码、锁文件、许可证、离线 USAGE、截图与构建说明，固定完整源码提交 SHA。
+2. 使用自己的发布者密钥签署插件包，上传到该仓库固定 tag 的 GitHub Release，计算最终包 SHA-256。私钥不提交。
+3. 向 [note-gen-plugins](https://github.com/codexu/note-gen-plugins) 提交 PR，只修改 `community/registry.json`。首次登记 publisher 和 plugin；更新时在 releases 开头追加版本，保留全部旧记录。
+4. 填写 PR 模板中的权限用途、联网行为、兼容版本和真实客户端操作结果，等待维护者核实身份、公钥、源代码与行为。
+5. 审核合并后由维护者在 main 手动运行市场发布。作者包保持自己的签名，发布到 OSS/CDN 与 GitHub Releases，再加入根签名索引。
+
+登记包含 publisher 的 id、name、repository、keyId、publicKey；plugin 的 id、publisherId、repository、categories；每个 release 的 version、sourceCommit、packageUrl、packageSha256、publisherKeyId、changelog、buildInstructions、permissionsReason、testedOn。示例与字段限制见[社区投稿说明](https://github.com/codexu/note-gen-plugins/blob/main/community/README.md)。
+
+PR 自动检查格式、历史不可变约束、新版本包摘要、签名和 manifest，不运行作者代码，也不使用生产密钥。自动通过不等于审核通过；源码复现、身份和实际运行仍需维护者确认。生产发布重新校验未上架版本，已上架版本使用根签名确认的历史记录，避免旧下载地址失效阻塞撤销。
+
+更新沿用同一 publisherId 和插件 ID。换钥时保留 previousKeys，旧 release 保留原 publisherKeyId，并由维护者独立核实。撤销通过 plugin.revocations 登记版本与原因，不能删除历史版本或既有撤销。跨作者或仓库转移暂不支持，需要新插件 ID。
+
+## 维护者首次启用
+
+- 配置 main 的 PR、CI 和 CODEOWNERS 审核要求；CODEOWNERS 文件本身不会启用分支保护。
+- 为 plugin-market-production 配置审批人及 main 部署限制，确认固定 SDK 提交和现有签名、OSS 配置。
+- 用独立发布者完成真实客户端首次安装、升级、权限变化、撤销及换钥，保存验收记录，再公告开放投稿。
+- 合并投稿后手动发布新 release_tag 和更高 generation。定时续签只更新现有索引，不发布新登记；已发布社区历史不能通过 reset_catalog 清空。
+
+## 作者需要准备什么
+
+建议作者仓库包含：
+
+- 插件源码、锁文件和可重复的构建说明；
+- 当前可导入的 `plugin.json`、`integrity.json` 和单文件 JavaScript 入口；
+- README、开源许可证和版本更新说明；
+- 每项权限为何必需、会接触哪些工作区内容；
+- 已验证的 NoteGen 最低版本与桌面系统；
+- 问题反馈方式和安全联系方式；
+- 不含真实笔记、绝对路径或凭据的示例数据。
+
+当前市场与开发运行时只支持桌面端。即使 manifest schema 可以表示 iOS 或 Android，也不要把未经支持的移动端列为已验证平台。
+
+本地导入步骤见[开发第一个插件](/cn/docs/plugins/developers/getting-started)，制品与签名规则见[打包与验证](/cn/docs/plugins/developers/package-verify)。
+
+## 现在可以验证的发布制品
+
+作者可以在本地完成以下流程：
+
+~~~bash
+notegen-plugin pack
+notegen-plugin keygen \
+  --private-key /安全路径/publisher-private.pem \
+  --public-key ./publisher-public.json
+notegen-plugin sign \
+  .notegen/releases/com.example.plugin-0.1.0.unsigned.notegen-plugin \
+  --private-key /安全路径/publisher-private.pem
+notegen-plugin verify \
+  .notegen/releases/com.example.plugin-0.1.0.notegen-plugin \
+  --public-key ./publisher-public.json \
+  --require-signature
+~~~
+
+`pack` 只生成 unsigned 包，不读取私钥；`sign` 只处理已经构建的归档，不读取源码或执行构建。签名文档使用 [RFC 8785 JSON Canonicalization Scheme（JCS）](https://www.rfc-editor.org/rfc/rfc8785)规范化后，再组成 NoteGen 的长度分帧 Ed25519 签名消息。
+
+`verify --public-key` 只证明包内容与给定发布者公钥相符。它不校验市场根索引、发布者登记、源码可重复构建、许可证或人工审核，也不会把包上传到任何地方。本地验签成功后仍需提交登记资料并经过人工审核，不能直接上传到市场。
+
+`keygen` 生成的是插件发布者密钥，不是市场根密钥。公共 CLI 不提供根密钥生成、索引签名、发布者登记、索引 generation 管理或上传命令。私钥必须离线保管并备份，不能进入插件源码、包、公开 CI 日志或 `note-gen-plugins` 仓库。
+
+## 官方插件的发布流程
+
+官方插件通过插件仓库的 GitHub Actions 发布。以下步骤描述官方插件构建；社区包通过下述独立接收流程进入同一个签名索引。
+
+1. 修改插件源码，同步提升 `plugin.json` 和 `package.json` 的版本号，更新登记表中的 changelog 和使用说明。已发布的版本不能被不同内容覆盖。
+2. 提交并推送后，在 `main` 运行 **Release signed plugin market**，填写唯一发布标签和大于线上最高索引的 generation。索引有效期通常为 14 天；正常更新保持 `first_release=false`。
+3. Actions 检出固定 SDK，构建、校验、测试和打包插件，签署插件包及市场索引，再发布到 GitHub Releases 和 OSS/CDN。
+4. 确认线上索引的版本与签名、两处下载源、包 SHA-256 和发布者签名均正确，再到 NoteGen 测试更新。
+
+手动发布会构建和打包全部官方插件。未变化的版本保留原下载路径，OSS 已存在且哈希一致的不可变对象会跳过上传。每周一、周四的定时任务只续签索引，复用原包。14 天是签名有效期，不是插件使用期限或检查更新的间隔。
+
+普通插件更新无需发布 npm。SDK 自身变化时，独立通过 **Publish npm packages** 和 npm Trusted Publishing 发布；SDK 发布不会自动发布插件或更新 NoteGen 应用。
+
+环境配置、发布参数和失败恢复以[插件仓库 README](https://github.com/codexu/note-gen-plugins#维护者发布流程)与 [SDK README](https://github.com/codexu/note-gen-plugin-sdk#maintainer-release-procedure)为准。
+
+## 安装和升级测试
+
+从 `.notegen/package` 导入的是开发版本，不参与市场更新。测试旧版到新版的升级时，需要在新版本发布前先通过市场安装旧签名版本；直接安装最新版只能验证安装。
+
+“发现”展示市场版本；“已安装”按钮只代表本地存在同 ID 插件，不代表已安装该版本。请到“已安装”核对实际版本和来源标签，在“发现”刷新后再查看“更新”。完整步骤见[管理插件](/cn/docs/plugins)。
+
+## 无服务器分发方式
+
+插件市场不需要常驻应用服务器。发布流水线生成不可变的插件包、`index.json` 和 `index.sig`，然后把完全相同的字节发布到两个静态来源：
+
+~~~text
+主源： https://download.notegen.top/plugins/v1/index.json
+       https://download.notegen.top/plugins/v1/index.sig
+
+备用： https://github.com/codexu/note-gen-plugins/releases/latest/download/index.json
+       https://github.com/codexu/note-gen-plugins/releases/latest/download/index.sig
+~~~
+
+OSS/CDN 负责高可用下载，GitHub Release assets 提供备用源和不可变留档。客户端不会读取仓库 `main` 分支、GitHub Raw 文件或作者自定义 JSON；向普通目录提交文件不会自动上架。
+
+索引是短期有效的可变入口，`generation` 必须单调递增；已经发布的插件包按版本和 SHA-256 保持不可变。流水线将包写入 `plugins/v1/packages/<release-tag>/`，并把每一代签名索引归档到 `plugins/v1/generations/<generation>/index.json` 与 `index.sig`。这些对象使用一年 immutable cache；只有 `plugins/v1/index.json` 与 `index.sig` 是 `no-cache` 的当前指针，而且发布时先更新签名再更新 JSON。
+
+完整发布必须由人工触发，并提供唯一 release tag、递增 generation 和固定 SDK SHA。如果找不到历史签名索引，流水线默认失败；只有维护者确认这是整个市场的首次发布后，才能显式开启 `first_release`。已存在的 GitHub Release 或 OSS immutable object 只有在字节或记录的 SHA-256 完全一致时才能作为中断续传继续使用，否则发布失败。
+
+流水线会分别验证 OSS、GitHub latest 和本次 tag 的索引与签名，再从有效候选中选择最高 generation。同代际存在不同的有效字节时会拒绝发布。OSS 的 `index.sig` 与 `index.json` 更新中断后，只要 GitHub 保留有效副本，重跑即可恢复；如果发现了索引却没有任何有效候选，`first_release` 也不能绕过验证。
+
+Release tag 必须指向本次实际构建的源码 `GITHUB_SHA`，已有 tag 也会检查目标提交。Release 的 `release-metadata.json` 记录源码提交和实际检出的 SDK SHA；仅续签索引时 `sdkCommit` 为 `null`。使用 Actions 的 Re-run jobs 可以沿用原提交与不可变制品；已被更高 generation 取代的旧运行不能恢复为当前索引。
+
+定时任务每周一、周四刷新签名索引：它读取并验证上一代索引，生成新的 generation 和最长 14 天有效期，不重新构建或替换插件包。定时任务不能创建首代索引。这样即使一段时间没有新插件版本，客户端仍能取得未过期的根签名目录。
+
+两个来源必须为同一 generation 提供相同字节，CDN 刷新完成后才能对外切换索引。这样可以复用软件升级的静态分发方式，同时保留根签名验证，而不需要数据库或上传 API。
+
+## 客户端实际消费的索引
+
+发布流程生成一个完整根索引。作者不直接提交客户端 JSON。顶层 schema 是：
+
+~~~ts
+type PluginPermission =
+  "editor.read" | "editor.write" | "notes.read" | "notes.create"
+  | "notes.open" | "notes.list" | "notes.write" | "notes.move"
+  | "notes.delete" | "network.fetch";
+
+interface PluginMarketIndex {
+  schemaVersion: 1;
+  generation: number;
+  generatedAt: string;
+  expiresAt: number;
+  publishers: Array<{
+    id: string;
+    name: string;
+    keyId: string;
+    publicKey: string;
+    verified?: boolean;
+    previousKeys?: Array<{ keyId: string; publicKey: string }>;
+  }>;
+  plugins: Array<{
+    id: string;
+    name: string;
+    description: string;
+    author: string;
+    publisherId: string;
+    repository?: string;
+    homepage?: string;
+    license?: string;
+    icon?: string;
+    categories?: string[];
+    featured?: boolean;
+    official?: boolean;
+    permissions: PluginPermission[];
+    releases: Array<{
+      version: string;
+      minAppVersion: string;
+      apiVersion: string;
+      platforms: Array<"desktop" | "ios" | "android">;
+      permissions?: PluginPermission[];
+      packageUrl: string;
+      packageUrls?: string[];
+      packageSha256: string;
+      signatureUrl?: string;
+      publishedAt: string;
+      changelog?: string;
+      publisherKeyId?: string;
+      revoked?: string;
+    }>;
+  }>;
+}
+~~~
+
+`expiresAt` 是 epoch 毫秒，校验时必须在未来且不超过 14 天。未知字段会被拒绝。`index.sig` 是对 `index.json` 原始字节的 64 字节 Ed25519 签名，并以 Base64 文本发布。
+
+新生成或续签的索引会为每个 release 写入 `permissions`，客户端展示、安装和校验时使用选中版本的摘要。插件级 `permissions` 保留用于兼容旧索引；旧 release 缺少摘要时，客户端使用该字段，发布工具也会从旧条目的摘要回填。若旧摘要与历史包不符，维护者需要核对包内 manifest 后修正，并发布新的 generation。
+
+每个插件最多保留 100 个 release。新增第 101 个版本会在索引签名前失败；维护者需要先审核版本保留策略并明确调整历史目录，工具不会自动删掉仍被旧客户端使用的兼容版本。
+
+`packageUrl` 是兼容旧索引读取方的主下载地址。`packageUrls` 可选，表示按顺序尝试的 HTTPS 镜像；官方发布器要求 1–3 个互不重复的 URL，且第一项与 `packageUrl` 相同。当前官方索引按“OSS 主源、对应 tag 的 GitHub Release”排序。客户端在某个地址下载或校验失败时尝试下一项，并始终以同一个 `packageSha256` 校验最终字节。
+
+URL 也是根签名索引的一部分。新增、删除或重排镜像会改变索引内容，必须发布更大的 generation 并重新根签名；不能在原 generation 下原地改写。只要插件归档字节和 SHA-256 没变，调整镜像不要求修改插件版本。
+
+`official: true` 只能由受信任的根索引发布流程写入，并且必须对应登记的 NoteGen 发布者。插件作者不能通过 manifest、作者名称或 ID 前缀自行获得官方标记；官方插件也使用与社区插件相同的包签名、权限和沙箱规则。
+
+作者只维护 `community/registry.json` 中的登记资料，不手工修改根索引。完整字段与限制见[社区登记格式](https://github.com/codexu/note-gen-plugins/blob/main/community/README.md)。
+
+## 不可变发布要求
+
+市场正式开放后，每个 release 至少需要满足：
+
+- 插件 ID、版本和 manifest 与登记信息一致；
+- `packageUrl` 与可选 `packageUrls` 指向客户端允许的 HTTPS 分发主机，并遵守主源、顺序和去重约束；
+- `packageSha256` 对应最终 `.notegen-plugin` 的精确字节；
+- 包内 `integrity.json` 覆盖全部载荷；
+- 包内 `signature.sig` 可由登记的发布者公钥验证；
+- `plugin.json` 与 `integrity.json` 的签名输入按 RFC 8785 JCS 规范化；
+- manifest 权限集合与索引权限摘要一致；
+- 同一 ID + version 的包永不替换，任何字节变化都发布新 SemVer；
+- 源码 tag、依赖锁定和构建说明长期可访问。
+
+单独发布外置 integrity 或 signature 不能替代包内文件。当前客户端也不使用 `signatureUrl` 完成包签名验证。
+
+## 发布者身份连续性
+
+首次安装钉扎 `publisherId`、`keyId` 和公钥字节。发布者 ID 不能静默更换。根签名索引可在发布者 `previousKeys` 中登记旧密钥；历史 release 可用 `publisherKeyId` 指定验签密钥，省略时使用当前发布者密钥。已安装公钥必须匹配登记的旧公钥，才允许换到当前密钥。新密钥包需要重新审核，不静默继承旧授权。
+
+维护者在源登记中配置 `previousPublisherKeys`，作者不能通过自己的 manifest 授权换钥。应保留旧公钥供历史版本验证。跨发布者转移不自动接受：不同发布者使用新的插件 ID，由用户重新安装和授权。
+
+## 版本撤销与事件处理
+
+release 的 `revoked` 字段是可公开的撤销原因。维护者在插件登记的 `revocations` 中列出受影响版本，发布更高 generation 的根签名索引；不得改写旧 generation 或替换包字节。被撤销版本不会进入安装/更新候选；宿主收到标记后停止其运行，并阻止启动和回滚到该版本。
+
+主宿主在启动和定期刷新（30 分钟）时检查，用户也可刷新“发现”。离线客户端不能即时收到新标记。从索引删除 release 不等于撤销。保留受影响版本和摘要，发布修复版本及数据恢复说明；密钥泄露时可能需要同时换钥和撤销受影响版本。
+
+这些是代码已实现的机制，不代表生产发布已验收。[社区审核流程](https://github.com/codexu/note-gen-plugins/blob/main/COMMUNITY-REVIEW.md)记录证据和事件处理要求。外部社区包通过独立发布者登记和验签接入，正式开放前仍需完成真实客户端验收。
+
+## 索引发布约束
+
+安装和更新当次必须取得新鲜的签名索引。刷新失败时，浏览页可以显示最后一份已通过签名验证的缓存；如果它已过期，只能作为离线的陈旧目录展示，不能用于安装或更新。客户端拒绝 generation 回退，以及同 generation 内容被重写。
+
+安装完成后，NoteGen 用本地钉扎的发布者公钥离线复验包，因此已安装插件启动不依赖市场在线。
+
+当投稿正式开放时，本页和 `note-gen-plugins` 仓库会同时提供唯一有效的目录结构、命令、PR 模板和审核规则。
+
+## 应用发版配置
+
+启用市场的应用发布必须配置 `PLUGIN_MARKET_ROOT_PUBLIC_KEY`。明确不包含市场的版本可以设置 `PLUGIN_MARKET_ENABLED=false`；未显式关闭且缺少公钥时发版失败，这不是绕过验签。发布验证前，应将宿主 `PLUGIN_SDK_REF`、SDK `PLUGIN_HOST_REF` 和官方插件仓库 `PLUGIN_SDK_REF` 固定为审核过的完整提交 SHA。完整操作见宿主[发布与恢复手册](https://github.com/codexu/note-gen/blob/dev/PLUGIN-MAINTENANCE.md)。
+
+## 规划中的下架能力
+
+目前已支持签名索引中的版本撤销：禁止安装被撤销版本，客户端收到撤销后停止对应市场版本。删除源码不会撤销版本，也不会删除 OSS 包。
+
+整插件下架专用的“只发布索引”流程、阻止／恢复发布，以及允许已安装用户继续使用的软下架，目前仍是设计方案，不是可用操作。方案在插件仓库维护，待实现并完成客户端兼容验证后再补充操作文档。历史文件清理与版本撤销独立处理。
