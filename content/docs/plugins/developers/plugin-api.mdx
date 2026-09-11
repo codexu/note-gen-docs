@@ -36,7 +36,7 @@ export const activate: PluginActivate = async (ctx) => {
 
 | 导出 | 类型或作用 |
 | --- | --- |
-| `PLUGIN_API_VERSION` | 当前包描述的具体宿主 API 版本，当前为 `"0.1.0"` |
+| `PLUGIN_API_VERSION` | 当前包描述的具体宿主 API 版本，SDK 0.1.6 中为 `"0.1.4"` |
 | `PLUGIN_ERROR_CODES` | 全部稳定 `PluginErrorCode` 的只读列表 |
 | `PluginError` | 带 `code`、`message` 和可选 `details` 的错误类 |
 | `isPluginError(value)` | 跨 Worker/realm 按结构识别已知插件错误 |
@@ -130,6 +130,7 @@ interface PluginAbortSignal {
 | `workspace` | `getCurrent()`、`onDidChange` | 无；只返回不透明 ID 和名称 |
 | `calendar` | `resolveDay(options)` | 无；使用 IANA 时区和 `HH:mm` 日界线 |
 | `notes` | 读取、列举、搜索、创建、写入、移动、删除和变更事件 | 对应的 `notes.*` 权限 |
+| `fileIcons` | `setRules`、`clear` | 动态图标规则，不授予文件读取权限 |
 | `attachments` | `read`、`create` | 独立的 `attachments.read`、`attachments.create` 权限 |
 | `editor` | 活动编辑器、选区、Markdown 快照、修改和事件 | `editor.read`；修改另需 `editor.write` |
 | `log` | `info`、`warning`、`error` | 本地诊断消息，不自动捕获 console |
@@ -199,8 +200,8 @@ import { PLUGIN_API_VERSION } from "@notegen/plugin-api";
 import type { PluginActivate } from "@notegen/plugin-api";
 
 export const activate: PluginActivate = async (ctx) => {
-  // PLUGIN_API_VERSION === "0.1.0"
-  // ctx.plugin.apiVersion === "0.1.0"（当前宿主）
+  // PLUGIN_API_VERSION === "0.1.4"
+  // ctx.plugin.apiVersion === "0.1.4"（当前宿主）
 };
 ~~~
 
@@ -249,3 +250,7 @@ export const activate: PluginActivate = async (ctx) => {
 - [插件测试](/cn/docs/plugins/developers/testing)
 
 SDK 已完成 npm 首发。修改已发布包的内容需要提升对应包版本；协议兼容性变化需同步更新宿主与 SDK。插件的 `apiVersion` 应声明实际支持的协议范围，例如 `^0.1.0`；开发分支中的未发布快照仍需通过提交版本区分。
+
+## 资源与顶部组件类型
+
+SDK `0.1.6` 导出 `PluginTitleBarLocation`，对应协议 `0.1.4`。`PluginManifestV1.resources` 包括主题、应用界面语言、文件图标和文档预览；无脚本资源包可以省略 `entry`。选择最低宿主协议前，先阅读[资源扩展](/cn/docs/plugins/developers/resources)与[顶部自定义组件](/cn/docs/plugins/developers/title-bar)。

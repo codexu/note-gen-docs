@@ -19,9 +19,9 @@ export const activate: PluginActivate = async (ctx) => {
 };
 ~~~
 
-`PluginContext` 包含 `log`、`commands`、`workspace`、`calendar`、`notes`、`attachments`、`editor`、`storage`、`ui`、`network`、`i18n` 和 `settings` 命名空间，以及生命周期用的 `signal`。本页说明它们的行为；完整签名以包导出的 `PluginContext` 及相关类型为准。
+`PluginContext` 包含 `log`、`commands`、`workspace`、`calendar`、`fileIcons`、`notes`、`attachments`、`editor`、`storage`、`ui`、`network`、`i18n` 和 `settings` 命名空间，以及生命周期用的 `signal`。本页说明它们的行为；完整签名以包导出的 `PluginContext` 及相关类型为准。
 
-`ctx.plugin.id` 和 `ctx.plugin.version` 来自当前插件 manifest。`ctx.plugin.apiVersion` 不是 manifest 中的兼容范围，而是宿主实际提供的 API 版本；当前为 `"0.1.0"`。manifest 可继续声明兼容范围 `"apiVersion": "^0.1.0"`。
+`ctx.plugin.id` 和 `ctx.plugin.version` 来自当前插件 manifest。`ctx.plugin.apiVersion` 不是 manifest 中的兼容范围，而是宿主实际提供的 API 版本；SDK 0.1.5 中为 `"0.1.3"`。manifest 可继续声明兼容范围 `"apiVersion": "^0.1.0"`。
 
 参数和返回值必须可 JSON 序列化。一次桥接消息约有 2.125 MiB 上限；超限返回 `QuotaExceeded`。
 
@@ -423,7 +423,7 @@ do {
 
 ## 当前未开放的能力
 
-API 0.1.0 不提供 AI、secret、网络二进制响应、原始文件系统、SQL、进程、Tauri command、自定义 HTML/WebView 或原生能力。附件通过单独的受控 Base64 接口传输，不意味着开放原始文件系统。声明未知权限会让插件安装失败。
+普通插件上下文不提供 AI、secret、网络二进制响应、原始文件系统、SQL、进程、Tauri command、自定义 HTML/WebView 或原生能力。附件通过单独的受控 Base64 接口传输，不意味着开放原始文件系统。声明未知权限会让插件安装失败。
 
 ## 日志与数据恢复
 
@@ -441,3 +441,7 @@ try {
 生产 KV 按包内容指纹隔离。新包首次复制当前包 KV；回滚选择旧包副本；已存在的同指纹副本复用。贡献设置、Markdown 和远端副作用不在回滚范围内。作者应保存显式数据 schema 版本，不要假设新版数据会合并回旧版。
 
 管理备份以 `plugin-user-data.json` 保存 KV，恢复时重绑归档工作区，但不恢复程序或权限，需先重新安装授权。进程内测试宿主不能证明原生备份、包回滚或迁移正确，这些需要桌面宿主验证。
+
+## 图标规则与预览访问
+
+`ctx.fileIcons.setRules(rules)` 替换运行时图标规则，`clear()` 恢复该插件的静态规则，两者均不授予文件访问能力。预览脚本使用私有 MessagePort，在 `attachments.read` 授权内读取当前显示文件；不能访问宿主 DOM 或任意 Tauri command。完整协议见[资源扩展](/cn/docs/plugins/developers/resources)。

@@ -72,10 +72,11 @@ icon: FileJson
 | `apiVersion` | 是 | 单个 SemVer 或带 `^`、`~`、`>=`、`>`、`<=`、`<` 的范围 |
 | `minAppVersion` | 是 | 最低 NoteGen SemVer |
 | `platforms` | 是 | `desktop`、`ios`、`android` 中的一个或多个 |
-| `entry` | 是 | 最多 240 个 UTF-8 字节的安全包内 JavaScript 相对路径，必须以 `.js` 结尾 |
+| `entry` | 有脚本时 | 最多 240 个 UTF-8 字节的安全包内 JavaScript 相对路径，必须以 `.js` 结尾 |
 | `activationEvents` | 是 | 最多 100 个受支持事件 |
 | `permissions` | 是 | 权限声明对象，可以为空 |
 | `contributes` | 是 | 扩展入口声明对象，可以为空 |
+| `resources` | 否 | 主题、应用界面语言、文件图标及文档预览声明 |
 | `defaultLocale`、`locales` | 否 | 本地化配置 |
 | `author`、`repository`、`license` | 否 | 作者与项目元数据 |
 
@@ -105,7 +106,7 @@ org.example.daily-tools
 ## 版本、API 与平台
 
 - `version` 使用 SemVer；市场中的同版本包不可替换；
-- `apiVersion` 是插件接受的 SemVer 兼容范围，当前必须包含宿主实际提供的 API `0.1.0`；激活后的 `ctx.plugin.apiVersion` 是具体宿主版本，不是这里的范围字符串；
+- `apiVersion` 是插件接受的 SemVer 兼容范围，当前必须包含宿主实际提供的 API（SDK 0.1.6 对应 `0.1.4`）；激活后的 `ctx.plugin.apiVersion` 是具体宿主版本，不是这里的范围字符串；
 - `minAppVersion` 高于当前应用时，安装会拒绝；
 - `platforms` 不包含当前平台时，插件不会运行。
 
@@ -113,7 +114,7 @@ schema 允许声明 `desktop`、`ios` 和 `android`，但当前官方、社区�
 
 ## 入口文件
 
-`entry` 必须是最多 240 个 UTF-8 字节的安全相对路径，并指向不超过 5 MiB、无 NUL 字节的 UTF-8 `.js` 文件。
+非空资源包在没有运行时贡献和激活事件时可以省略 `entry`，详见[资源扩展](/cn/docs/plugins/developers/resources)。提供 `entry` 时，它必须是最多 240 个 UTF-8 字节的安全相对路径，并指向不超过 5 MiB、无 NUL 字节的 UTF-8 `.js` 文件。
 
 NoteGen 的安装校验只确认文件存在、类型、编码和大小。JavaScript 语法或模块导入错误会在激活时报告。入口需要是单文件 ESM，所有依赖在作者构建阶段合并进去；运行时除内部入口外不解析任何相对、外部或远程模块。
 
@@ -153,6 +154,8 @@ NoteGen 的安装校验只确认文件存在、类型、编码和大小。JavaSc
 | `notes.create` | `workspace-folder` |
 | `notes.open` | `workspace-folder` |
 | `notes.write`、`notes.delete` | `workspace-file`、`workspace-files`、`workspace-folder` |
+| `attachments.read` | `workspace-file`、`workspace-files`、`workspace-folder` |
+| `attachments.create` | `workspace-folder` |
 | `network.fetch` | `network-origins` |
 
 `optional` 默认为 false。必需权限未批准时插件不能激活；可选权限可被拒绝，相关 API 调用会返回 `PermissionDenied`。
@@ -167,7 +170,7 @@ manifest 是权限请求上限，实际路径在每个工作区由用户审核�
 - `settings`：由 NoteGen 渲染的设置；
 - `statusBar`：宿主状态栏项目；
 - `menus`：命令在允许位置的入口。
-- `views`：宿主渲染的 `left-sidebar`、`right-sidebar` 或 `editor-tab` 入口。
+- `views`：宿主渲染的 `left-sidebar`、`right-sidebar`、`editor-tab`、`settings` 或[顶部插槽](/cn/docs/plugins/developers/title-bar)入口。
 
 `suggestedShortcut` 只在插件命令面板中显示提示文字，不注册快捷键，也没有冲突检测或用户绑定界面。
 

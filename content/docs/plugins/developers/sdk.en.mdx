@@ -28,7 +28,7 @@ Most plugins install `@notegen/plugin-api` and `@notegen/plugin-cli`. Add `@note
 | Node.js | 20 or newer |
 | SDK repository development | pnpm 10 |
 | Module format | ESM-only; use `import` in Node.js code because CommonJS `require()` is unsupported |
-| Plugin API protocol | `0.1.0` |
+| Plugin API protocol | `0.1.3` |
 | Marketplace plugin platform | NoteGen desktop |
 | Development import | Developer mode in NoteGen desktop |
 
@@ -115,13 +115,13 @@ SDK package versions, the plugin API protocol, and NoteGen application versions 
 
 | Value | Example | Purpose |
 | --- | --- | --- |
-| npm package version | `@notegen/plugin-api@0.1.0` | Selects a TypeScript package release |
-| `PLUGIN_API_VERSION` | `0.1.0` | Identifies the concrete host protocol described by that package |
+| npm package version | `@notegen/plugin-api@0.1.5` | Selects a TypeScript package release |
+| `PLUGIN_API_VERSION` | `0.1.3` | Identifies the concrete host protocol described by that package |
 | Manifest `apiVersion` | `^0.1.0` | Declares the host API SemVer range accepted by the plugin |
 | Manifest `minAppVersion` | `0.37.0` | Declares the oldest supported NoteGen application version |
-| `ctx.plugin.apiVersion` | `0.1.0` | Reports the concrete API version implemented by the running host |
+| `ctx.plugin.apiVersion` | `0.1.3` | Reports the concrete API version implemented by the running host |
 
-A breaking host-contract change requires a new API major. Backward-compatible capability additions use a minor version. A package-only fix can increment the package patch without changing the protocol. Do not substitute `minAppVersion` for `apiVersion`, or confuse the manifest range with the runtime's concrete version.
+The protocol is still in the `0.x` series. Declare the minimum required by the capabilities you use: a baseline range may be `^0.1.0`, while title bar components require at least `>=0.1.3`. A package fix does not necessarily change the protocol; check the exported value for each release. Do not substitute `minAppVersion` for `apiVersion`, or confuse the manifest range with the runtime's concrete version.
 
 ## Single-file runtime boundary
 
@@ -152,3 +152,7 @@ The SDK is not a remote client SDK for NoteGen data. It does not upload marketpl
 The four npm packages have completed their initial publication. SDK maintainers bump changed package versions and affected dependencies, then publish from `main` through **Publish npm packages** using npm Trusted Publishing (OIDC). The workflow packs and checks all four packages; existing versions are skipped only when their integrity matches, and missing versions are published in dependency order.
 
 Plugin authors do not need to publish the SDK when changing their own plugin. Bump the plugin version and follow the [Publish to the plugin marketplace](/en/docs/plugins/developers/publishing). A published npm version, a plugin's own version, and its supported host API range serve different purposes. Operational configuration remains in the [SDK README](https://github.com/codexu/note-gen-plugin-sdk#maintainer-release-procedure).
+
+SDK `0.1.5` is published on npm and describes protocol `0.1.3`. Resource packs require `>=0.1.2`; title bar views require `>=0.1.3`. Keep `minAppVersion` tied to a host version you have actually verified.
+
+See [resource extensions](/en/docs/plugins/developers/resources) and [title bar components](/en/docs/plugins/developers/title-bar).

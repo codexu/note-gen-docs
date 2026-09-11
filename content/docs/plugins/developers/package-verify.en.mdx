@@ -118,7 +118,7 @@ com.example.word-count-0.1.0.notegen-plugin
 The client requires:
 
 - `plugin.json` and `integrity.json` at the package root;
-- an existing UTF-8 `.js` file at the manifest's `entry` path;
+- an existing UTF-8 `.js` file when `entry` is declared; resource-only packages may omit it;
 - every locale file declared by the manifest;
 - an `integrity.json` entry for every payload and no extra entries;
 - a valid `signature.sig` in a marketplace package.
@@ -186,7 +186,7 @@ The client rejects:
 - symbolic links, special files, and files with an executable bit in a development directory;
 - `.notegen`, `node_modules`, `.git`, `.hg`, `.svn`, and `.cache`;
 - `.env` and `.env.*`;
-- native libraries, executables, installers, shell scripts, Java class or JAR files, WASM, source maps, and sensitive PEM/P12/PFX files;
+- native libraries, executables, installers, shell scripts, Java class or JAR files, undeclared WASM, source maps, and sensitive PEM/P12/PFX files;
 - `install`, `preinstall`, or `postinstall` scripts in `package.json`.
 
 The client cannot determine whether an ordinary text file contains an API key, personal path, real user data, or remote-code string. Inspect packages manually before publication. Never include a private key or user data in source control or a package.
@@ -234,3 +234,7 @@ A development import requires:
 NoteGen copies only the payload named in the integrity manifest, plus the integrity manifest itself, and stores an immutable snapshot identified by content hash. Source code, README files, and build configuration may remain in the development directory without entering the snapshot.
 
 The reviewed identity includes the plugin ID, version, content hash, source type, and canonical source path. Changing the directory, contents, or version requires another review. Development plugins have neither automatic updates nor the automatic first-activation rollback provided for marketplace updates.
+
+## Resource files
+
+The CLI includes declared language messages, preview scripts, and preview assets in the integrity manifest. WASM is allowed only when listed in a document preview asset declaration. Resource-only packages can omit the normal JavaScript entry. [Resource extensions](/en/docs/plugins/developers/resources) describes the package shape and limits.

@@ -19,9 +19,9 @@ export const activate: PluginActivate = async (ctx) => {
 };
 ~~~
 
-`PluginContext` contains the `log`, `commands`, `workspace`, `calendar`, `notes`, `attachments`, `editor`, `storage`, `ui`, `network`, `i18n`, and `settings` namespaces, together with the lifecycle `signal`. This page documents their behavior; use the package's `PluginContext` and related exports as the complete signature source.
+`PluginContext` contains the `log`, `commands`, `workspace`, `calendar`, `fileIcons`, `notes`, `attachments`, `editor`, `storage`, `ui`, `network`, `i18n`, and `settings` namespaces, together with the lifecycle `signal`. This page documents their behavior; use the package's `PluginContext` and related exports as the complete signature source.
 
-`ctx.plugin.id` and `ctx.plugin.version` come from the current plugin manifest. `ctx.plugin.apiVersion` is the concrete host API version, currently `"0.1.0"`; a manifest may keep the compatible range `"apiVersion": "^0.1.0"`.
+`ctx.plugin.id` and `ctx.plugin.version` come from the current plugin manifest. `ctx.plugin.apiVersion` is the concrete host API version, `"0.1.3"` in SDK 0.1.5; a manifest may keep the compatible range `"apiVersion": "^0.1.0"`.
 
 Arguments and return values must be JSON-serializable. One bridge message is limited to approximately 2.125 MiB; an oversized message returns `QuotaExceeded`.
 
@@ -406,7 +406,7 @@ Keep the folder, recursive option and workspace unchanged. Treat cursors as opaq
 
 ## Capabilities not available in API v1
 
-API 0.1.0 does not provide AI, secret storage, binary network responses, raw filesystem access, SQL, processes, Tauri commands, custom HTML/WebViews, or native capabilities. Attachments use a separate restricted Base64 API, not raw filesystem access. Declaring an unknown permission makes installation fail.
+The ordinary plugin context does not provide AI, secret storage, binary network responses, raw filesystem access, SQL, processes, Tauri commands, custom HTML/WebViews, or native capabilities. Attachments use a separate restricted Base64 API, not raw filesystem access. Declaring an unknown permission makes installation fail.
 
 ## Diagnostics and data recovery
 
@@ -424,3 +424,7 @@ try {
 Production KV is isolated by package content fingerprint. A new package initially copies the current package's KV; rollback selects the old package's copy. Existing fingerprint snapshots are reused. Settings, Markdown and remote side effects are outside that rollback boundary. Store explicit data schema versions and avoid assuming that data from a newer package will be merged back.
 
 Managed backup stores KV in `plugin-user-data.json`, rebinding the archived workspace on restore without restoring programs or permissions. Reinstall and authorize first. The in-process test host does not prove native backup, package rollback or migration behavior; verify those in the desktop host.
+
+## Icon rules and preview access
+
+`ctx.fileIcons.setRules(rules)` replaces runtime rules; `clear()` restores static rules. Neither grants file access. Preview scripts use a private MessagePort to read the displayed file under an `attachments.read` grant, without host DOM access or arbitrary Tauri calls. See [resource extensions](/en/docs/plugins/developers/resources).

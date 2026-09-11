@@ -72,10 +72,11 @@ Every plugin directory or archive must contain `plugin.json` at its root. NoteGe
 | `apiVersion` | Yes | One SemVer version or a range beginning with `^`, `~`, `>=`, `>`, `<=`, or `<` |
 | `minAppVersion` | Yes | Minimum NoteGen SemVer version |
 | `platforms` | Yes | One or more of `desktop`, `ios`, and `android` |
-| `entry` | Yes | Safe package-relative JavaScript path no longer than 240 UTF-8 bytes and ending in `.js` |
+| `entry` | For scripted plugins | Safe package-relative JavaScript path no longer than 240 UTF-8 bytes and ending in `.js` |
 | `activationEvents` | Yes | At most 100 supported events |
 | `permissions` | Yes | Permission declarations; may be empty |
 | `contributes` | Yes | Static contributions; may be empty |
+| `resources` | No | Theme, application language, file icon, and document preview declarations |
 | `defaultLocale`, `locales` | No | Localization configuration |
 | `author`, `repository`, `license` | No | Author and project metadata |
 
@@ -105,7 +106,7 @@ Menus reference a declared command and do not have their own IDs. Do not change 
 ## Versions, API, and platforms
 
 - `version` uses SemVer. A marketplace package for an existing version is immutable.
-- `apiVersion` is the SemVer compatibility range accepted by the plugin and must currently include the host's concrete API `0.1.0`. After activation, `ctx.plugin.apiVersion` is that concrete host version, not this range string.
+- `apiVersion` is the SemVer compatibility range accepted by the plugin and must currently include the host's concrete API (`0.1.4` in SDK 0.1.6). After activation, `ctx.plugin.apiVersion` is that concrete host version, not this range string.
 - Installation is rejected when `minAppVersion` is newer than the installed NoteGen version.
 - A plugin does not run if `platforms` omits the current platform.
 
@@ -113,7 +114,7 @@ The schema can represent `desktop`, `ios`, and `android`, but official, communit
 
 ## Entry file
 
-`entry` must be a safe relative path no longer than 240 UTF-8 bytes to a UTF-8 `.js` file no larger than 5 MiB and containing no NUL byte.
+A non-empty resource-only package with no runtime contributions or activation events may omit `entry`; see [resource extensions](/en/docs/plugins/developers/resources). When present, `entry` must be a safe relative path no longer than 240 UTF-8 bytes to a UTF-8 `.js` file no larger than 5 MiB and containing no NUL byte.
 
 Installation validation checks the file's path, presence, type, encoding, and size. JavaScript syntax and module-resolution errors are reported only when the plugin activates. The entry must be self-contained ESM with all dependencies bundled during authoring. The runtime does not resolve relative, external, package, or remote modules beyond the entry itself.
 
@@ -153,6 +154,8 @@ Each permission has this form:
 | `notes.create` | `workspace-folder` |
 | `notes.open` | `workspace-folder` |
 | `notes.write`, `notes.delete` | `workspace-file`, `workspace-files`, `workspace-folder` |
+| `attachments.read` | `workspace-file`, `workspace-files`, `workspace-folder` |
+| `attachments.create` | `workspace-folder` |
 | `network.fetch` | `network-origins` |
 
 `optional` defaults to false. A plugin cannot activate until every required permission is approved. An optional permission may be denied; a corresponding API call then returns `PermissionDenied`.
@@ -167,7 +170,7 @@ The manifest is the upper bound of the permission request. The user reviews actu
 - `settings`, rendered by NoteGen;
 - `statusBar`, for host-rendered status items;
 - `menus`, which place declared commands at supported locations.
-- `views`, which add host-rendered `left-sidebar`, `right-sidebar`, or `editor-tab` entries.
+- `views`, which add host-rendered `left-sidebar`, `right-sidebar`, `editor-tab`, `settings`, or [title bar](/en/docs/plugins/developers/title-bar) entries.
 
 `suggestedShortcut` is only a hint shown in the plugin command palette. It does not register a key binding, detect conflicts, or create a user-configurable shortcut.
 

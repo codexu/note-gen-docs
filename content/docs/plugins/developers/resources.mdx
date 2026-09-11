@@ -1,0 +1,119 @@
+---
+title: 主题、语言、图标与文档预览
+description: 开发无脚本资源包、文件图标规则和隔离文档预览插件。
+icon: Palette
+---
+
+资源扩展使用 `plugin.json` 的 `resources` 字段，支持主题、应用界面语言、文件图标和文档预览。它们与普通插件共用安装、启用、权限、更新、回滚和卸载流程，目前只在桌面端生效。
+
+> 本页以 SDK `0.1.5` 为基线；资源契约从协议 `0.1.2` 起提供。需要实现该协议的 NoteGen 宿主。SDK 发布不等于应用稳定版已经包含这些功能，开发阶段请使用配套的 NoteGen `dev` 源码。
+
+## 无脚本资源包
+
+只有资源、不含运行时贡献和激活事件的包可以省略 `entry`，不启动插件 JavaScript Worker。主题、语言和静态图标包可以使用空权限对象。预览包仍须声明并取得 `attachments.read` 授权。
+
+下面是可保存为 `plugin.json` 的最小主题包。发布时将 `minAppVersion` 改成实际验证过的最低应用版本。
+
+~~~json
+{
+  "manifestVersion": 1,
+  "id": "org.example.theme",
+  "name": "Slate Theme",
+  "version": "1.0.0",
+  "apiVersion": ">=0.1.2",
+  "minAppVersion": "0.0.0",
+  "platforms": ["desktop"],
+  "activationEvents": [],
+  "permissions": {},
+  "contributes": {},
+  "resources": {
+    "themes": [{
+      "id": "slate",
+      "name": "Slate",
+      "light": { "primary": [210, 35, 40] },
+      "dark": { "primary": [210, 35, 75] }
+    }]
+  }
+}
+~~~
+
+在项目目录使用 `notegen-plugin build` 构建，将 `.notegen/package` 导入 NoteGen 开发者模式后启用。完整范例见 SDK 的 [resource-pack](https://github.com/codexu/note-gen-plugin-sdk/tree/main/examples/resource-pack)。
+
+## 主题
+
+`themes` 中的每一项声明 `id`、`name`、`light`、`dark`。颜色只能使用 SDK 导出的 `PLUGIN_THEME_TOKENS`，值为 HSL 三元组：色相 0–360、饱和度和亮度 0–100。省略的颜色继承内置值；不能放入任意 CSS、字体或远程资源。
+
+启用后，在“设置 → 常规”的外观设置中选择主题。应用顺序是内置颜色 → 插件主题 → 用户自定义颜色，亮暗模式分别计算。选择保存在本机；禁用或卸载提供者时立即撤下插件颜色，并保留选择记录，以便重新启用后恢复。
+
+## 应用界面语言
+
+在 `resources.languages` 中声明语言及消息文件：
+
+~~~json
+{
+  "languages": [{ "locale": "fr", "name": "Français", "messages": "fr.json" }]
+}
+~~~
+
+这是 `resources` 内的片段。`fr.json` 使用 NoteGen 消息的嵌套结构，叶子必须为字符串，例如：
+
+~~~json
+{ "common": { "cancel": "Annuler" } }
+~~~
+
+它可以新增一种界面语言，也可以补充现有语言的部分翻译。缺失内容先回退到所选语言的内置消息，再回退到中文；新增语言直接使用中文兜底。宿主校验 ICU 参数、标签名称及对象/字符串结构，不能通过翻译更换原消息的参数契约。
+
+多个插件覆盖同一消息时，插件 ID 按字典序较早的提供者优先。禁用语言包后使用内置回退，保留已选语言以便恢复。这里的应用语言包不同于 manifest 顶层 `locales`：后者只翻译插件自己的标题、设置等文案。
+
+## 文件与文件夹图标
+
+`resources.fileIcons` 提供静态规则；有脚本的插件也可动态设置：
+
+~~~ts
+await ctx.fileIcons.setRules([
+  { kind: 'file', extension: 'md', icon: { name: 'book-open' } },
+  { kind: 'folder', path: 'Projects', icon: { emoji: '📁' } },
+])
+// 撤下运行时规则，恢复该插件的 manifest 规则。
+await ctx.fileIcons.clear()
+~~~
+
+`path` 是相对工作区的精确路径，`extension` 使用不带点的小写扩展名。所有已给定条件必须同时匹配。同一提供者的第一条匹配规则生效；多个提供者按插件 ID 排序。每次最多设置 500 条运行时规则，整体替换，优先于该插件自己的静态规则。
+
+图标使用宿主支持的符号名称或 Emoji，不接受任意 SVG、图片 URL 或 CSS。文件树和编辑器标签共用规则。重命名或移动文件后按新路径匹配，路径规则不会自动跟随文件身份。运行时停止后动态规则被清除；需要保留的分配应存入插件存储，并在激活时恢复。注册图标本身不授予文件读取权限。
+
+## 文档预览
+
+`resources.documentPreviews` 声明 `id`、`name`、小写 `extensions`、独立的经典 JavaScript `script`，以及可选 `assets`。仅处理宿主没有内置编辑器的扩展名；多个提供者匹配时按插件 ID 选择。
+
+预览脚本运行在隔离 iframe 内，不能访问宿主 DOM 或 Tauri。与普通插件入口不同，预览脚本可以操作自己的文档 DOM。宿主支持已打包的脚本、blob Worker、图片、字体及明确列入预览资产的 WASM；网络请求、嵌套框架和表单提交被限制。
+
+脚本须同步注册消息监听器。收到 `type: "notegen:preview-init"`、`protocol: 1` 的初始化消息后，从 `event.ports[0]` 取得私有端口，通过它发送请求：
+
+~~~ts
+port.postMessage({ id: 1, method: 'readDocument', offset: 0, length: 1048576 })
+port.postMessage({ id: 2, method: 'readAsset', path: 'caption.txt' })
+~~~
+
+返回值为 `{ id, result: Uint8Array }` 或 `{ id, error: string }`。`readDocument` 绑定当前预览文件，不能传入另一条路径；必须取得覆盖该文件的 `attachments.read` 授权。`readAsset` 只能读取当前预览声明的资产，并校验安装包摘要。
+
+| 项目 | 限制 |
+| --- | --- |
+| 文档大小 | 256 MiB |
+| 单次文档读取 | 1 MiB；空结果表示 EOF |
+| 并发请求 | 2 个 |
+| 单个预览会话请求量 | 4096 次 |
+| 累计读取预算 | 512 MiB |
+| 单个资源文件 | 5 MiB；同时受整个安装包大小限制 |
+
+关闭文件、切换工作区或撤下提供者后，宿主销毁 iframe 和端口，丢弃迟到的响应。iframe 不提供 CPU/内存配额，作者仍应避免持续占用主线程。
+
+完整示例见 [document-preview](https://github.com/codexu/note-gen-plugin-sdk/tree/main/examples/document-preview)。它是 `.ngpreview` 协议范例，不是完整 PDF 或 Office 阅读器；需要这类格式时，由插件自行打包相应解析器。
+
+## 打包与下一步
+
+CLI 会收集已声明的语言文件、预览脚本和资产，并写入完整性清单。未列入预览资产的 WASM 仍会被拒绝。资源包不会绕过签名、权限或启用校验。
+
+- [顶部自定义组件](/cn/docs/plugins/developers/title-bar)
+- [插件配置](/cn/docs/plugins/developers/manifest)
+- [打包与验证](/cn/docs/plugins/developers/package-verify)

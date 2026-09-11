@@ -1,0 +1,119 @@
+---
+title: Themes, languages, icons, and previews
+description: Build scriptless resource packs, file icon providers, and isolated document previews.
+icon: Palette
+---
+
+Declare resource extensions in `plugin.json` under `resources`. Themes, application languages, file icons, and document previews share the normal plugin installation, enablement, permissions, update, rollback, and uninstall flow. They currently run on desktop only.
+
+> This guide uses SDK `0.1.5` as its baseline. Resource extensions require host protocol `0.1.2` or newer. Publishing the SDK does not release these features in the stable application; during development, use the matching NoteGen `dev` source.
+
+## Scriptless packages
+
+A package containing resources but no runtime contributions or activation events can omit `entry`. It does not start a plugin JavaScript Worker. Theme, language, and static icon packs can use empty permissions; preview packages still require a declared and approved `attachments.read` permission.
+
+Save this minimal theme package as `plugin.json`. Before publication, replace `minAppVersion` with the oldest application version you have verified.
+
+~~~json
+{
+  "manifestVersion": 1,
+  "id": "org.example.theme",
+  "name": "Slate Theme",
+  "version": "1.0.0",
+  "apiVersion": ">=0.1.2",
+  "minAppVersion": "0.0.0",
+  "platforms": ["desktop"],
+  "activationEvents": [],
+  "permissions": {},
+  "contributes": {},
+  "resources": {
+    "themes": [{
+      "id": "slate",
+      "name": "Slate",
+      "light": { "primary": [210, 35, 40] },
+      "dark": { "primary": [210, 35, 75] }
+    }]
+  }
+}
+~~~
+
+Run `notegen-plugin build` in the project, import `.notegen/package` through NoteGen developer mode, and enable it. See the complete [resource-pack example](https://github.com/codexu/note-gen-plugin-sdk/tree/main/examples/resource-pack).
+
+## Themes
+
+Each theme declares `id`, `name`, `light`, and `dark`. Palettes accept only the SDK's `PLUGIN_THEME_TOKENS`, with HSL triples: hue 0–360, saturation and lightness 0–100. Omitted colors inherit built-in values. Arbitrary CSS, fonts, and remote resources are not accepted.
+
+Select an enabled theme in the appearance controls under Settings → General. Precedence is built-in colors → selected plugin theme → user custom colors, separately for light and dark modes. Selection is local to the device. Disabling or uninstalling the provider removes its colors immediately while retaining the selection for re-enablement.
+
+## Application languages
+
+Declare a language and its message file under `resources.languages`:
+
+~~~json
+{
+  "languages": [{ "locale": "fr", "name": "Français", "messages": "fr.json" }]
+}
+~~~
+
+This fragment belongs inside `resources`. The message file uses NoteGen's nested message structure, with string leaves:
+
+~~~json
+{ "common": { "cancel": "Annuler" } }
+~~~
+
+A language pack can add a locale or supplement an existing one. Missing messages fall back to the selected locale's built-in messages, then Chinese; new locales use Chinese as the fallback. The host checks ICU argument names, tags, and object/string structure against its fallback contract.
+
+When providers overlap, the lexically earlier plugin ID wins for matching keys. Disabling a provider restores the built-in fallback while retaining the locale selection. Application language resources differ from top-level manifest `locales`, which translate only the plugin's own labels, settings, and other text.
+
+## File and folder icons
+
+Use `resources.fileIcons` for static rules. Scripted plugins can replace their rules at runtime:
+
+~~~ts
+await ctx.fileIcons.setRules([
+  { kind: 'file', extension: 'md', icon: { name: 'book-open' } },
+  { kind: 'folder', path: 'Projects', icon: { emoji: '📁' } },
+])
+// Remove runtime rules and restore this plugin's manifest rules.
+await ctx.fileIcons.clear()
+~~~
+
+`path` is an exact workspace-relative path; `extension` is lowercase without the dot. All supplied conditions must match. The first matching rule wins within a provider, and providers are ordered by plugin ID. A call replaces up to 500 runtime rules atomically; they take precedence over that plugin's static rules.
+
+Use a supported symbolic icon name or an Emoji. Arbitrary SVG, image URLs, and CSS are not accepted. File trees and editor tabs share the resolver. Renaming or moving a file matches its new path; path rules do not follow file identity. Runtime rules disappear when the runtime stops. Persist assignments through plugin storage and restore them during activation when needed. Icon registration grants no file-read access.
+
+## Document previews
+
+Each `resources.documentPreviews` entry declares `id`, `name`, lowercase `extensions`, a self-contained classic JavaScript `script`, and optional `assets`. It handles extensions without a built-in editor. Overlapping providers are selected by plugin ID.
+
+Preview scripts run in an isolated iframe without host DOM or Tauri access. Unlike a normal plugin entry, a preview script can render its own document DOM. Bundled scripts, blob Workers, images, fonts, and explicitly declared WASM assets are supported. Network requests, nested frames, and form submissions are restricted.
+
+Register the message listener synchronously. When it receives `type: "notegen:preview-init"` with `protocol: 1`, obtain the private port from `event.ports[0]` and send requests through it:
+
+~~~ts
+port.postMessage({ id: 1, method: 'readDocument', offset: 0, length: 1048576 })
+port.postMessage({ id: 2, method: 'readAsset', path: 'caption.txt' })
+~~~
+
+Replies are `{ id, result: Uint8Array }` or `{ id, error: string }`. Document reads are bound to the displayed file and require an `attachments.read` grant covering that file; requests cannot supply another path. Asset reads are limited to that preview's declared assets and checked against the installed package hash.
+
+| Item | Limit |
+| --- | --- |
+| Document size | 256 MiB |
+| Single document read | 1 MiB; an empty result means EOF |
+| Concurrent requests | 2 |
+| Requests per preview session | 4096 |
+| Aggregate read budget | 512 MiB |
+| Individual resource file | 5 MiB; package-wide limits also apply |
+
+Closing the file, changing workspace, or removing the provider disposes the iframe and port and discards late replies. An iframe does not impose CPU or memory quotas; avoid sustained work on the main thread.
+
+The [document-preview example](https://github.com/codexu/note-gen-plugin-sdk/tree/main/examples/document-preview) demonstrates `.ngpreview`, not a complete PDF or Office reader. Plugins implementing those formats must bundle their own parsers.
+
+## Packaging and next steps
+
+The CLI collects declared language files, preview scripts, and assets into the integrity-protected package. WASM outside a preview's asset list remains rejected. Resource packs do not bypass signatures, permissions, or enablement checks.
+
+- [Title bar components](/en/docs/plugins/developers/title-bar)
+- [Plugin configuration](/en/docs/plugins/developers/manifest)
+- [Packaging and verification](/en/docs/plugins/developers/package-verify)

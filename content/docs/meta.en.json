@@ -56,6 +56,8 @@
     "plugins/developers/cli",
     "plugins/developers/manifest",
     "plugins/developers/ui-contributions",
+    "plugins/developers/title-bar",
+    "plugins/developers/resources",
     "plugins/developers/ui-components",
     "plugins/developers/lifecycle",
     "plugins/developers/api-permissions",

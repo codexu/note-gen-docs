@@ -118,7 +118,7 @@ com.example.word-count-0.1.0.notegen-plugin
 客户端硬性要求：
 
 - 根目录存在 `plugin.json` 和 `integrity.json`；
-- manifest 的 `entry` 存在且为 UTF-8 `.js`；
+- 若声明 `entry`，对应文件存在且为 UTF-8 `.js`；纯资源包可省略入口；
 - manifest 声明的每个 locale 文件存在；
 - `integrity.json` 精确覆盖全部载荷；
 - 市场包内存在有效 `signature.sig`。
@@ -186,7 +186,7 @@ README、LICENSE 和作者图片不是运行时必需文件，但公开项目应
 - 符号链接、特殊文件和带可执行位的开发目录文件；
 - `.notegen`、`node_modules`、`.git`、`.hg`、`.svn`、`.cache`；
 - `.env` 和 `.env.*`；
-- 原生库、可执行文件、安装包、Shell 脚本、Java class/JAR、WASM、source map、PEM/P12/PFX 等敏感后缀；
+- 原生库、可执行文件、安装包、Shell 脚本、Java class/JAR、未声明的 WASM、source map、PEM/P12/PFX 等敏感后缀；
 - `package.json` 中的 `install`、`preinstall` 或 `postinstall` 脚本。
 
 客户端不能替作者判断普通文本里是否含 API key、个人路径、真实用户数据或远程代码字符串。发布前仍需人工检查，私钥和用户数据绝不能进入源码或包。
@@ -234,3 +234,7 @@ README、LICENSE 和作者图片不是运行时必需文件，但公开项目应
 NoteGen 只复制清单列出的载荷及清单本身，按内容哈希保存不可变快照。源码、README 或构建配置可以留在开发目录且不进入快照。
 
 授权身份包括插件 ID、版本、内容哈希、来源类型和规范化源路径。换目录、改内容或改版本后需要重新核对。开发插件没有自动更新，也没有市场版本的自动激活回滚。
+
+## 资源文件打包
+
+CLI 将声明的语言消息、预览脚本及预览资产纳入完整性清单。只有明确列入文档预览资产的 WASM 才允许打包；无脚本资源包可省略普通 JavaScript 入口。包结构和限制见[资源扩展](/cn/docs/plugins/developers/resources)。

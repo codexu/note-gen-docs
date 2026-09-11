@@ -4,11 +4,11 @@ description: 插件可用的宿主组件、参数、交互事件与限制。
 icon: PanelsTopLeft
 ---
 
-本页面面向插件开发者，对应当前源码中的插件 API **0.1.1**。使用这些能力前，请确认目标 NoteGen 和 SDK 支持该 API；源码支持不代表所有已发布客户端都已包含。插件通过 JSON 描述界面，由 NoteGen 使用自身组件和主题渲染，不能直接导入任意 shadcn/React 组件。
+本页面面向插件开发者，对应当前源码中的插件 API **0.1.3**。使用这些能力前，请确认目标 NoteGen 和 SDK 支持该 API；源码支持不代表所有已发布客户端都已包含。插件通过 JSON 描述界面，由 NoteGen 使用自身组件和主题渲染，不能直接导入任意 shadcn/React 组件。
 
 ## 放在哪里
 
-同一份 `{ blocks }` 文档可用于 `ctx.ui.views.update(viewId, document)`、`ctx.ui.openDialog({ title, content: document })` 和 `ctx.ui.updateDialog(dialogId, { title, content: document })`。视图需先在 manifest 声明，位置为 `left-sidebar`、`right-sidebar` 或 `editor-tab`。下面的 `tabs` 是视图内部的标签组，与编辑区插件标签入口不同。
+同一份 `{ blocks }` 文档可用于 `ctx.ui.views.update(viewId, document)`、`ctx.ui.openDialog({ title, content: document })` 和 `ctx.ui.updateDialog(dialogId, { title, content: document })`。视图需先在 manifest 声明，位置可选 `left-sidebar`、`right-sidebar`、`editor-tab` 或顶部插槽。下面的 `tabs` 是视图内部的标签组，与编辑区插件标签入口不同。
 
 所有交互命令必须在当前插件的 `contributes.commands` 中声明，并用 `ctx.commands.handle` 注册。界面不会自动授予笔记、编辑器或网络权限。入口声明、状态栏、菜单、设置与对话框生命周期见[扩展应用界面](/cn/docs/plugins/developers/ui-contributions)。
 
@@ -134,3 +134,7 @@ await ctx.ui.openDialog({
 Markdown 仅由宿主解析文字格式；HTML 不执行，图片不加载，链接不导航。插件仍不能提供 iframe、WebView、任意 CSS 或 Tiptap 扩展。组件中出现操作按钮不表示自动具备相应权限，也不会替插件完成文件写入或业务校验。
 
 本页依据 [SDK 类型与扩展校验](https://github.com/codexu/note-gen-plugin-sdk/blob/main/packages/plugin-api/src/index.ts)、[宿主文档校验](https://github.com/codexu/note-gen/blob/dev/src/lib/plugins/ui-registry.ts) 与[宿主组件实现](https://github.com/codexu/note-gen/tree/dev/src/components/plugins)维护。版本适配应同时核对 SDK 与目标客户端。
+
+## 在顶部显示组件
+
+同一份文档也可以显示在[顶部视图](/cn/docs/plugins/developers/title-bar)：紧凑组件直接显示，含较大组件的整份文档通过弹层展开。顶部位置要求宿主协议 `0.1.3`，已有侧栏和对话框 API 继续可用。

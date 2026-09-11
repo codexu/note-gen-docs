@@ -4,7 +4,7 @@ description: Host-rendered plugin components, fields, interaction payloads, and 
 icon: PanelsTopLeft
 ---
 
-This reference targets plugin developers and API **0.1.1** in the current source. Confirm that your target NoteGen client and SDK support it; source support does not mean every published client includes these features. Plugins describe UI as JSON, and NoteGen renders its own components and theme. Plugins cannot import arbitrary shadcn or React components.
+This reference targets plugin developers and API **0.1.3** in the current source. Confirm that your target NoteGen client and SDK support it; source support does not mean every published client includes these features. Plugins describe UI as JSON, and NoteGen renders its own components and theme. Plugins cannot import arbitrary shadcn or React components.
 
 ## Where components appear
 
@@ -134,3 +134,7 @@ Each blocks array allows up to 50 entries. The entire document allows 200 blocks
 Markdown is formatted by the host: HTML does not execute, images do not load, and links do not navigate. Plugins still cannot supply iframe, WebView, arbitrary CSS, or Tiptap extensions. Buttons do not grant permissions or perform file writes and business validation on the plugin's behalf.
 
 Maintained against [SDK types and extension validation](https://github.com/codexu/note-gen-plugin-sdk/blob/main/packages/plugin-api/src/index.ts), [host document validation](https://github.com/codexu/note-gen/blob/dev/src/lib/plugins/ui-registry.ts), and [host components](https://github.com/codexu/note-gen/tree/dev/src/components/plugins). Check both the SDK and target client when adapting versions.
+
+## Rendering in the title bar
+
+The same document can render in a [title bar view](/en/docs/plugins/developers/title-bar). Compact blocks render inline; documents containing larger blocks open in a popover. These locations require host protocol `0.1.3`; sidebar and dialog APIs remain available.

@@ -28,7 +28,7 @@ SDK 不需要连接 NoteGen 服务器，也不会成为插件运行时依赖。�
 | Node.js | 20 或更高版本 |
 | SDK 仓库开发 | pnpm 10 |
 | 模块格式 | 仅 ESM；Node.js 代码使用 `import`，不支持 CommonJS `require()` |
-| 插件 API 协议 | `0.1.0` |
+| 插件 API 协议 | `0.1.3` |
 | 市场插件运行平台 | NoteGen 桌面端 |
 | 开发导入 | NoteGen 桌面端开发者模式 |
 
@@ -115,13 +115,13 @@ SDK 包版本、插件 API 协议和 NoteGen 应用版本是三种不同的值�
 
 | 值 | 示例 | 作用 |
 | --- | --- | --- |
-| npm 包版本 | `@notegen/plugin-api@0.1.0` | 选择 TypeScript 包发布版本 |
-| `PLUGIN_API_VERSION` | `0.1.0` | 表示这版包描述的具体宿主协议 |
+| npm 包版本 | `@notegen/plugin-api@0.1.5` | 选择 TypeScript 包发布版本 |
+| `PLUGIN_API_VERSION` | `0.1.3` | 表示这版包描述的具体宿主协议 |
 | manifest `apiVersion` | `^0.1.0` | 声明插件接受的宿主 API SemVer 范围 |
 | manifest `minAppVersion` | `0.37.0` | 声明插件可运行的最低 NoteGen 应用版本 |
-| `ctx.plugin.apiVersion` | `0.1.0` | 运行时宿主实际提供的具体 API 版本 |
+| `ctx.plugin.apiVersion` | `0.1.3` | 运行时宿主实际提供的具体 API 版本 |
 
-破坏宿主契约的变化需要新的 API major；向后兼容的能力扩展使用 minor；只修复 SDK 包而不改变协议时，可以只升级包 patch。不要用 `minAppVersion` 代替 `apiVersion`，也不要把 manifest 中的范围字符串与运行时具体版本混为一谈。
+协议仍处于 `0.x` 阶段，应按所用能力声明最低协议：基础兼容范围可使用 `^0.1.0`，顶部组件需至少 `>=0.1.3`。SDK 包修复不一定改变协议版本，发布时应核对导出的实际协议值。不要用 `minAppVersion` 代替 `apiVersion`，也不要把 manifest 中的范围字符串与运行时具体版本混为一谈。
 
 ## 单文件运行时边界
 
@@ -152,3 +152,7 @@ SDK 不是用于远程读写 NoteGen 数据的客户端 SDK，也不提供市场
 四个 npm 包均已完成首发。SDK 维护者提升受影响的包版本及依赖范围后，从 `main` 通过 **Publish npm packages** 工作流发布，使用 npm Trusted Publishing（OIDC）。工作流会打包并检查四个包：已有版本只有在完整性一致时才跳过，未发布版本按依赖顺序上传。
 
 插件作者修改自己的插件不需要发布 SDK，只需提升插件版本并按[发布到插件市场](/cn/docs/plugins/developers/publishing)处理。npm 包版本、插件自身版本、兼容的宿主 API 范围各有作用。维护者环境配置以 [SDK README](https://github.com/codexu/note-gen-plugin-sdk#maintainer-release-procedure)为准。
+
+SDK `0.1.5` 已发布 npm，对应协议 `0.1.3`。资源包要求 `>=0.1.2`，顶部视图要求 `>=0.1.3`；`minAppVersion` 应填写实际验证过的宿主版本。
+
+继续阅读[资源扩展](/cn/docs/plugins/developers/resources)与[顶部自定义组件](/cn/docs/plugins/developers/title-bar)。

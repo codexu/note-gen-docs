@@ -10,7 +10,7 @@ On desktop, open Settings → Plugins to access Installed, Discover, Updates, an
 
 Desktop writing statistics retain a built-in fallback. When the official statistics plugin displays its status item, the fallback is hidden to avoid duplicate counters. Mobile retains its native character counter, controlled by Settings → Editor → Writing statistics; no plugin installation is required.
 
-> Updated 2026-09-10: all four SDK packages are published on npm and the signed official marketplace is live; community submissions remain closed. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
+> Updated 2026-09-11: all four SDK packages are published on npm and the signed official marketplace is live; community submissions remain closed. API details describe the current development branch, so unreleased additions require the matching source version. Remote installation also requires a NoteGen build with plugin support and the production root public key.
 
 ## Plugins, Skills, and MCP
 
@@ -108,6 +108,18 @@ A plugin can use only capabilities declared in its manifest and granted for the 
 ### Inspect or revoke
 
 Open Installed → plugin Settings → Permissions to inspect grants by workspace. Only the current workspace can be changed. Revoking an optional permission rejects new calls; revoking a required permission also disables the plugin. A write already in the host's atomic commit stage may finish. Revocation does not undo completed file changes.
+
+## Plugin settings under Extensions
+
+The desktop Settings sidebar includes an Extensions category with a Plugin management entry. Enabled plugins with declared settings, a settings view, or display controls appear below it as individual pages. There is no installed-plugin count threshold. Disabled plugins and plugins without configurable content do not receive a separate entry; their details remain accessible in plugin management.
+
+Search matches plugin names, IDs, descriptions, and setting labels. If a selected plugin becomes unavailable, Settings returns to plugin management. Both entrances share the same device/workspace settings and save rules. Runtime settings views activate only while that plugin page is open.
+
+## Resource packs and title bar components
+
+Enabled packages can add themes and interface languages in General settings, file/folder icons, and previews for extensions without a built-in editor. Previewing a document requires file access approval. Plugins can also place buttons, labels, badges, and other declared components in the left, center, or right title bar slots; larger content opens in a popover.
+
+These extensions require the matching NoteGen host. See [resource extensions](/en/docs/plugins/developers/resources) and [title bar components](/en/docs/plugins/developers/title-bar) for compatibility and examples.
 
 ## Settings
 

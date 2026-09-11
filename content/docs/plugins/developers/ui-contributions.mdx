@@ -257,9 +257,9 @@ await ctx.ui.views.update("com.example.tools.results", { blocks: [
 当前 API 不允许插件提供：
 
 - React、Vue、Svelte 或 Tiptap/ProseMirror 扩展；
-- HTML、iframe、WebView 或 DOM 回调；
-- 全局 CSS、主题覆盖或图标字体；
-- 自定义设置页面或声明式 schema 之外的任意组件树；
+- 向宿主界面注入任意 HTML、iframe、WebView 或 DOM 回调；
+- 全局 CSS 或图标字体；主题颜色通过单独的资源契约提供；
+- 自行渲染的设置页面或声明式 schema 之外的任意组件树；
 - 原生窗口、系统托盘或移动端原生页面。
 
 需要更复杂的交互时，应组合命令、宿主设置字段、通知、菜单、状态栏和声明式 block。
@@ -393,3 +393,11 @@ await ctx.commands.executeHost('app.openPluginSettings');
 ## 用户自定义视图名称
 
 当前宿主约定：声明 key 为 `<view.id>.title` 的工作区 string 设置，可让用户自定义该视图的导航标题。该设置必须使用 `scope: "workspace"`；空字符串或纯空白回退到视图的本地化 `title`。左侧栏、右侧栏和编辑器标签共用此规则；不会更改插件 ID、命令名称或笔记文件名。视图内容中的标题由插件通过设置读取并更新。
+
+## 顶部视图与插件独立设置页
+
+协议 `0.1.3` 新增三个[顶部插槽](/cn/docs/plugins/developers/title-bar)，沿用视图 API。[资源扩展](/cn/docs/plugins/developers/resources)提供主题颜色和隔离文档预览渲染器，不会开放宿主 DOM。
+
+“拓展”分类始终保留“插件管理”。已启用且具有设置字段、设置视图或界面展示开关的插件会单列入口，不设已安装数量门槛；已有 `contributes.settings` 自动出现在独立页面。
+
+动态设置内容由 SDK `0.1.6` 和宿主协议 `0.1.4` 新增的 `contributes.views[].location: "settings"` 提供。插件需声明 `^0.1.4` 或更高兼容范围，并通过 `ui.views.update` 更新内容。同一插件的设置视图一起显示；`open` 导航到该插件设置页，`focus` 聚焦视图，`close` 仅在当前选中该插件页时关闭设置窗口。可见性事件跟随导航和启用状态变化，设置视图没有单独的界面展示开关。

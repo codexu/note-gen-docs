@@ -1,0 +1,80 @@
+---
+title: Title bar components
+description: Add plugin buttons and components to the left, center, and right title bar slots.
+icon: PanelTop
+---
+
+Title bar components use existing `contributes.views` declarations and `ctx.ui.views` updates. There is no separate button-registration API.
+
+> Requires SDK `0.1.5` and a NoteGen desktop host implementing protocol `0.1.3`. Integration is available in the application development branch; confirm support before using a stable release. Declare `apiVersion: ">=0.1.3"`.
+
+## Three slots
+
+| `location` | Placement |
+| --- | --- |
+| `title-bar-left` | After the built-in recording buttons, at the end of the left area |
+| `title-bar-center` | Centered in the remaining draggable space |
+| `title-bar-right` | Before the built-in right-side buttons, at the start of the right area |
+
+The host preserves blank dragging space and window controls. Providers are ordered by plugin ID, then by manifest order within each plugin. Wide content can scroll horizontally without increasing title bar height.
+
+## Declare and update components
+
+Put this fragment inside `contributes`, set the plugin ID to `org.example.title-bar`, and provide a script entry:
+
+~~~json
+{
+  "commands": [{ "id": "org.example.title-bar.hello", "title": "Show greeting" }],
+  "views": [
+    { "id": "org.example.title-bar.left", "title": "Quick action", "location": "title-bar-left" },
+    { "id": "org.example.title-bar.center", "title": "Workspace status", "location": "title-bar-center" },
+    { "id": "org.example.title-bar.right", "title": "Plugin action", "location": "title-bar-right" }
+  ]
+}
+~~~
+
+This entry renders an icon button on the left, text and a badge in the center, and a text button on the right:
+
+~~~ts
+import type { PluginActivate } from '@notegen/plugin-api'
+
+export const activate: PluginActivate = async context => {
+  const prefix = 'org.example.title-bar'
+  context.commands.handle(`${prefix}.hello`, async () => {
+    await context.ui.showNotice('Hello from the title bar')
+  })
+  await context.ui.views.update(`${prefix}.left`, { blocks: [{
+    type: 'toolbar', id: 'quick-actions', label: 'Quick actions', actions: [{
+      id: 'hello', label: 'Say hello', command: `${prefix}.hello`, icon: 'sparkles', iconOnly: true,
+    }],
+  }] })
+  await context.ui.views.update(`${prefix}.center`, { blocks: [
+    { type: 'text', text: 'My workspace', tone: 'muted' },
+    { type: 'badge', text: 'Ready' },
+  ] })
+  await context.ui.views.update(`${prefix}.right`, { blocks: [{
+    type: 'toolbar', id: 'tools', label: 'Plugin tools', actions: [{
+      id: 'greet', label: 'Hello', command: `${prefix}.hello`, icon: 'hand',
+    }],
+  }] })
+}
+~~~
+
+See the complete buildable [title-bar example](https://github.com/codexu/note-gen-plugin-sdk/tree/main/examples/title-bar).
+
+## Inline content and popovers
+
+`toolbar`, `actions`, `text`, `badge`, `loading`, `separator`, and `progress` render inline in a single row. Toolbar actions support icons, `iconOnly`, disabled state, and command arguments.
+
+If a document contains another block type, such as a form, list, or tabs, the host displays its view title or declared icon as a button. Clicking it opens the entire document in a popover. Empty documents render nothing. Larger components do not increase title bar height; plugins cannot inject React, HTML, or CSS into the host.
+
+## Visibility and cleanup
+
+- Mounting a title bar view activates its plugin; views are initially visible.
+- `ctx.ui.views.update(id, document)` replaces content without reopening a closed view.
+- `close(id)` hides the view, `open(id)` restores it, and `focus(id)` focuses its container.
+- `getState(id)` and `onDidChange` use the existing view-state contract. Multiple title bar views can be visible simultaneously.
+- Users can hide each of the three slots in a plugin's display settings. Calling `open` cannot override that preference.
+- Disabling, uninstalling, or rebuilding a runtime clears its dynamic content without affecting other plugins.
+
+Buttons still invoke declared plugin commands, with the same permission requirements for their operations. See the [UI component reference](/en/docs/plugins/developers/ui-components) for complete fields.

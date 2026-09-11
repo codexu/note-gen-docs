@@ -249,9 +249,9 @@ This invokes a command; it does not automatically modify files. The SDK reposito
 The current API does not allow plugins to provide:
 
 - React, Vue, or Svelte components, or Tiptap/ProseMirror extensions;
-- HTML, iframes, WebViews, or DOM callbacks;
-- global CSS, theme overrides, or icon fonts;
-- custom settings pages or arbitrary component trees outside the declarative schema;
+- arbitrary HTML, iframes, WebViews, or DOM callbacks in host UI;
+- global CSS or icon fonts; color-token themes use the separate resource contract;
+- custom-rendered settings pages or arbitrary component trees outside the declarative schema;
 - native windows, system-tray items, or native mobile pages.
 
 For more involved interactions, combine commands, host-rendered settings, notices, menus, status-bar items, and declarative blocks.
@@ -382,3 +382,11 @@ The Installed details render the guide offline: HTML is disabled, images render 
 ## User-defined view titles
 
 The current host recognizes a workspace string setting keyed `<view.id>.title` as a navigation-title override. Use `scope: "workspace"`; empty or whitespace-only values fall back to the localized view `title`. Left/right sidebars and editor tabs share this convention. It does not rename plugin IDs, commands or note files. Plugins read the setting and update headings inside their own content separately.
+
+## Title bar views and plugin settings pages
+
+Protocol `0.1.3` adds three [title bar slots](/en/docs/plugins/developers/title-bar), using the existing views API. [Resource extensions](/en/docs/plugins/developers/resources) cover color themes and isolated document preview renderers; these do not grant host DOM access.
+
+The Extensions category always retains Plugin management. Enabled plugins with settings fields, settings views, or display controls receive individual entries, without an installed-plugin count threshold. Existing `contributes.settings` fields appear automatically.
+
+For dynamic settings content, SDK `0.1.6` and host protocol `0.1.4` add `contributes.views[].location: "settings"`. Require `^0.1.4` or higher and update it through `ui.views.update`. All settings views belonging to the plugin render together. `open` navigates to its settings page; `focus` focuses the view; `close` closes Settings only if that plugin page is selected. Visibility events track navigation and enablement. Settings views have no separate display-visibility toggle.

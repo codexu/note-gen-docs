@@ -36,7 +36,7 @@ The package has no runtime dependencies and does not require DOM types in the Ty
 
 | Export | Type or purpose |
 | --- | --- |
-| `PLUGIN_API_VERSION` | Concrete host API version described by this package; currently `"0.1.0"` |
+| `PLUGIN_API_VERSION` | Concrete host API version described by this package; `"0.1.4"` in SDK 0.1.6 |
 | `PLUGIN_ERROR_CODES` | Read-only list of every stable `PluginErrorCode` |
 | `PluginError` | Error class with `code`, `message`, and optional `details` |
 | `isPluginError(value)` | Structurally recognizes a known plugin error across Workers or realms |
@@ -130,6 +130,7 @@ It is not a native browser `AbortSignal`. Do not use `instanceof AbortSignal` or
 | `workspace` | `getCurrent()`, `onDidChange` | None; returns only an opaque ID and display name |
 | `calendar` | `resolveDay(options)` | None; accepts an IANA time zone and `HH:mm` day boundary |
 | `notes` | Read, list, search, create, write, move, delete, and change events | Corresponding `notes.*` permissions |
+| `fileIcons` | `setRules`, `clear` | Runtime icon rules; no file access granted |
 | `attachments` | `read`, `create` | Separate `attachments.read` and `attachments.create` grants |
 | `editor` | Active editor, selection, snapshot, edits, and events | `editor.read`; edits also require `editor.write` |
 | `log` | `info`, `warning`, `error` | Local diagnostic messages; no automatic console capture |
@@ -196,8 +197,8 @@ import { PLUGIN_API_VERSION } from "@notegen/plugin-api";
 import type { PluginActivate } from "@notegen/plugin-api";
 
 export const activate: PluginActivate = async (ctx) => {
-  // PLUGIN_API_VERSION === "0.1.0"
-  // ctx.plugin.apiVersion === "0.1.0" in the current host
+  // PLUGIN_API_VERSION === "0.1.4"
+  // ctx.plugin.apiVersion === "0.1.4" in the current host
 };
 ~~~
 
@@ -250,3 +251,7 @@ This package does not expose the marketplace catalog, installation records, sign
 Forms export `PluginFormBlock`, `PluginFormField`, and `PluginFormValue`. View visibility uses `PluginViewState`. Search uses `SearchNotesOptions` and `SearchNotesResult`. Source-range operations use `EditorRangeEdit`, `ApplyEditorEditsOptions`, and `SetEditorSelectionOptions`. Attachment reads return `PluginAttachment`.
 
 The SDK has completed its initial npm publication. Changes to published package contents require a package version bump; protocol compatibility changes require coordinated host and SDK updates. Declare the supported protocol range in `apiVersion`, such as `^0.1.0`. Use commit revisions to distinguish unpublished development snapshots.
+
+## Resource and title bar types
+
+SDK `0.1.6` exports `PluginTitleBarLocation` and describes protocol `0.1.4`. `PluginManifestV1.resources` covers themes, languages, file icons, and document previews; resource-only packages may omit `entry`. See [resource extensions](/en/docs/plugins/developers/resources) and [title bar components](/en/docs/plugins/developers/title-bar) before choosing the required host range.

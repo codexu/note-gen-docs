@@ -1,0 +1,80 @@
+---
+title: 顶部自定义组件
+description: 在窗口顶部拖拽条的左、中、右位置添加插件按钮和组件。
+icon: PanelTop
+---
+
+顶部组件通过现有的 `contributes.views` 声明，使用 `ctx.ui.views` 更新内容，不需要另一套按钮注册 API。
+
+> 需要 SDK `0.1.5` 和实现协议 `0.1.3` 的 NoteGen 桌面宿主。应用开发分支已接入，使用稳定版前请确认其支持情况。插件应声明 `apiVersion: ">=0.1.3"`。
+
+## 三个插槽
+
+| `location` | 插入位置 |
+| --- | --- |
+| `title-bar-left` | 内置记录按钮的右侧，即左侧区域的末尾 |
+| `title-bar-center` | 剩余拖拽区域的中间 |
+| `title-bar-right` | 内置右侧按钮的左侧，即右侧区域的开头 |
+
+宿主保留空白拖拽区域，组件不会替换窗口控制按钮。各插槽内按插件 ID 排序，同一插件按 manifest 声明顺序排列。内容过宽时可横向滚动，标题栏高度保持不变。
+
+## 声明并更新组件
+
+以下是放入 `contributes` 的片段；同时将插件 ID 设为 `org.example.title-bar`，并提供脚本入口。
+
+~~~json
+{
+  "commands": [{ "id": "org.example.title-bar.hello", "title": "Show greeting" }],
+  "views": [
+    { "id": "org.example.title-bar.left", "title": "Quick action", "location": "title-bar-left" },
+    { "id": "org.example.title-bar.center", "title": "Workspace status", "location": "title-bar-center" },
+    { "id": "org.example.title-bar.right", "title": "Plugin action", "location": "title-bar-right" }
+  ]
+}
+~~~
+
+入口示例在左侧显示图标按钮，中间显示文字与徽标，右侧显示文字按钮：
+
+~~~ts
+import type { PluginActivate } from '@notegen/plugin-api'
+
+export const activate: PluginActivate = async context => {
+  const prefix = 'org.example.title-bar'
+  context.commands.handle(`${prefix}.hello`, async () => {
+    await context.ui.showNotice('Hello from the title bar')
+  })
+  await context.ui.views.update(`${prefix}.left`, { blocks: [{
+    type: 'toolbar', id: 'quick-actions', label: 'Quick actions', actions: [{
+      id: 'hello', label: 'Say hello', command: `${prefix}.hello`, icon: 'sparkles', iconOnly: true,
+    }],
+  }] })
+  await context.ui.views.update(`${prefix}.center`, { blocks: [
+    { type: 'text', text: 'My workspace', tone: 'muted' },
+    { type: 'badge', text: 'Ready' },
+  ] })
+  await context.ui.views.update(`${prefix}.right`, { blocks: [{
+    type: 'toolbar', id: 'tools', label: 'Plugin tools', actions: [{
+      id: 'greet', label: 'Hello', command: `${prefix}.hello`, icon: 'hand',
+    }],
+  }] })
+}
+~~~
+
+完整可构建项目见 SDK 的 [title-bar 示例](https://github.com/codexu/note-gen-plugin-sdk/tree/main/examples/title-bar)。
+
+## 直接显示与弹层
+
+`toolbar`、`actions`、`text`、`badge`、`loading`、`separator`、`progress` 会在顶部单行显示。工具栏按钮支持 `icon`、`iconOnly`、禁用状态和命令参数。
+
+一份文档只要包含其他 block（例如表单、列表或 tabs），宿主就改为显示该视图的标题按钮或 `icon` 按钮，点击后在弹层展示整份文档。空文档不显示内容。复杂组件不会直接撑高拖拽条，也不能把 React、HTML 或 CSS 注入宿主。
+
+## 显示、隐藏与清理
+
+- 顶部视图挂载时激活插件，初始为可见。
+- `ctx.ui.views.update(id, document)` 替换内容，不自动重新打开已关闭的视图。
+- `close(id)` 隐藏该视图；`open(id)` 恢复；`focus(id)` 聚焦它的容器。
+- `getState(id)` 和 `onDidChange` 沿用视图状态接口；多个顶部视图可以同时可见。
+- 用户可以在插件的“界面展示”设置中分别隐藏顶部左、中、右入口。插件不能通过 `open` 绕过这个选择。
+- 禁用、卸载或运行时重建时清理对应动态内容；不影响其他插件。
+
+按钮仍调用 manifest 已声明的插件命令，具体操作的权限要求保持不变。完整组件字段见[界面组件参考](/cn/docs/plugins/developers/ui-components)。
