@@ -5,6 +5,7 @@ import {
   CloudIcon,
   DatabaseIcon,
   DownloadIcon,
+  ExternalLinkIcon,
   FileTextIcon,
   GitBranchIcon,
   GithubIcon,
@@ -14,6 +15,7 @@ import {
   NetworkIcon,
   ServerIcon,
   ShieldCheckIcon,
+  UsersIcon,
   WifiOffIcon,
 } from "lucide-react"
 
@@ -29,6 +31,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { NoteGenDemo } from "@/components/home/note-gen-demo"
 import { PluginSection } from "@/components/home/plugin-section"
+import { providerReferrals } from "@/data/provider-referrals"
 import { cn } from "@/lib/utils"
 
 import HomeFooter from "./footer"
@@ -99,11 +102,69 @@ const syncOptions = [
   { name: "cloudDrive", icon: CloudIcon },
 ]
 
+const supporters = {
+  cn: [
+    {
+      name: "PackyCode",
+      description: "稳定、高效的 API 中转服务商，使用统一域名和密钥接入主流模型，提供智能容灾切换与 Codex、Claude Code 高速通道。",
+      benefit: "通过 NoteGen 链接注册可获得 1 美元体验额度及首充优惠。",
+      href: "https://www.packyapi.ai/register?aff=NqBq",
+      icon: providerReferrals[1].icon,
+    },
+    {
+      name: "Infistar.cc 无限星河",
+      description: "提供兼容 OpenAI 标准接口的模型服务，支持 ChatGPT、Claude、Gemini、Kimi、GLM、DeepSeek 等模型，以及 OCR、Embedding、Rerank 和语音能力。",
+      benefit: "通过 NoteGen 专属链接注册并完成首次调用，可领取测试额度或首充优惠。",
+      href: "https://www.infistar.cc/register?aff=G55F2Z5Q&ref_source=link",
+      icon: providerReferrals[2].icon,
+    },
+  ],
+  en: [
+    {
+      name: "PackyCode",
+      description: "A stable API gateway for leading models, with one endpoint and API key, automatic failover, and dedicated high-speed routes for Codex and Claude Code.",
+      benefit: "Sign up through NoteGen to receive US$1 in trial credit and a first top-up offer.",
+      href: "https://www.packyapi.ai/register?aff=NqBq",
+      icon: providerReferrals[1].icon,
+    },
+    {
+      name: "Infistar.cc Infinity Galaxy",
+      description: "An OpenAI-compatible model service supporting ChatGPT, Claude, Gemini, Kimi, GLM, and DeepSeek, along with OCR, embeddings, reranking, and speech capabilities.",
+      benefit: "Register through NoteGen and complete a first call to receive trial credit or a first top-up offer.",
+      href: "https://www.infistar.cc/register?aff=G55F2Z5Q&ref_source=link",
+      icon: providerReferrals[2].icon,
+    },
+  ],
+} as const
+
+const serviceSupporters = {
+  cn: [
+    { name: "硅基流动", href: "https://cloud.siliconflow.cn/i/O2ciJeZw", description: "模型服务支持" },
+    { name: "七牛云", href: "https://www.qiniu.com/products/ai-token-api?utm_source=NoteGen", description: "服务支持" },
+    { name: "302.AI", href: "https://share.302.ai/jfFrIP", description: "服务支持" },
+    { name: "胜算云", href: "https://www.shengsuanyun.com/?from=CH_KAFLGC9O", description: "服务支持" },
+    { name: "Gitee AI", href: "https://ai.gitee.com/", description: "服务支持" },
+    { name: "Netlify", href: "https://www.netlify.com", description: "服务支持" },
+    { name: "Skywork", href: "https://skywork.ai/p/bY47ky", description: "服务支持" },
+  ],
+  en: [
+    { name: "SiliconFlow", href: "https://cloud.siliconflow.cn/i/O2ciJeZw", description: "Model service support" },
+    { name: "Qiniu", href: "https://www.qiniu.com/products/ai-token-api?utm_source=NoteGen", description: "Service support" },
+    { name: "302.AI", href: "https://share.302.ai/jfFrIP", description: "Service support" },
+    { name: "ShengSuanYun", href: "https://www.shengsuanyun.com/?from=CH_KAFLGC9O", description: "Service support" },
+    { name: "Gitee AI", href: "https://ai.gitee.com/", description: "Service support" },
+    { name: "Netlify", href: "https://www.netlify.com", description: "Service support" },
+    { name: "Skywork", href: "https://skywork.ai/p/bY47ky", description: "Service support" },
+  ],
+} as const
+
 export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
   const isEnglish = lang === "en"
   const text = (cnText: string, enText: string) => isEnglish ? enText : cnText
   const capabilities = isEnglish ? capabilitiesEn : capabilitiesCn
   const cases = isEnglish ? casesEn : casesCn
+  const projectSupporters = supporters[lang]
+  const projectServiceSupporters = serviceSupporters[lang]
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section id="top" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
@@ -345,6 +406,134 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
             <DownloadIcon data-icon="inline-start" />
             {text("下载 NoteGen", "Download NoteGen")}
           </a>
+        </div>
+      </section>
+
+      <section className="border-t bg-muted/20">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
+          <SectionHeading
+            badge={text("支持与贡献", "Supporters and contributors")}
+            title={text("每一次支持，都让 NoteGen 能继续维护。", "Every contribution helps keep NoteGen maintained.")}
+            description={text(
+              "感谢为项目提供服务支持的合作伙伴，也感谢参与代码、文档、翻译、测试和问题反馈的每一位贡献者。",
+              "Thanks to the partners supporting the project with services, and to everyone contributing code, docs, translations, testing, and feedback."
+            )}
+          />
+
+          <div className="mt-12 flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <Badge variant="outline">{text("AI 平台合作伙伴", "AI platform partners")}</Badge>
+              <p className="text-sm text-muted-foreground">
+                {text("为 NoteGen 用户提供模型服务与专属权益。", "Model services and member benefits for NoteGen users.")}
+              </p>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {projectSupporters.map((supporter) => (
+                <Card key={supporter.name} className="h-full">
+                  <CardHeader className="gap-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <CardTitle className="flex items-center gap-3 text-xl">
+                        <img
+                          src={supporter.icon}
+                          alt=""
+                          className="size-9 rounded-xl border bg-background object-contain p-1"
+                        />
+                        {supporter.name}
+                      </CardTitle>
+                      <Badge variant="outline">{text("合作支持", "Partner")}</Badge>
+                    </div>
+                    <CardDescription className="leading-6">{supporter.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-4">
+                    <p className="text-sm leading-6 text-muted-foreground">{supporter.benefit}</p>
+                    <a
+                      href={supporter.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
+                    >
+                      {text("通过专属链接了解", "Explore through NoteGen")}
+                      <ExternalLinkIcon data-icon="inline-end" />
+                    </a>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <Card className="mt-8">
+            <CardHeader className="gap-3">
+              <div className="flex items-center gap-3">
+                <Badge variant="outline">{text("模型与服务支持", "Model and service support")}</Badge>
+                <CardTitle className="text-xl">{text("项目资源支持", "Project resource support")}</CardTitle>
+              </div>
+              <CardDescription className="leading-6">
+                {text(
+                  "感谢为 NoteGen 提供模型服务、基础设施和其他项目资源支持的伙伴。",
+                  "Thanks to the partners providing NoteGen with model services, infrastructure, and other project resources."
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2">
+              {projectServiceSupporters.map((supporter) => (
+                <a
+                  key={supporter.name}
+                  href={supporter.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span className="font-medium">{supporter.name}</span>
+                  <span className="text-muted-foreground">{supporter.description}</span>
+                  <ExternalLinkIcon className="size-3 text-muted-foreground" aria-hidden="true" />
+                </a>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="mt-8 overflow-hidden">
+            <CardHeader className="gap-3">
+              <div className="flex items-center gap-2">
+                <UsersIcon className="size-5 text-muted-foreground" />
+                <CardTitle className="text-xl">{text("开源贡献者", "Open source contributors")}</CardTitle>
+              </div>
+              <CardDescription className="leading-6">
+                {text(
+                  "感谢每一位提交问题、分享想法、改进翻译、补充文档和贡献代码的人。",
+                  "Thanks to everyone who reports issues, shares ideas, improves translations, writes documentation, and contributes code."
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <a
+                href="https://github.com/codexu/note-gen/graphs/contributors"
+                target="_blank"
+                rel="noreferrer"
+                className="w-fit max-w-full rounded-lg outline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={text("在 GitHub 查看 NoteGen 贡献者", "View NoteGen contributors on GitHub")}
+              >
+                <img
+                  src="https://contrib.rocks/image?repo=codexu/note-gen"
+                  alt={text("NoteGen 开源贡献者", "NoteGen open source contributors")}
+                  className="max-w-full"
+                />
+              </a>
+              <div className="flex flex-wrap gap-3">
+                <a href="https://github.com/codexu/note-gen" target="_blank" rel="noreferrer" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                  <GithubIcon data-icon="inline-start" />
+                  {text("查看 GitHub 项目", "View on GitHub")}
+                </a>
+                <a href={`/${lang}/docs/contributing`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                  {text("贡献指南", "Contribution guide")}
+                  <ArrowRightIcon data-icon="inline-end" />
+                </a>
+                <a href={`/${lang}/donate`} className={buttonVariants({ size: "sm" })}>
+                  <HeartIcon data-icon="inline-start" />
+                  {text("支持 NoteGen", "Support NoteGen")}
+                </a>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 

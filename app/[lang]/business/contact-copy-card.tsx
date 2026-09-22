@@ -1,12 +1,12 @@
 'use client';
 
-import { Check, Copy, Mail, MessageCircle } from 'lucide-react';
+import { Check, Copy, Mail, MessageCircle, Phone } from 'lucide-react';
 import { useState } from 'react';
 
 type ContactCopyCardProps = {
   label: string;
   value: string;
-  type: 'wechat' | 'email';
+  type: 'wechat' | 'email' | 'phone';
   copyText: string;
   copiedText: string;
 };
@@ -38,7 +38,7 @@ export function ContactCopyCard({
     window.setTimeout(() => setCopied(false), 1600);
   }
 
-  const Icon = type === 'email' ? Mail : MessageCircle;
+  const Icon = { email: Mail, wechat: MessageCircle, phone: Phone }[type];
 
   return (
     <button

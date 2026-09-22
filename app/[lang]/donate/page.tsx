@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import {
   BotIcon,
   BugIcon,
+  CopyIcon,
   Globe2Icon,
   HeartHandshakeIcon,
   MessageCircleIcon,
@@ -12,6 +13,7 @@ import {
   WalletCardsIcon,
 } from 'lucide-react';
 import { QrActionPage } from '@/components/marketing/qr-action-page';
+import { providerReferrals } from '@/data/provider-referrals';
 import { normalizeLang, siteConfig } from '@/lib/seo';
 
 const content = {
@@ -58,6 +60,7 @@ const content = {
       title: '不捐赠，也可以支持',
       description: '钱不是唯一的支持方式。下面这些行动同样能帮助 NoteGen 被看见、发现问题并持续改进。',
       copiedShareAction: '链接已复制',
+      copiedRecommendationAction: '推荐文案已复制',
       items: [
         {
           title: '给 GitHub 点 Star',
@@ -74,7 +77,17 @@ const content = {
           description: '把 NoteGen 分享给真正可能用得上的朋友或同事。',
           action: '分享 NoteGen',
         },
+        {
+          title: '复制推荐文案',
+          description: '一键复制带官网链接的推荐文字，发到社区、群聊或朋友圈。',
+          action: '复制推荐文案',
+        },
       ],
+    },
+    platformSupport: {
+      title: '通过平台注册支持项目',
+      description: '下列链接含 NoteGen 推广归因。通过链接访问或注册模型服务平台，也是对项目的一种支持；是否使用服务完全由你决定。',
+      action: '通过 NoteGen 链接访问',
     },
     qrcodes: {
       alipay: {
@@ -130,6 +143,7 @@ const content = {
       title: 'Other ways to help',
       description: 'Money is not the only useful form of support. These actions help NoteGen reach people, find problems, and keep improving.',
       copiedShareAction: 'Link copied',
+      copiedRecommendationAction: 'Recommendation copied',
       items: [
         {
           title: 'Star NoteGen on GitHub',
@@ -146,7 +160,17 @@ const content = {
           description: 'Share NoteGen with a friend or colleague who may genuinely find it useful.',
           action: 'Share NoteGen',
         },
+        {
+          title: 'Copy a recommendation',
+          description: 'Copy a ready-to-share recommendation with the official website link.',
+          action: 'Copy recommendation',
+        },
       ],
+    },
+    platformSupport: {
+      title: 'Support through platform sign-up',
+      description: 'These links include NoteGen referral attribution. Visiting or registering through them is another way to support the project; whether you use a service is entirely your choice.',
+      action: 'Visit through NoteGen',
     },
     qrcodes: {
       alipay: {
@@ -214,7 +238,7 @@ export default async function DonatePage({
   const language = normalizeLang(lang);
   const t = content[language];
   const usageIcons = [BotIcon, Globe2Icon, SmartphoneIcon, ServerCogIcon];
-  const alternativeSupportIcons = [StarIcon, BugIcon, Share2Icon];
+  const alternativeSupportIcons = [StarIcon, BugIcon, Share2Icon, CopyIcon];
   const alternativeSupportUrls = [
     'https://github.com/codexu/note-gen',
     'https://github.com/codexu/note-gen/issues',
@@ -289,6 +313,27 @@ export default async function DonatePage({
                   copiedLabel: t.alternativeSupport.copiedShareAction,
                 }
               : undefined,
+          copy:
+            index === 3
+              ? {
+                  text:
+                    language === 'cn'
+                      ? '我在用 NoteGen：免费、开源、本地优先的 AI 知识工作台。可以记录文字、语音和资料，再用 AI 整理成笔记、文章和图表。\n\nhttps://notegen.top/cn/'
+                      : 'I use NoteGen, a free, open-source, local-first AI knowledge workspace. Capture text, voice, and source material, then use AI to turn them into notes, articles, and diagrams.\n\nhttps://notegen.top/en/',
+                  label: item.action,
+                  copiedLabel: t.alternativeSupport.copiedRecommendationAction,
+                }
+              : undefined,
+        })),
+      }}
+      platformSupport={{
+        ...t.platformSupport,
+        items: providerReferrals.map((provider) => ({
+          title: provider.name[language],
+          description: provider.description[language],
+          href: provider.href,
+          iconImage: { src: provider.icon, alt: provider.name[language] },
+    promotion: 'promotion' in provider ? provider.promotion[language] : undefined,
         })),
       }}
       layout="stack"

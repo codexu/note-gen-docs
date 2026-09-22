@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react"
+import { ArrowUpRightIcon, type LucideIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { ShareButton } from "@/components/marketing/share-button"
+import { CopyRecommendationButton } from "@/components/marketing/copy-recommendation-button"
 
 type QrActionItem = {
   title: string
@@ -57,6 +58,27 @@ type QrActionAlternativeSupport = {
       label: string
       copiedLabel: string
     }
+    copy?: {
+      text: string
+      label: string
+      copiedLabel: string
+    }
+  }[]
+}
+
+type QrActionPlatformSupport = {
+  title: string
+  description: string
+  action: string
+  items: {
+    title: string
+    href: string
+    description?: string
+    iconImage?: {
+      src: string
+      alt: string
+    }
+    promotion?: string
   }[]
 }
 
@@ -72,6 +94,7 @@ export function QrActionPage({
   sectionDescription,
   items,
   alternativeSupport,
+  platformSupport,
   layout = "split",
 }: {
   badge: string
@@ -85,6 +108,7 @@ export function QrActionPage({
   sectionDescription: string
   items: QrActionItem[]
   alternativeSupport?: QrActionAlternativeSupport
+  platformSupport?: QrActionPlatformSupport
   layout?: "split" | "stack"
 }) {
   return (
@@ -94,7 +118,7 @@ export function QrActionPage({
           "mx-auto w-full gap-12 px-4 py-16 sm:px-6 md:py-24",
           layout === "split"
             ? "grid max-w-6xl lg:grid-cols-[0.8fr_1.2fr] lg:gap-16"
-            : "flex max-w-5xl flex-col",
+            : "flex max-w-6xl flex-col",
         )}
       >
         <div
@@ -232,36 +256,94 @@ export function QrActionPage({
           </div>
 
           {alternativeSupport ? (
-            <Card className="shadow-none">
-              <CardHeader>
-                <CardTitle className="text-lg">{alternativeSupport.title}</CardTitle>
-                <CardDescription className="leading-6">
+            <section className="flex flex-col gap-6">
+              <div className="flex max-w-2xl flex-col gap-2">
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  {alternativeSupport.title}
+                </h2>
+                <p className="text-sm leading-6 text-muted-foreground">
                   {alternativeSupport.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-5 sm:grid-cols-3">
-                {alternativeSupport.items.map((item) => {
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {alternativeSupport.items.map((item, index) => {
                   const Icon = item.icon
+                  const iconClassName = [
+                    "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+                    "bg-rose-500/10 text-rose-700 dark:text-rose-400",
+                    "bg-sky-500/10 text-sky-700 dark:text-sky-400",
+                    "bg-violet-500/10 text-violet-700 dark:text-violet-400",
+                  ][index]
 
                   return (
-                    <div key={item.title} className="flex flex-col items-start gap-2">
-                      <Icon className="size-5 text-muted-foreground" aria-hidden="true" />
-                      <h3 className="text-sm font-medium">{item.title}</h3>
-                      <p className="text-sm leading-6 text-muted-foreground">
-                        {item.description}
-                      </p>
-                      {item.share ? (
-                        <ShareButton {...item.share} />
-                      ) : item.href && item.action ? (
-                        <Button asChild variant="outline" size="sm" className="mt-auto">
-                          <a href={item.href} target="_blank" rel="noreferrer">
-                            {item.action}
-                          </a>
-                        </Button>
-                      ) : null}
+                    <div key={item.title} className="flex min-h-48 flex-col rounded-xl border bg-background p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <span className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${iconClassName}`}>
+                          <Icon className="size-5" aria-hidden="true" />
+                        </span>
+                        <span className="text-xs font-medium tracking-[0.18em] text-muted-foreground">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                      <div className="mt-5 flex flex-col gap-2">
+                        <h3 className="text-base font-semibold">{item.title}</h3>
+                        <p className="text-sm leading-6 text-muted-foreground">
+                          {item.description}
+                        </p>
+                      </div>
+                      <div className="mt-auto pt-5">
+                        {item.share ? (
+                          <ShareButton {...item.share} />
+                        ) : item.copy ? (
+                          <CopyRecommendationButton {...item.copy} />
+                        ) : item.href && item.action ? (
+                          <Button asChild variant="outline" size="sm">
+                            <a href={item.href} target="_blank" rel="noreferrer">
+                              {item.action}
+                            </a>
+                          </Button>
+                        ) : null}
+                      </div>
                     </div>
                   )
                 })}
+              </div>
+            </section>
+          ) : null}
+
+          {platformSupport ? (
+            <Card className="shadow-none">
+              <CardHeader>
+                <CardTitle className="text-lg">{platformSupport.title}</CardTitle>
+                <CardDescription className="leading-6">{platformSupport.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                {platformSupport.items.map((item) => (
+                  <Card key={item.title} className="shadow-none">
+                    <CardHeader className="gap-3">
+                      <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+                        {item.iconImage ? (
+                          <img src={item.iconImage.src} alt="" className="size-5 rounded" />
+                        ) : null}
+                        <span>{item.title}</span>
+                        {item.promotion ? (
+                          <Badge className="border-0 bg-foreground px-2 py-0.5 text-xs font-semibold text-background shadow-sm">
+                            {item.promotion}
+                          </Badge>
+                        ) : null}
+                      </CardTitle>
+                      {item.description ? <CardDescription>{item.description}</CardDescription> : null}
+                    </CardHeader>
+                    <CardContent>
+                      <Button asChild variant="outline" size="sm">
+                        <a href={item.href} target="_blank" rel="noreferrer">
+                          {platformSupport.action}
+                          <ArrowUpRightIcon data-icon="inline-end" />
+                        </a>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
               </CardContent>
             </Card>
           ) : null}

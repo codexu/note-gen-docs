@@ -48,6 +48,11 @@ export function homeOptions(locale: string): BaseLayoutProps {
         url: `/${lang}/web-clipper/download`,
         active: 'url',
       },
+      {
+        text: lang === 'en' ? 'Plugins' : '插件',
+        url: `/${lang}/plugins`,
+        active: 'url',
+      },
       ...(isSelfHostedEnabled
         ? [{
             text: (
