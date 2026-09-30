@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import SectionWrap from "../(home)/section-wrap";
+import ReleaseHistory from "./release-history";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,6 +93,7 @@ const copy = {
     unknownDescription: "我们暂时无法识别当前设备，请从下方选择安装包。",
     download: "立即下载",
     releaseNotes: "查看 GitHub Releases",
+    history: "下载历史版本",
     autoDownload: {
       title: "下载即将自动开始",
       description: "如果浏览器没有响应，可以手动重新下载。",
@@ -208,6 +210,7 @@ const copy = {
       "We could not identify this device. Pick the matching installer below.",
     download: "Download now",
     releaseNotes: "View GitHub Releases",
+    history: "Previous versions",
     autoDownload: {
       title: "Your download is starting",
       description:
@@ -544,7 +547,10 @@ export default function DownloadClient({
                 <strong className="font-medium text-foreground">v{version}</strong>
               </span>
             </CardContent>
-            <CardFooter className="border-t">
+            <CardFooter className="flex-wrap gap-2 border-t">
+              <Button variant="ghost" size="sm" asChild>
+                <a href="#release-history">{t.history}</a>
+              </Button>
               <Button variant="ghost" size="sm" asChild>
                 <a
                   href={GITHUB_RELEASES_URL}
@@ -581,6 +587,10 @@ export default function DownloadClient({
             ))}
           </div>
         </div>
+      </SectionWrap>
+
+      <SectionWrap className="py-12 md:py-16">
+        <ReleaseHistory lang={lang} latestVersion={version} />
       </SectionWrap>
 
       <SectionWrap className="py-12 md:py-16">
