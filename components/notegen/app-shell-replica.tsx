@@ -1,174 +1,128 @@
-import type { ReactNode } from "react"
-import {
-  Bot,
-  ChevronDown,
-  ChevronsUpDown,
-  Cloud,
-  Code2,
-  Copy,
-  Download,
-  Eye,
-  FolderOpen,
-  Grid3X3,
-  List,
-  Magnet,
-  Maximize2,
-  Mic,
-  Minus,
-  PanelLeft,
-  PanelRight,
-  Pin,
-  ScanText,
-  Settings,
-  Sparkles,
-  Square,
-  WandSparkles,
-  X,
-  ZoomOut,
-  ImagePlus,
-  Link,
-  ListTodo,
-  Type,
-} from "lucide-react"
+"use client"
 
-import { NoteGenReplicaIconButton } from "@/components/notegen/replica-primitives"
+import type { CSSProperties, ReactNode } from "react"
+import { Bot, ChevronDown, ChevronsUpDown, Code2, Copy, Download, Eye, FolderOpen, Grid3X3, List, Magnet, Maximize2, Settings2, Sparkles, WandSparkles, ZoomOut } from "lucide-react"
+
+import type { NoteGenReplicaPlatform } from "@/components/notegen/chrome-controls"
+import { NoteGenReplicaFrame } from "@/components/notegen/replica-primitives"
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
+import { NoteGenWindowTitleBar, type NoteGenTitleBarProps } from "@/components/notegen/window-title-bar"
 import type { NoteGenWorkspace } from "@/components/notegen/workspace-switcher"
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-const captureTools = [Type, Mic, ScanText, ImagePlus, Link, ListTodo]
+// Preserve the original public imports while sharing one implementation.
+export { NoteGenCaptureToolbar, NoteGenWindowControls } from "@/components/notegen/chrome-controls"
+export type { NoteGenCaptureTool, NoteGenReplicaPlatform } from "@/components/notegen/chrome-controls"
 
-export function NoteGenCaptureToolbar({ lang = "cn", className }: { lang?: NoteGenReplicaLanguage; className?: string }) {
-  return (
-    <div className={cn("flex items-center gap-0.5 rounded-md border bg-background/95 p-0.5 shadow-xs", className)}>
-      {captureTools.map((Icon, index) => (
-        <NoteGenReplicaIconButton
-          key={index}
-          icon={Icon}
-          label={lang === "en" ? "Capture tool" : "记录工具"}
-          active={index === 0}
-          className="size-7"
-        />
-      ))}
-    </div>
-  )
-}
-
-export function NoteGenWindowControls({ platform = "mac", className }: { platform?: "mac" | "windows" | "linux"; className?: string }) {
-  if (platform === "mac") {
-    return (
-      <div className={cn("flex items-center gap-2 px-3", className)} aria-label="macOS window controls">
-        <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-        <span className="size-2.5 rounded-full bg-[#febc2e]" />
-        <span className="size-2.5 rounded-full bg-[#28c840]" />
-      </div>
-    )
-  }
-  return (
-    <div className={cn("ml-auto flex h-full items-stretch", className)} aria-label={`${platform} window controls`}>
-      <span className="flex w-10 items-center justify-center text-muted-foreground"><Minus className="size-3" /></span>
-      <span className="flex w-10 items-center justify-center text-muted-foreground"><Square className="size-2.5" /></span>
-      <span className="flex w-10 items-center justify-center text-muted-foreground"><X className="size-3" /></span>
-    </div>
-  )
-}
-
-export function NoteGenAppTitleBar({ lang = "cn", platform = "mac", className }: { lang?: NoteGenReplicaLanguage; platform?: "mac" | "windows" | "linux"; className?: string }) {
-  return (
-    <header className={cn("flex h-10 shrink-0 items-center border-b bg-background", className)}>
-      {platform === "mac" ? <NoteGenWindowControls platform="mac" /> : null}
-      <div className="flex min-w-0 flex-1 items-center justify-center">
-        <NoteGenCaptureToolbar lang={lang} />
-      </div>
-      <div className="flex items-center gap-0.5 px-2">
-        <NoteGenReplicaIconButton icon={PanelLeft} label="Left panel" className="size-7" />
-        <NoteGenReplicaIconButton icon={PanelRight} label="Right panel" className="size-7" />
-        <NoteGenReplicaIconButton icon={Pin} label="Pin" className="size-7" />
-        <NoteGenReplicaIconButton icon={Settings} label="Settings" className="size-7" />
-        <span className="relative ml-1 flex size-7 items-center justify-center rounded-md border text-muted-foreground">
-          <Bot className="size-3.5" />
-          <span className="absolute right-0.5 top-0.5 size-1.5 rounded-full bg-emerald-500 ring-1 ring-background" />
-        </span>
-      </div>
-      {platform !== "mac" ? <NoteGenWindowControls platform={platform} /> : null}
-    </header>
-  )
+export function NoteGenAppTitleBar({ lang = "cn", ...props }: Omit<NoteGenTitleBarProps, "lang"> & { lang?: NoteGenReplicaLanguage }) {
+  return <NoteGenWindowTitleBar lang={lang} {...props} />
 }
 
 export function NoteGenPanelHandle({ orientation = "vertical" }: { orientation?: "vertical" | "horizontal" }) {
-  return <div className={cn("group relative shrink-0 bg-border/70", orientation === "vertical" ? "w-px cursor-col-resize" : "h-px cursor-row-resize")}><span className={cn("absolute rounded-full bg-foreground/15 opacity-0 group-hover:opacity-100", orientation === "vertical" ? "inset-y-1/3 -left-0.5 w-0.5" : "inset-x-1/3 -top-0.5 h-0.5")} /></div>
+  return <div aria-hidden="true" className={cn("shrink-0 bg-border/70", orientation === "vertical" ? "w-px" : "h-px")} />
 }
 
-function StatusButton({ icon: Icon, label, endIcon: EndIcon }: { icon: typeof Bot; label: string; endIcon?: typeof Bot }) {
+export type NoteGenSyncIndicatorState = "local" | "not-configured" | "unavailable" | "checking" | "ready" | "syncing" | "failed" | "synced"
+
+const syncLabels: Record<NoteGenSyncIndicatorState, { cn: string; en: string }> = {
+  local: { cn: "仅本地存储", en: "Local storage only" },
+  "not-configured": { cn: "未配置同步", en: "Sync not configured" },
+  unavailable: { cn: "同步服务不可用", en: "Sync service unavailable" },
+  checking: { cn: "正在检查同步连接", en: "Checking sync connection" },
+  ready: { cn: "同步已就绪", en: "Sync ready" },
+  syncing: { cn: "正在同步", en: "Syncing" },
+  failed: { cn: "同步失败", en: "Sync failed" },
+  synced: { cn: "已同步", en: "Synced" },
+}
+
+export function NoteGenUnifiedSyncIndicator({ lang = "cn", state = "local", recentActivity }: {
+  lang?: NoteGenReplicaLanguage
+  state?: NoteGenSyncIndicatorState
+  recentActivity?: string
+}) {
+  const label = syncLabels[state][lang === "en" ? "en" : "cn"]
+  const description = `${lang === "en" ? "Sync status" : "同步状态"}：${label}。${recentActivity ?? (lang === "en" ? "No sync activity" : "暂无同步记录")}`
+  const syncColors = {
+    "--notegen-sync-ready": "var(--color-emerald-500, #10b981)",
+    "--notegen-sync-busy": "hsl(38 92% 50%)",
+  } as CSSProperties
   return (
-    <Button variant="ghost" size="sm" className="h-5 min-w-0 gap-1 px-1.5 text-[8px] font-normal text-muted-foreground">
-      <Icon data-icon="inline-start" />
-      <span className="truncate">{label}</span>
-      {EndIcon ? <EndIcon data-icon="inline-end" className="opacity-50" /> : null}
-    </Button>
+    <span role="status" tabIndex={0} aria-label={description} title={description} data-sync-state={state} style={{ ...syncColors, display: "inline-flex", width: 24, height: 24, flexShrink: 0, alignItems: "center", justifyContent: "center" }} className="flex size-6 shrink-0 items-center justify-center rounded-sm outline-none focus-visible:ring-1 focus-visible:ring-ring">
+      <span aria-hidden="true" style={{ display: "block", width: 8, height: 8, borderRadius: "50%", background: state === "local" || state === "not-configured" ? "color-mix(in srgb, var(--color-muted-foreground, #a1a1aa) 50%, transparent)" : state === "unavailable" || state === "failed" ? "var(--color-destructive, #ef4444)" : state === "checking" || state === "syncing" ? "var(--notegen-sync-busy)" : "var(--notegen-sync-ready)" }} className={cn("size-2 rounded-full", state === "local" || state === "not-configured" ? "bg-muted-foreground/50" : state === "unavailable" || state === "failed" ? "bg-destructive" : state === "checking" || state === "syncing" ? "bg-[var(--notegen-sync-busy)]" : "bg-[var(--notegen-sync-ready)]")} />
+    </span>
   )
 }
 
-export function NoteGenMainStatusBar({
-  lang = "cn",
-  workspace = "writing",
-  className,
-}: {
+function StatusItem({ icon: Icon, label, endIcon: EndIcon }: { icon: typeof Bot; label: string; endIcon?: typeof Bot }) {
+  return (
+    <span title={label} className="inline-flex h-5 min-w-0 shrink-0 items-center gap-1 px-1.5">
+      <Icon className="size-3 shrink-0" />
+      <span className="truncate">{label}</span>
+      {EndIcon ? <EndIcon className="size-3 shrink-0 opacity-50" /> : null}
+    </span>
+  )
+}
+
+export type NoteGenMainStatusBarProps = {
   lang?: NoteGenReplicaLanguage
   workspace?: NoteGenWorkspace
+  workspaceName?: string
+  syncState?: NoteGenSyncIndicatorState
+  recentSyncActivity?: string
+  pluginSlot?: ReactNode
+  characterCount?: number
+  modelLabel?: string
+  promptLabel?: string
   className?: string
-}) {
-  const isEnglish = lang === "en"
+}
 
+export function NoteGenMainStatusBar({
+  lang = "cn", workspace = "writing", workspaceName, syncState = "local",
+  recentSyncActivity, pluginSlot, characterCount = 862, modelLabel = "GPT-5", promptLabel, className,
+}: NoteGenMainStatusBarProps) {
+  const en = lang === "en"
   return (
-    <footer className={cn("flex h-6 min-h-6 shrink-0 items-center gap-2 overflow-hidden border-t bg-background px-1 text-[8px] text-muted-foreground", className)}>
-      <Button variant="ghost" size="sm" className="h-5 max-w-48 shrink-0 gap-1 px-1.5 text-[8px] font-normal text-muted-foreground">
-        <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
-        <FolderOpen data-icon="inline-start" />
-        <span className="truncate">{isEnglish ? "Local workspace" : "本地工作区"}</span>
-        <ChevronsUpDown data-icon="inline-end" className="opacity-50" />
-      </Button>
-
-      <div className="flex min-w-0 flex-1 items-center justify-between overflow-hidden">
-        {workspace === "writing" ? (
-          <div className="flex min-w-0 items-center gap-0.5 overflow-hidden">
-            <span className="shrink-0 px-1 text-[8px]">{isEnglish ? "862 characters" : "862 字符"}</span>
-            <StatusButton icon={Eye} label={isEnglish ? "Visual" : "所见即所得"} />
-            <StatusButton icon={Copy} label={isEnglish ? "Copy" : "复制"} />
-            <StatusButton icon={Download} label={isEnglish ? "Export" : "导出"} />
-            <StatusButton icon={List} label={isEnglish ? "Outline" : "大纲"} />
-          </div>
-        ) : workspace === "canvas" ? (
-          <div className="flex min-w-0 items-center gap-0.5 overflow-hidden">
-            <StatusButton icon={Grid3X3} label={isEnglish ? "Grid" : "网格"} />
-            <StatusButton icon={Magnet} label={isEnglish ? "Snap" : "吸附"} />
-            <StatusButton icon={WandSparkles} label={isEnglish ? "Layout" : "布局"} />
-            <StatusButton icon={Code2} label={isEnglish ? "Import" : "导入"} />
-          </div>
-        ) : <span />}
-
-        {workspace === "writing" ? (
-          <span className="flex shrink-0 items-center gap-1 px-1"><Cloud className="size-3" />{isEnglish ? "Synced" : "已同步"}</span>
-        ) : workspace === "canvas" ? (
-          <div className="flex shrink-0 items-center gap-2 px-1"><ZoomOut className="size-3" /><span>100%</span><Maximize2 className="size-3" /></div>
-        ) : null}
-      </div>
-
-      <div className="flex shrink-0 items-center gap-0.5 overflow-hidden">
-        <StatusButton icon={Bot} label="GPT-5" endIcon={ChevronDown} />
-        <StatusButton icon={Sparkles} label={isEnglish ? "Default" : "默认提示词"} endIcon={ChevronDown} />
-      </div>
+    <footer data-notegen-replica="status-bar" className={cn("flex h-6 min-h-6 shrink-0 items-center gap-2 overflow-x-auto overflow-y-hidden border-t bg-background px-1 text-xs text-muted-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden", className)}>
+      <NoteGenUnifiedSyncIndicator lang={lang} state={syncState} recentActivity={recentSyncActivity} />
+      <StatusItem icon={FolderOpen} label={workspaceName ?? (en ? "Local workspace" : "本地工作区")} endIcon={ChevronsUpDown} />
+      {workspace === "writing" ? <div className="flex shrink-0 items-center gap-0.5">
+        <StatusItem icon={Eye} label={en ? "Visual" : "所见即所得"} />
+        <StatusItem icon={Copy} label={en ? "Copy" : "复制"} />
+        <StatusItem icon={Download} label={en ? "Export" : "导出"} />
+        <StatusItem icon={List} label={en ? "Outline" : "大纲"} />
+      </div> : workspace === "canvas" ? <div className="flex shrink-0 items-center gap-0.5">
+        <StatusItem icon={Grid3X3} label={en ? "Grid" : "网格"} />
+        <StatusItem icon={Magnet} label={en ? "Snap" : "吸附"} />
+        <StatusItem icon={WandSparkles} label={en ? "Layout" : "布局"} />
+        <StatusItem icon={Code2} label={en ? "Import" : "导入"} />
+        <StatusItem icon={ZoomOut} label="100%" />
+        <StatusItem icon={Maximize2} label={en ? "Fit canvas" : "适应画布"} />
+      </div> : null}
+      <span className="min-w-2 flex-1" aria-hidden="true" />
+      {pluginSlot ? <div data-notegen-replica="status-plugins" className="flex shrink-0 items-center gap-1">{pluginSlot}</div> : null}
+      <span className="min-w-2 flex-1" aria-hidden="true" />
+      {workspace === "writing" ? <span className="px-1">T {characterCount} {en ? "characters" : "字符"}</span> : null}
+      <StatusItem icon={Settings2} label={en ? "Configure sync" : "配置同步"} />
+      <StatusItem icon={Bot} label={modelLabel} endIcon={ChevronDown} />
+      <StatusItem icon={Sparkles} label={promptLabel ?? (en ? "Default" : "默认提示词")} endIcon={ChevronDown} />
     </footer>
   )
 }
 
-export function NoteGenAppShell({ children, lang = "cn", platform = "mac", workspace = "writing", className }: { children: ReactNode; lang?: NoteGenReplicaLanguage; platform?: "mac" | "windows" | "linux"; workspace?: NoteGenWorkspace; className?: string }) {
+export function NoteGenAppShell({ children, lang = "cn", platform = "mac", workspace = "writing", className, titleBarProps, statusBarProps }: {
+  children: ReactNode
+  lang?: NoteGenReplicaLanguage
+  platform?: NoteGenReplicaPlatform
+  workspace?: NoteGenWorkspace
+  className?: string
+  titleBarProps?: Omit<NoteGenTitleBarProps, "lang" | "platform">
+  statusBarProps?: Omit<NoteGenMainStatusBarProps, "lang" | "workspace">
+}) {
   return (
-    <div className={cn("flex aspect-[16/10] min-h-0 w-full flex-col overflow-hidden rounded-xl border bg-background text-[10px] shadow-xl", className)}>
-      <NoteGenAppTitleBar lang={lang} platform={platform} />
+    <NoteGenReplicaFrame fill className={cn("flex min-h-0 flex-col", className)}>
+      <NoteGenAppTitleBar lang={lang} platform={platform} {...titleBarProps} />
       <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
-      <NoteGenMainStatusBar lang={lang} workspace={workspace} />
-    </div>
+      <NoteGenMainStatusBar lang={lang} workspace={workspace} {...statusBarProps} />
+    </NoteGenReplicaFrame>
   )
 }

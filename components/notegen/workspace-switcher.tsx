@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { Files, Highlighter, Palette } from "lucide-react"
 
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
@@ -7,8 +8,28 @@ import { cn } from "@/lib/utils"
 
 export type NoteGenWorkspace = "writing" | "records" | "canvas"
 
+export function NoteGenWorkspaceSidebar({ lang, value, onValueChange, actions, children, compact = false, className }: {
+  lang: NoteGenReplicaLanguage
+  value: NoteGenWorkspace
+  onValueChange?: (workspace: NoteGenWorkspace) => void
+  actions?: ReactNode
+  children: ReactNode
+  compact?: boolean
+  className?: string
+}) {
+  return (
+    <section data-notegen-replica="workspace-sidebar" className={cn("flex min-h-0 min-w-0 flex-col border-r", className)}>
+      <div className="flex h-12 shrink-0 items-center justify-between border-b px-2">
+        <NoteGenWorkspaceSwitcher lang={lang} value={value} onValueChange={onValueChange} className={cn("shrink-0 flex-nowrap", compact && "[&>button]:gap-1 [&>button]:px-1.5")} />
+        {actions}
+      </div>
+      <div className="relative min-h-0 flex-1 overflow-hidden">{children}</div>
+    </section>
+  )
+}
+
 const workspaceTabs = [
-  { id: "writing", cn: "写作", en: "Writing", icon: Files },
+  { id: "writing", cn: "笔记", en: "Notes", icon: Files },
   { id: "records", cn: "记录", en: "Records", icon: Highlighter },
   { id: "canvas", cn: "画布", en: "Canvas", icon: Palette },
 ] satisfies Array<{
@@ -53,7 +74,7 @@ export function NoteGenWorkspaceSwitcher({
             )}
           >
             <Icon className="size-4 shrink-0" />
-            {active ? <span className="whitespace-nowrap text-[10px]">{label}</span> : null}
+            {active ? <span className="whitespace-nowrap text-sm">{label}</span> : null}
           </button>
         )
       })}

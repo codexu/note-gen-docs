@@ -22,8 +22,19 @@ import {
 import {
   NoteGenDesktopReplica,
   NoteGenAgentPanel,
+  NoteGenChatEmpty,
+  NoteGenSkillsSettingsDialog,
+  NoteGenMcpSettingsDialog,
+  NoteGenMemoriesSettingsDialog,
+  NoteGenKnowledgeSettingsDialog,
+  NoteGenKnowledgeSources,
+  NoteGenMcpRecordWorkspace,
+  NoteGenSkillInstallApproval,
+  NoteGenSkillCandidateChoice,
   NoteGenActivityHeatmap,
   NoteGenAppShell,
+  NoteGenMainStatusBar,
+  NoteGenUnifiedSyncIndicator,
   NoteGenCanvasWorkspace,
   NoteGenConfirmationDialog,
   NoteGenDialogBackdrop,
@@ -50,6 +61,7 @@ import {
   NoteGenWindowTitleBar,
   NoteGenWorkspaceSwitcher,
   type NoteGenReplicaLanguage,
+  type NoteGenSyncIndicatorState,
   type NoteGenWorkspace,
 } from "@/components/notegen"
 import { Badge } from "@/components/ui/badge"
@@ -69,6 +81,8 @@ const titleBarModes = [
   ["agent-tools", "Agent 工具", "Agent tools"],
   ["canvas-tools", "画布工具", "Canvas tools"],
 ] as const
+
+const syncIndicatorStates: NoteGenSyncIndicatorState[] = ["local", "not-configured", "unavailable", "checking", "ready", "syncing", "failed", "synced"]
 
 export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage }) {
   const [workspace, setWorkspace] = useState<NoteGenWorkspace>("records")
@@ -124,8 +138,8 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
           eyebrow="01 · NoteGenDesktopReplica"
           title={text("完整桌面应用", "Complete desktop app")}
           description={text(
-            "点击右上角齿轮可以进入设置页，再点击返回按钮回到工作区。左侧写作、记录和画布也可以切换。",
-            "Use the settings button in the top-right to open preferences and return to the workspace. Writing, records, and canvas are interactive too."
+            "点击齿轮打开或关闭设置，切换左侧写作、记录和画布。标题栏支持面板显隐和置顶状态演示；底部左侧指示器展示同步状态。",
+            "Open or close settings, switch between writing, records, and canvas, and try panel visibility and pinning in the title bar. The bottom-left indicator shows sync status."
           )}
         >
           <div className="mx-auto w-full max-w-6xl">
@@ -157,6 +171,33 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
             <ComponentCard desktopWidth={560} title="NoteGenWorkspaceSwitcher" description={text("可交互的工作区入口", "Interactive workspace navigation")}>
               <div className="flex min-h-32 items-center justify-center rounded-lg border bg-background">
                 <NoteGenWorkspaceSwitcher lang={lang} value={workspace} onValueChange={setWorkspace} />
+              </div>
+            </ComponentCard>
+
+            {(["windows", "linux"] as const).map((platform) => (
+              <ComponentCard key={platform} desktopWidth={760} title={`NoteGenWindowTitleBar · ${platform}`} description={text("系统窗口控制在右侧", "Window controls on the right")}>
+                <div className="overflow-hidden rounded-lg border bg-background">
+                  <NoteGenWindowTitleBar lang={lang} platform={platform} />
+                  <div className="h-12" />
+                </div>
+              </ComponentCard>
+            ))}
+
+            <ComponentCard desktopWidth={900} title="NoteGenMainStatusBar" description={text("统一同步、工作区、编辑器、插件槽位和模型入口", "Unified sync, workspace, editor, plugin slot, and model display")}>
+              <div className="overflow-hidden rounded-lg border bg-background">
+                <div className="h-16" />
+                <NoteGenMainStatusBar lang={lang} syncState="synced" recentSyncActivity={text("最近同步成功：Markdown 文件 · 2026/10/1 09:40", "Last successful sync: Markdown files · 2026/10/1 09:40")} pluginSlot={<span className="px-1.5">{text("示例插件", "Example plugin")}</span>} />
+              </div>
+            </ComponentCard>
+
+            <ComponentCard title="NoteGenUnifiedSyncIndicator" description={text("固定状态样例；悬停查看说明，键盘可聚焦并读取状态", "Fixed state examples; hover for descriptions or focus to read each status")}>
+              <div className="flex flex-col gap-2 rounded-lg border bg-background p-3">
+                {syncIndicatorStates.map((state) => (
+                  <div key={state} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <NoteGenUnifiedSyncIndicator lang={lang} state={state} />
+                    <span>{state}</span>
+                  </div>
+                ))}
               </div>
             </ComponentCard>
 
@@ -211,10 +252,19 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
           description={text("每个工作区都由更小的列表、工具栏、内容区和状态组件组合而成。", "Each workspace is composed from smaller lists, toolbars, content areas, and state components.")}
         >
           <div className="grid gap-6">
-            <ComponentCard desktopWidth={1152} title="NoteGenRecordWorkspace" description={text("记录列表与详情", "Capture list and detail")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenRecordWorkspace lang={lang} /></div></ComponentCard>
+            <ComponentCard desktopWidth={1152} title="NoteGenRecordWorkspace · NoteGenTagManagementReplica" description={text("上方层级标签树，下方所选标签与子级的记录；可拖动分隔条、右键管理标签", "Hierarchical tags above matching records; drag the divider or right-click a tag to manage it")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenRecordWorkspace lang={lang} /></div></ComponentCard>
             <ComponentCard desktopWidth={1152} title="NoteGenEditorWorkspace" description={text("文件树、标签页与 Markdown 编辑器", "File tree, tabs, and Markdown editor")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenEditorWorkspace lang={lang} /></div></ComponentCard>
             <div className="grid gap-6 xl:grid-cols-2">
               <ComponentCard desktopWidth={552} title="NoteGenAgentPanel" description={text("消息、思考过程、工具调用与上下文", "Messages, reasoning, tool calls, and context")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenAgentPanel lang={lang} /></div></ComponentCard>
+              <ComponentCard desktopWidth={440} title="NoteGenChatEmpty" description={text("空白对话：淡网格、快速开始与可选最近对话", "Empty conversation with a subtle grid, quick prompts and optional recent conversations")}><div style={{ height: 560 }}><NoteGenChatEmpty lang={lang} recentConversations={[{ title: lang === "en" ? "Help me write a note" : "帮我写一篇笔记", time: lang === "en" ? "1 hour ago" : "1 小时前" }]} /></div></ComponentCard>
+              <ComponentCard desktopWidth={1360} title="NoteGenKnowledgeSettingsDialog" description={text("知识库检索模型、索引状态和来源设置（固定模拟数据）", "Retrieval models, index status and source controls with fixed demo data")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenKnowledgeSettingsDialog lang={lang} /></div></ComponentCard>
+              <ComponentCard desktopWidth={552} title="NoteGenKnowledgeSources" description={text("文章与记录参考来源、原文展开与入口", "Referenced articles and records with original content")}><div className="ng-skill-workspace" style={{ width: "100%", height: "auto", padding: 16 }}><NoteGenKnowledgeSources lang={lang} expanded sources={[{ type: "article", title: text("发布会议.md", "Release meeting.md"), content: text("原定 10 月 12 日发布。", "Originally scheduled for October 12."), expanded: true }, { type: "record", title: text("发布调整", "Release adjustment"), content: text("调整至 10 月 15 日。", "Moved to October 15.") }]} /></div></ComponentCard>
+              <ComponentCard desktopWidth={1360} title="NoteGenSkillsSettingsDialog" description={text("设置-技能：工作区与全局技能、安装入口和启用状态", "Settings–Skills: workspace/global lists, installation entries and enable state")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenSkillsSettingsDialog lang={lang} skills={[{ name: "meeting-notes", description: lang === "en" ? "Summarize meeting notes, decisions and action items." : "将会议记录整理成讨论要点、决定与待办事项。", enabled: true }]} /></div></ComponentCard>
+              <ComponentCard desktopWidth={1360} title="NoteGenMcpRecordWorkspace" description={text("MCP 记录结果：固定示例数据，完整 PC 工作台", "MCP record result: fixed demo data, full desktop workspace")}><NoteGenMcpRecordWorkspace lang={lang} title={text("项目调研结论", "Project findings")} content={text("先完成模板，再检查文案，最后确定上线日期。", "Finish the template, review the copy, then confirm the launch date.")} tag={text("项目调研", "Research")} time="2026-10-02 14:00" /></ComponentCard>
+              <ComponentCard desktopWidth={1360} title="NoteGenMemoriesSettingsDialog" description={text("记忆管理：自动生成、状态筛选、记忆表单和操作菜单（固定模拟数据）", "Memory management: generation, status filters, forms and actions with fixed demo data")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenMemoriesSettingsDialog lang={lang} memories={[{ id: "writing", content: lang === "en" ? "Give the conclusion first, then list the steps." : "回答先给结论，再列出操作步骤。", kind: "preference", scope: "global", status: "active", always: true }]} /></div></ComponentCard>
+              <ComponentCard desktopWidth={1360} title="NoteGenMcpSettingsDialog" description={text("MCP：访问 NoteGen、本机服务和连接配置（展示状态）", "MCP: local access and connection config (display only)")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenMcpSettingsDialog lang={lang} state="running" /></div></ComponentCard>
+              <ComponentCard desktopWidth={552} title="NoteGenSkillCandidateChoice" description={text("Agent 单选提问：多个技能候选与选中状态", "Agent single-choice panel with multiple Skill candidates")}><div className="ng-skill-workspace" style={{ width: "100%", height: "auto" }}><NoteGenSkillCandidateChoice lang={lang} selected="meeting-notes" candidates={[{ name: "meeting-notes", description: text("整理会议要点、决定和待办事项。", "Organize meeting topics, decisions and action items."), source: "Azure-Samples / agent-skills-dotnet-demo" }, { name: "summarize-meeting", description: text("将会议转录整理为结构化摘要。", "Produce a structured summary from a transcript."), source: "tomzx / agents" }, { name: "doc-coauthoring", description: text("协作编写文档与决策记录。", "Collaborate on documents and decision records."), source: "anthropics / skills" }]} /></div></ComponentCard>
+              <ComponentCard desktopWidth={552} title="NoteGenSkillInstallApproval" description={text("第三方 Skill 安装来源、固定版本、范围与确认；展示状态不执行安装", "Source, revision, scope, and confirmation; display only")}><div className="ng-skill-workspace" style={{ width: "100%", height: "auto" }}><NoteGenSkillInstallApproval lang={lang} value={{ kind: "remote", name: "example-skill", source: "https://example.com/skill.zip", revision: "example-revision", scope: "global" }} /></div></ComponentCard>
               <ComponentCard desktopWidth={552} title="NoteGenCanvasWorkspace" description={text("画布项目、节点、连线和画布工具", "Canvas projects, nodes, edges, and canvas tools")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenCanvasWorkspace lang={lang} /></div></ComponentCard>
             </div>
             <ComponentCard desktopWidth={1152} title="NoteGenAppShell" description={text("当前桌面外壳：平台窗口控制、记录工具与全局统一状态栏", "Current desktop shell with platform controls, capture tools, and one unified status bar")}><NoteGenAppShell lang={lang}><div className="grid h-full grid-cols-[28%_42%_30%]"><div className="border-r"><NoteGenRecordWorkspace lang={lang} /></div><div className="border-r"><NoteGenEditorWorkspace lang={lang} /></div><NoteGenAgentPanel lang={lang} /></div></NoteGenAppShell></ComponentCard>

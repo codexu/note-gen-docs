@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useEffect, useState } from "react"
+import { memo, useEffect, useMemo, useState } from "react"
 import {
   Check,
   CheckSquare,
@@ -48,12 +48,14 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { CanvasThumbnail } from "@/components/home/canvas-thumbnail"
-import { NoteGenMainStatusBar } from "@/components/notegen/app-shell-replica"
-import { NoteGenReplicaFrame } from "@/components/notegen/replica-primitives"
+import { NoteGenMainStatusBar, type NoteGenMainStatusBarProps, type NoteGenReplicaPlatform } from "@/components/notegen/app-shell-replica"
+import { NoteGenReplicaFrame, NoteGenReplicaIconButton } from "@/components/notegen/replica-primitives"
+import { createNoteGenTagFixture, NoteGenTagManagementReplica } from "@/components/notegen/tag-management-replica"
+import { NoteGenTagPlusIcon } from "@/components/notegen/tag-plus-icon"
 import { NoteGenSettingsReplica } from "@/components/notegen/settings-replica"
 import type { NoteGenReplicaView } from "@/components/notegen/types"
-import { NoteGenWindowTitleBar, type NoteGenTitleBarMode } from "@/components/notegen/window-title-bar"
-import { NoteGenWorkspaceSwitcher, type NoteGenWorkspace } from "@/components/notegen/workspace-switcher"
+import { NoteGenWindowTitleBar, type NoteGenReplicaPanelVisibility, type NoteGenTitleBarMode } from "@/components/notegen/window-title-bar"
+import { NoteGenWorkspaceSidebar, type NoteGenWorkspace } from "@/components/notegen/workspace-switcher"
 import { cn } from "@/lib/utils"
 
 export type NoteGenReplicaRecord = {
@@ -63,6 +65,7 @@ export type NoteGenReplicaRecord = {
   content: string
   time: string
   imageCount?: number
+  tagPaths?: string[]
 }
 
 const records: NoteGenReplicaRecord[] = [
@@ -173,6 +176,16 @@ const MemoizedAgentPanel = memo(AgentPanel)
 
 const workspaceCycle: Workspace[] = ["writing", "records", "canvas"]
 
+type ReplicaPanelLayout = "three" | "two" | "left" | "center" | "right"
+
+function panelsForLayout(layout: ReplicaPanelLayout): NoteGenReplicaPanelVisibility {
+  return {
+    left: layout === "three" || layout === "two" || layout === "left",
+    center: layout === "three" || layout === "two" || layout === "center",
+    right: layout === "three" || layout === "right",
+  }
+}
+
 export function NoteGenDesktopReplica({
   lang = "cn",
   initialWorkspace = "records",
@@ -184,20 +197,38 @@ export function NoteGenDesktopReplica({
   simplified = false,
   recordItems,
   recordGroupLabel,
+  platform = "mac",
+  hasUpdate = false,
+  statusBarProps,
 }: {
   lang?: "cn" | "en"
   initialWorkspace?: Workspace
   initialView?: NoteGenReplicaView
   autoCycle?: boolean
-  panelLayout?: "three" | "two" | "left" | "center" | "right"
+  panelLayout?: ReplicaPanelLayout
   titleBarMode?: NoteGenTitleBarMode | "none"
   fill?: boolean
   simplified?: boolean
   recordItems?: NoteGenReplicaRecord[]
   recordGroupLabel?: string
+  platform?: NoteGenReplicaPlatform
+  hasUpdate?: boolean
+  statusBarProps?: Omit<NoteGenMainStatusBarProps, "lang" | "workspace">
 }) {
   const [workspace, setWorkspace] = useState<Workspace>(initialWorkspace)
   const [view, setView] = useState<NoteGenReplicaView>(initialView)
+  const [pinned, setPinned] = useState(false)
+  const [panels, setPanels] = useState<NoteGenReplicaPanelVisibility>(() => panelsForLayout(panelLayout))
+  useEffect(() => { setPanels(panelsForLayout(panelLayout)) }, [panelLayout])
+  const visiblePanelCount = Number(panels.left) + Number(panels.center) + Number(panels.right)
+  const togglePanel = (panel: keyof NoteGenReplicaPanelVisibility) => {
+    setPanels((current) => {
+      const next = { ...current, [panel]: !current[panel] }
+      // Match the product: keep a content panel, never close the last panel.
+      if (!next.center && !next.right) return current
+      return next
+    })
+  }
 
   useEffect(() => {
     if (!autoCycle) return
@@ -224,6 +255,12 @@ export function NoteGenDesktopReplica({
           mode={titleBarMode}
           view={view}
           onViewChange={setView}
+          platform={platform}
+          panels={panels}
+          onPanelToggle={togglePanel}
+          pinned={pinned}
+          onPinnedChange={setPinned}
+          hasUpdate={hasUpdate}
           className="shrink-0"
         />
       ) : null}
@@ -233,14 +270,16 @@ export function NoteGenDesktopReplica({
         ) : <div
           className={cn(
             "grid min-w-0 origin-top-left",
-            panelLayout === "three"
+            visiblePanelCount === 3
               ? "h-full w-full grid-cols-[26%_44%_30%]"
-              : panelLayout === "two"
-                ? cn("h-full w-full", simplified ? "grid-cols-[minmax(170px,34%)_minmax(0,1fr)]" : "grid-cols-[30%_70%]")
+              : visiblePanelCount === 2
+                ? cn("h-full w-full", panels.left && panels.center
+                  ? (simplified ? "grid-cols-[minmax(170px,34%)_minmax(0,1fr)]" : "grid-cols-[30%_70%]")
+                  : panels.left ? "grid-cols-2" : "grid-cols-[60%_40%]")
                 : "h-[117.647%] w-[117.647%] scale-[0.85] grid-cols-1"
           )}
         >
-          {panelLayout === "three" || panelLayout === "two" || panelLayout === "left" ? (
+          {panels.left ? (
             <WorkspaceSidebar
               lang={lang}
               workspace={workspace}
@@ -250,43 +289,22 @@ export function NoteGenDesktopReplica({
               recordGroupLabel={recordGroupLabel}
             />
           ) : null}
-          {panelLayout === "three" || panelLayout === "two" || panelLayout === "center" ? (
+          {panels.center ? (
             <>
               {workspace === "records" ? <RecordDetailReplica lang={lang} simplified={simplified} /> : null}
               {workspace === "writing" && (lang === "en" ? <MemoizedEnglishEditor simplified={simplified} /> : <MemoizedEditor simplified={simplified} />)}
               {workspace === "canvas" ? <CanvasEditorReplica lang={lang} simplified={simplified} /> : null}
             </>
           ) : null}
-          {panelLayout === "three" || panelLayout === "right" ? <MemoizedAgentPanel lang={lang} /> : null}
+          {panels.right ? <MemoizedAgentPanel lang={lang} /> : null}
         </div>}
       </div>
-      {!simplified ? <NoteGenMainStatusBar lang={lang} workspace={workspace} /> : null}
+      {!simplified ? <NoteGenMainStatusBar lang={lang} workspace={workspace} {...statusBarProps} /> : null}
     </NoteGenReplicaFrame>
   )
 }
 
 type Workspace = NoteGenWorkspace
-
-function WorkspaceTabs({
-  lang,
-  workspace,
-  onWorkspaceChange,
-  simplified,
-}: {
-  lang: "cn" | "en"
-  workspace: Workspace
-  onWorkspaceChange: (workspace: Workspace) => void
-  simplified?: boolean
-}) {
-  return (
-    <NoteGenWorkspaceSwitcher
-      lang={lang}
-      value={workspace}
-      onValueChange={onWorkspaceChange}
-      className={simplified ? "shrink-0 flex-nowrap [&>button]:gap-1 [&>button]:px-1.5" : undefined}
-    />
-  )
-}
 
 function WorkspaceSidebar({
   lang,
@@ -303,14 +321,9 @@ function WorkspaceSidebar({
   recordItems?: NoteGenReplicaRecord[]
   recordGroupLabel?: string
 }) {
+  const [tagCreateRequest, setTagCreateRequest] = useState(0)
   return (
-    <section className="flex min-w-0 flex-col border-r">
-      <div className="flex h-12 shrink-0 items-center justify-between border-b px-2">
-        <WorkspaceTabs lang={lang} workspace={workspace} onWorkspaceChange={onWorkspaceChange} simplified={simplified} />
-        {!simplified ? <WorkspaceActions workspace={workspace} /> : null}
-      </div>
-
-      <div className="relative min-h-0 flex-1 overflow-hidden">
+    <NoteGenWorkspaceSidebar lang={lang} value={workspace} onValueChange={onWorkspaceChange} compact={simplified} actions={!simplified ? <WorkspaceActions workspace={workspace} lang={lang} onCreateTag={() => setTagCreateRequest(current => current + 1)} /> : undefined}>
         <div className={cn("absolute inset-0 transition-opacity duration-150", workspace === "writing" ? "opacity-100" : "pointer-events-none opacity-0")}>
           <WritingSidebarContent lang={lang} />
         </div>
@@ -319,17 +332,18 @@ function WorkspaceSidebar({
             lang={lang}
             recordItems={recordItems}
             recordGroupLabel={recordGroupLabel}
+            createRequest={tagCreateRequest}
+            simplified={simplified}
           />
         </div>
         <div className={cn("absolute inset-0 transition-opacity duration-150", workspace === "canvas" ? "opacity-100" : "pointer-events-none opacity-0")}>
           <CanvasSidebarContent lang={lang} />
         </div>
-      </div>
-    </section>
+    </NoteGenWorkspaceSidebar>
   )
 }
 
-function WorkspaceActions({ workspace }: { workspace: Workspace }) {
+function WorkspaceActions({ workspace, lang, onCreateTag }: { workspace: Workspace; lang: "cn" | "en"; onCreateTag: () => void }) {
   const actions = workspace === "writing"
     ? [FilePlus, FolderPlus, RefreshCw, EllipsisVertical]
     : workspace === "canvas"
@@ -339,10 +353,7 @@ function WorkspaceActions({ workspace }: { workspace: Workspace }) {
   return (
     <div className="flex shrink-0 items-center gap-0.5">
       {workspace === "records" ? (
-        <span className="relative flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground">
-          <Tag className="size-4" strokeWidth={1.7} />
-          <Plus className="absolute right-1 top-1 size-2.5 rounded-full bg-background" strokeWidth={2.2} />
-        </span>
+        <NoteGenReplicaIconButton icon={NoteGenTagPlusIcon} label={lang === "en" ? "New tag" : "新建标签"} onClick={onCreateTag} />
       ) : null}
       {actions.map((Icon, index) => (
         <IconButton key={`${workspace}-${index}`} icon={Icon} />
@@ -355,52 +366,31 @@ function RecordsSidebarContent({
   lang,
   recordItems,
   recordGroupLabel,
+  createRequest,
+  simplified = false,
 }: {
   lang: "cn" | "en"
   recordItems?: NoteGenReplicaRecord[]
   recordGroupLabel?: string
+  createRequest: number
+  simplified?: boolean
 }) {
   const visibleRecords = recordItems ?? (lang === "en" ? recordsEn : records)
+  const fixture = useMemo(() => {
+    const base = createNoteGenTagFixture(lang, visibleRecords.map((_, index) => index), recordGroupLabel)
+    const memberships = base.memberships.map((membership, index) => ({ ...membership, tagPaths: visibleRecords[index].tagPaths?.length ? visibleRecords[index].tagPaths! : membership.tagPaths }))
+    const paths = new Set(base.tags.map(tag => tag.path))
+    const tags = [...base.tags, ...memberships.flatMap(record => record.tagPaths).filter(path => {
+      if (paths.has(path)) return false
+      paths.add(path); return true
+    }).map(path => ({ path }))]
+    return { ...base, tags, memberships }
+  }, [lang, visibleRecords, recordGroupLabel])
 
   return (
-    <div className="min-h-0 flex-1 overflow-hidden">
-      <div className="border-b">
-        <div className="flex h-10 items-center justify-between px-3 font-medium">
-          <div className="flex min-w-0 items-center gap-2">
-            <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
-            <Tags className="size-3.5 shrink-0 text-muted-foreground" />
-            <span className="truncate">
-              {recordGroupLabel ?? (lang === "en" ? "Paris trip" : "杭州旅行")}
-            </span>
-          </div>
-          <span className="text-[10px] font-normal text-muted-foreground">
-            {visibleRecords.length}
-          </span>
-        </div>
-        <div className="border-t border-border/60">
-          {visibleRecords.map((record, index) => (
-            <RecordItem key={record.title} record={record} active={index === 0} />
-          ))}
-        </div>
-      </div>
-
-      <div className="flex h-10 items-center justify-between px-3 text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <ChevronRight className="size-3.5" />
-          <Tags className="size-3.5" />
-          <span>{lang === "en" ? "Product ideas" : "产品想法"}</span>
-        </div>
-        <span className="text-[10px]">7</span>
-      </div>
-      <div className="flex h-10 items-center justify-between border-t px-3 text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <ChevronRight className="size-3.5" />
-          <Tags className="size-3.5" />
-          <span>{lang === "en" ? "Daily notes" : "日常记录"}</span>
-        </div>
-        <span className="text-[10px]">18</span>
-      </div>
-    </div>
+    <NoteGenTagManagementReplica key={lang + JSON.stringify(fixture)} lang={lang} initialTags={fixture.tags} initialRecords={fixture.memberships} initialSelectedPath={recordItems?.[0]?.tagPaths?.[0] ?? fixture.groupPath} initialCollapsed={simplified} createRequest={createRequest}>
+      {(filtered) => filtered.map(({ id, tagPaths }, index) => <RecordItem key={id} record={{ ...visibleRecords[id], tagPaths: simplified ? undefined : tagPaths }} active={index === 0} />)}
+    </NoteGenTagManagementReplica>
   )
 }
 
@@ -528,6 +518,7 @@ function RecordItem({
       </div>
       <p className="truncate font-medium">{record.title}</p>
       <p className="mt-1 truncate text-[10px] text-muted-foreground">{record.content}</p>
+      {record.tagPaths?.length ? <div className="mt-1.5 flex flex-wrap gap-1">{record.tagPaths.map(path => <Badge key={path} variant="secondary" title={path}>{path.slice(path.lastIndexOf("/") + 1)}</Badge>)}</div> : null}
       {record.imageCount ? (
         <div className="mt-2 grid grid-cols-3 gap-1.5">
           {Array.from({ length: record.imageCount }, (_, index) => (

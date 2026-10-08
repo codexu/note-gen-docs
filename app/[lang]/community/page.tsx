@@ -59,7 +59,7 @@ const content = {
 } as const;
 
 const qqGroupQrUrl = 'https://files.seeusercontent.com/2026/07/06/wy6R/448631047-08d1ccbc-5909-483d-a41.png';
-const wechatAdminQrUrl = 'https://files.seeusercontent.com/2026/07/06/W6mi/590254361-d7e2773a-0c31-4247-a4d.png';
+const wechatAdminQrUrl = 'https://files.seeusercontent.com/2026/10/08/cGl2/IMG_4512.jpg';
 
 export async function generateMetadata({
   params,

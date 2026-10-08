@@ -1,20 +1,23 @@
+"use client"
+
+import { useMemo, useState } from "react"
 import {
   CheckCircle2,
-  ChevronDown,
   FileText,
   Filter,
   Image,
   Link,
-  ListFilter,
   Mic,
   MoreHorizontal,
-  Plus,
   Search,
   SlidersHorizontal,
   Sparkles,
   Tag,
 } from "lucide-react"
 
+import { NoteGenTagManagementReplica } from "@/components/notegen/tag-management-replica"
+import { NoteGenReplicaIconButton } from "@/components/notegen/replica-primitives"
+import { NoteGenTagPlusIcon } from "@/components/notegen/tag-plus-icon"
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
 import { cn } from "@/lib/utils"
 
@@ -22,10 +25,11 @@ export function NoteGenTagChip({ label, count, active, color = "bg-blue-500" }: 
   return <span className={cn("inline-flex h-6 items-center gap-1.5 rounded-md px-2 text-[9px] text-muted-foreground", active && "bg-accent font-medium text-foreground")}><span className={cn("size-1.5 rounded-full", color)} />{label}{count !== undefined ? <span className="text-[8px] opacity-60">{count}</span> : null}</span>
 }
 
-export function NoteGenRecordHeader({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
+export function NoteGenRecordHeader({ lang = "cn", onCreateTag }: { lang?: NoteGenReplicaLanguage; onCreateTag?: () => void }) {
   return (
-    <div className="flex h-10 items-center gap-1 border-b px-2">
+    <div className="flex h-10 shrink-0 items-center gap-1 border-b px-2">
       <div className="flex h-7 min-w-0 flex-1 items-center gap-2 rounded-md bg-muted/50 px-2 text-muted-foreground"><Search className="size-3" /><span className="truncate">{lang === "en" ? "Search captures" : "搜索记录"}</span><span className="ml-auto rounded border px-1 text-[7px]">⌘ K</span></div>
+      <NoteGenReplicaIconButton icon={NoteGenTagPlusIcon} label={lang === "en" ? "New tag" : "新建标签"} onClick={onCreateTag} disabled={!onCreateTag} className="size-7 disabled:cursor-default" />
       <span className="flex size-7 items-center justify-center rounded-md text-muted-foreground"><Filter className="size-3.5" /></span>
       <span className="flex size-7 items-center justify-center rounded-md text-muted-foreground"><SlidersHorizontal className="size-3.5" /></span>
     </div>
@@ -71,8 +75,30 @@ export function NoteGenRecordDetail({ lang = "cn" }: { lang?: NoteGenReplicaLang
 }
 
 export function NoteGenRecordSidebar({ lang = "cn", className }: { lang?: NoteGenReplicaLanguage; className?: string }) {
+  const [createRequest, setCreateRequest] = useState(0)
+  const fixture = useMemo(() => {
+    const root = lang === "en" ? "Knowledge" : "知识"
+    const idea = root + (lang === "en" ? "/Ideas" : "/灵感")
+    const writing = idea + (lang === "en" ? "/Writing" : "/写作")
+    const thoughts = idea + (lang === "en" ? "/Thoughts" : "/随想")
+    const meeting = root + (lang === "en" ? "/Meetings" : "/会议")
+    const design = root + (lang === "en" ? "/References/Interfaces" : "/参考资料/界面")
+    return {
+      root,
+      tags: [{ path: lang === "en" ? "Inbox" : "收件箱", locked: true }, ...[root, idea, writing, thoughts, meeting, design].map(path => ({ path }))],
+      records: [{ id: 0, tagPaths: [writing, thoughts] }, { id: 1, tagPaths: [meeting] }, { id: 2, tagPaths: [design] }],
+    }
+  }, [lang])
   return (
-    <aside className={cn("flex h-full min-h-0 flex-col bg-sidebar", className)}><NoteGenRecordHeader lang={lang} /><div className="flex items-center gap-1 overflow-hidden border-b px-2 py-2"><NoteGenTagChip label={lang === "en" ? "All" : "全部"} count={24} active /><NoteGenTagChip label={lang === "en" ? "Ideas" : "灵感"} count={8} color="bg-violet-500" /><span className="ml-auto flex size-6 items-center justify-center"><Plus className="size-3" /></span></div><div className="flex items-center justify-between px-3 py-2 text-[8px] text-muted-foreground"><span>{lang === "en" ? "TODAY" : "今天"}</span><span className="flex items-center gap-1"><ListFilter className="size-3" />{lang === "en" ? "Newest" : "最新"}<ChevronDown className="size-2.5" /></span></div><div className="min-h-0 flex-1 space-y-0.5 overflow-hidden px-1.5"><NoteGenRecordItem type="text" active title={lang === "en" ? "A lightweight way to keep useful fragments" : "一种保留有用碎片的轻量方式"} excerpt={lang === "en" ? "Capture first, structure later…" : "先记录，再整理，让想法自然抵达……"} tags={[lang === "en" ? "idea" : "灵感"]} /><NoteGenRecordItem type="audio" title={lang === "en" ? "Product meeting notes" : "产品会议速记"} excerpt={lang === "en" ? "Audio · 01:42" : "录音 · 01:42"} time="09:48" /><NoteGenRecordItem type="image" title={lang === "en" ? "Interface references" : "界面参考"} excerpt={lang === "en" ? "3 images" : "3 张图片"} time="Yesterday" /></div></aside>
+    <aside className={cn("flex h-full min-h-0 flex-col bg-sidebar", className)}>
+      <NoteGenRecordHeader lang={lang} onCreateTag={() => setCreateRequest(current => current + 1)} />
+      <NoteGenTagManagementReplica key={lang} lang={lang} initialTags={fixture.tags} initialRecords={fixture.records} initialSelectedPath={fixture.root} createRequest={createRequest}>
+        {(filtered) => <div className="flex flex-col gap-0.5 px-1.5">{filtered.map(({ id, tagPaths }, index) => id === 0
+          ? <NoteGenRecordItem key={id} type="text" active={index === 0} title={lang === "en" ? "A lightweight way to keep useful fragments" : "一种保留有用碎片的轻量方式"} excerpt={lang === "en" ? "Capture first, structure later…" : "先记录，再整理，让想法自然抵达……"} tags={tagPaths.map(path => path.slice(path.lastIndexOf("/") + 1))} />
+          : id === 1 ? <NoteGenRecordItem key={id} type="audio" active={index === 0} title={lang === "en" ? "Product meeting notes" : "产品会议速记"} excerpt={lang === "en" ? "Audio · 01:42" : "录音 · 01:42"} time="09:48" tags={tagPaths.map(path => path.slice(path.lastIndexOf("/") + 1))} />
+          : <NoteGenRecordItem key={id} type="image" active={index === 0} title={lang === "en" ? "Interface references" : "界面参考"} excerpt={lang === "en" ? "3 images" : "3 张图片"} time={lang === "en" ? "Yesterday" : "昨天"} tags={tagPaths.map(path => path.slice(path.lastIndexOf("/") + 1))} />)}</div>}
+      </NoteGenTagManagementReplica>
+    </aside>
   )
 }
 

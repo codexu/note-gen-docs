@@ -1,5 +1,7 @@
 "use client"
 
+import { settingsScrollbarCss } from "@/components/notegen/settings-scrollbar"
+
 import { useMemo, useState, type ReactNode } from "react"
 import {
   AppWindow,
@@ -47,6 +49,8 @@ import {
   ZoomIn,
 } from "lucide-react"
 
+import { NoteGenMemoriesSettings } from "./memories-replica"
+import { NoteGenSkillsSettings, skillsSettingsCss, type NoteGenInstalledSkill } from "@/components/notegen/skills-settings-replica"
 import { noteGenSettingsPages, type NoteGenSettingRowData, type NoteGenSettingSectionData, type NoteGenSettingSectionId } from "@/components/notegen/settings-data"
 import type { NoteGenReplicaIcon, NoteGenReplicaLanguage } from "@/components/notegen/types"
 import { cn } from "@/lib/utils"
@@ -86,8 +90,17 @@ export const noteGenSettingsNavigation = navigationItems
 
 const groupLabels = {
   basic: { cn: "基础设置", en: "Basic" },
-  aiExtensions: { cn: "AI 与扩展", en: "AI & Extensions" },
+  aiExtensions: { cn: "AI", en: "AI" },
   data: { cn: "数据与存储", en: "Data & Storage" },
+}
+
+function updateSettingsScrollbar(node: HTMLElement) {
+  const sidebar = node.parentElement
+  if (!sidebar) return
+  const ratio = Math.min(1, node.clientHeight / Math.max(1, node.scrollHeight))
+  sidebar.style.setProperty("--ng-settings-thumb-height", `${ratio * 100}%`)
+  sidebar.style.setProperty("--ng-settings-thumb-offset", `${node.scrollTop / Math.max(1, node.scrollHeight) * node.clientHeight}px`)
+  sidebar.style.setProperty("--ng-settings-scrollbar-visible", ratio < 1 ? "block" : "none")
 }
 
 export function NoteGenSettingsShell({
@@ -104,6 +117,7 @@ export function NoteGenSettingsShell({
       data-notegen-replica="settings-shell"
       className={cn("relative flex h-full min-h-0 w-full overflow-hidden bg-background", className)}
     >
+      <style>{settingsScrollbarCss}</style>
       {sidebar}
       <main className="min-h-0 min-w-0 flex-1 overflow-hidden">{children}</main>
     </div>
@@ -139,7 +153,8 @@ export function NoteGenSettingsSidebar({
   )
 
   return (
-    <aside className="flex h-full min-h-0 w-56 shrink-0 flex-col border-r bg-sidebar py-4">
+    <aside data-notegen-replica="settings-sidebar" className="flex h-full min-h-0 w-56 shrink-0 flex-col border-r bg-sidebar py-4">
+      <style>{settingsScrollbarCss}</style>
       <div className="shrink-0 px-3">
         <label className="flex h-8 items-center gap-2 rounded-lg border border-input bg-background px-2 text-muted-foreground">
           <Search className="size-4" />
@@ -158,7 +173,7 @@ export function NoteGenSettingsSidebar({
           <Search className="size-5 opacity-50" />
           <span>{lang === "en" ? "No matching settings found" : "没有找到相关设置"}</span>
         </div>
-      ) : <nav className="min-h-0 flex-1 overflow-y-auto px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      ) : <nav className="ng-settings-scroll ng-settings-sidebar-viewport min-h-0 flex-1 overflow-y-auto px-3" ref={(node) => { if (node) updateSettingsScrollbar(node) }} onScroll={(event) => updateSettingsScrollbar(event.currentTarget)}>
         {(["basic", "aiExtensions", "data"] as const).map((group) => {
           const items = filtered.filter((item) => item.group === group)
           if (items.length === 0) return null
@@ -172,6 +187,7 @@ export function NoteGenSettingsSidebar({
                 return (
                   <button
                     key={item.id}
+                    data-settings-section={item.id}
                     type="button"
                     onClick={() => onValueChange?.(item.id)}
                     aria-current={active ? "page" : undefined}
@@ -190,6 +206,7 @@ export function NoteGenSettingsSidebar({
           )
         })}
       </nav>}
+      {filtered.length > 0 ? <span className="ng-settings-sidebar-scrollbar" aria-hidden="true"><i /></span> : null}
     </aside>
   )
 }
@@ -206,7 +223,8 @@ export function NoteGenSettingsPage({
   children: ReactNode
 }) {
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div data-notegen-replica="settings-page" className="flex h-full min-h-0 flex-col">
+      <style>{settingsScrollbarCss}</style>
       <header className="shrink-0 px-8 pb-6 pr-10 pt-8">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-1.5">
           <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
@@ -216,7 +234,7 @@ export function NoteGenSettingsPage({
           {description ? <p className="max-w-3xl whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{description}</p> : null}
         </div>
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto px-8 pb-8 pr-10 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="ng-settings-scroll min-h-0 flex-1 overflow-y-auto px-8 pb-8 pr-10 pt-2">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">{children}</div>
       </div>
     </div>
@@ -233,7 +251,7 @@ export function NoteGenSettingsSection({
   children: ReactNode
 }) {
   return (
-    <section className="flex min-w-0 flex-col gap-3">
+    <section data-notegen-replica="settings-section" className="flex min-w-0 flex-col gap-3">
       <header className="flex flex-col gap-1">
         <h3 className="text-base font-semibold">{title}</h3>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
@@ -258,6 +276,7 @@ export function NoteGenSettingRow({
 }) {
   return (
     <div
+      data-notegen-replica="settings-row"
       aria-disabled={disabled || undefined}
       className={cn(
         "flex w-full flex-wrap items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 text-sm",
@@ -603,6 +622,8 @@ function NoteGenSettingsDataSection({ section, lang, icon: Icon }: { section: No
 }
 
 function NoteGenSettingsContentReplica({ lang, section }: { lang: NoteGenReplicaLanguage; section: NoteGenSettingSectionId }) {
+  if (section === "memories") return <NoteGenMemoriesSettings lang={lang} />
+  if (section === "skills") return <NoteGenSkillsSettings lang={lang} />
   if (section === "general") return <GeneralSettingsReplica lang={lang} />
 
   const page = noteGenSettingsPages[section]
@@ -696,4 +717,16 @@ export function NoteGenSettingsReplica({
       ) : null}
     </div>
   )
+}
+
+
+export function NoteGenSkillsSettingsDialog({ lang = "cn", skills = [], activeSection = "skills", onClose }: {
+  lang?: NoteGenReplicaLanguage
+  skills?: NoteGenInstalledSkill[]
+  activeSection?: "about" | "skills"
+  onClose?: () => void
+}) {
+  return <div className="ng-skills-dialog-backdrop"><style>{skillsSettingsCss}</style><div className="ng-skills-dialog" role="dialog" aria-label={lang === "en" ? "Settings" : "设置"}><NoteGenSettingsShell sidebar={<NoteGenSettingsSidebar lang={lang} value={activeSection} hasUpdate={false} />}>
+    {activeSection === "skills" ? <NoteGenSkillsSettings lang={lang} globalSkills={skills} /> : <NoteGenSettingsContentReplica lang={lang} section="about" />}
+  </NoteGenSettingsShell><button type="button" className="ng-skills-dialog-close" data-settings-action="close" onClick={onClose} aria-label={lang === "en" ? "Close settings" : "关闭设置"}><X size={16} /></button></div></div>
 }
