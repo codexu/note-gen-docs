@@ -125,7 +125,7 @@ const copy = {
       windows: {
         title: "Windows 64 位",
         description: "标准安装程序",
-        format: ".exe",
+        format: ".msi",
         action: "下载 Windows 版",
       },
       macosAppleSilicon: {
@@ -244,7 +244,7 @@ const copy = {
       windows: {
         title: "Windows 64-bit",
         description: "Standard installer",
-        format: ".exe",
+        format: ".msi",
         action: "Download for Windows",
       },
       macosAppleSilicon: {

@@ -22,7 +22,7 @@ export function getDownloadUrls(version: string) {
   const releasePath = `${CDN_BASE_URL}/releases/note-gen-v${version}`;
 
   return {
-    windows: `${releasePath}/NoteGen_${version}_x64-setup.exe`,
+    windows: `${releasePath}/NoteGen_${version}_x64_en-US.msi`,
     macosAppleSilicon: `${releasePath}/NoteGen_${version}_aarch64.dmg`,
     macosIntel: `${releasePath}/NoteGen_${version}_x64.dmg`,
     linuxAppImage: `${releasePath}/NoteGen_${version}_amd64.AppImage`,
