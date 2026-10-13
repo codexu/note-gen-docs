@@ -158,11 +158,7 @@ export const noteGenSettingsPages: Record<NoteGenSettingSectionId, NoteGenSettin
     en: "Model Platforms",
     cnDescription: "集中管理 AI 模型平台、连接凭据和不同能力的模型，可用于对话、整理、知识库和语音等功能。",
     enDescription: "Manage AI platforms, credentials, and models for chat, organization, knowledge, and audio.",
-    sections: [
-      { cn: "模型平台", en: "Model platforms", presentation: "cards", rows: [row("ChatGPT", "ChatGPT", "status", "已配置 · 4 个模型", "Configured · 4 models"), row("Gemini", "Gemini", "status", "未配置", "Not configured"), row("Ollama", "Ollama", "status", "本地 · 未连接", "Local · Disconnected"), row("LM Studio", "LM Studio", "status", "本地 · 未连接", "Local · Disconnected"), row("自定义平台", "Custom platform", "button", "添加平台", "Add platform")] },
-      { cn: "连接配置", en: "Connection", presentation: "tabs", rows: [row("API Key", "API Key", "input", "sk-••••••••••••", "sk-••••••••••••"), row("API 地址", "Base URL", "input", "https://api.openai.com/v1", "https://api.openai.com/v1"), row("代理方式", "Proxy mode", "select", "继承全局设置", "Inherit global settings")] },
-      { cn: "模型", en: "Models", presentation: "cards", rows: [row("GPT-5", "GPT-5", "status", "对话 · 流式", "Chat · Streaming"), row("text-embedding-3-small", "text-embedding-3-small", "status", "嵌入", "Embedding")] },
-    ],
+    sections: [],
   },
   webSearch: {
     cn: "网络搜索",

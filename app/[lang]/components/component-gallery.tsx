@@ -26,6 +26,8 @@ import {
   NoteGenSkillsSettingsDialog,
   NoteGenMcpSettingsDialog,
   NoteGenMemoriesSettingsDialog,
+  NoteGenModelSettingsReplica,
+  NoteGenModelSetupScene,
   NoteGenKnowledgeSettingsDialog,
   NoteGenKnowledgeSources,
   NoteGenMcpRecordWorkspace,
@@ -64,6 +66,7 @@ import {
   type NoteGenSyncIndicatorState,
   type NoteGenWorkspace,
 } from "@/components/notegen"
+import { AiHubMixLink } from "@/components/notegen/aihubmix-link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -380,6 +383,20 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
           <DesktopScaledPreview baseWidth={1600}>
             <NoteGenSettingsDialogReplica lang={lang} className="h-[900px]" />
           </DesktopScaledPreview>
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <ComponentCard desktopWidth={1120} title={<><AiHubMixLink /> · Connection</>} description={text("真实 CDN 平台列表与本地连接设置演示", "Live CDN platforms and local connection settings")}>
+              <div className="h-[720px]"><NoteGenModelSettingsReplica lang={lang} /></div>
+            </ComponentCard>
+            <ComponentCard desktopWidth={1120} title={<><AiHubMixLink /> · Models</>} description={text("模型卡片、能力类型与高级参数", "Model cards, capability types, and advanced parameters")}>
+              <div className="h-[720px]"><NoteGenModelSettingsReplica lang={lang} initialTab="models" /></div>
+            </ComponentCard>
+            <ComponentCard desktopWidth={1120} title="Model platforms · Empty" description={text("尚未添加平台的默认模型与选择状态", "Default models and selection state with no configured providers")}>
+              <div className="h-[720px]"><NoteGenModelSettingsReplica lang={lang} initialProviders={[]} /></div>
+            </ComponentCard>
+            {(["platform", "connection", "chat-model", "connection-test", "select-chat", "chat-reply", "editor", "embedding", "rerank", "knowledge-models"] as const).map(step => <ComponentCard key={step} desktopWidth={1120} title={`Model setup · ${step}`} description={text("教程步骤的固定初始状态", "Fixed initial state for this tutorial step")}>
+              <div className="h-[780px]"><NoteGenModelSetupScene lang={lang} step={step} /></div>
+            </ComponentCard>)}
+          </div>
         </GallerySection>
       </div>
 
@@ -424,7 +441,7 @@ function ComponentCard({
   children,
   desktopWidth,
 }: {
-  title: string
+  title: ReactNode
   description: string
   children: ReactNode
   desktopWidth?: number

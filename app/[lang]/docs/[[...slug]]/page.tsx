@@ -8,6 +8,8 @@ import {
 import { notFound } from 'next/navigation';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { getMDXComponents } from '@/mdx-components';
+import { AiHubMixLink } from '@/components/notegen/aihubmix-link';
+import { AIHUBMIX_SHARE_URL } from '@/src/config/providers';
 import type { Metadata } from 'next';
 import {
   getPageAlternates,
@@ -28,6 +30,7 @@ export default async function Page({
   if (!page) notFound();
 
   const MDXContent = page.data.body;
+  const RelativeLink = createRelativeLink(source, page);
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
@@ -37,7 +40,9 @@ export default async function Page({
         <MDXContent
           components={getMDXComponents({
             // this allows you to link to other pages with relative file paths
-            a: createRelativeLink(source, page),
+            a: ({ href, target, ...props }) => href === AIHUBMIX_SHARE_URL
+              ? <AiHubMixLink {...props} />
+              : <RelativeLink href={href} target={target} {...props} />,
           })}
         />
       </DocsBody>

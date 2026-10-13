@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useEffect, useMemo, useState } from "react"
+import { memo, useEffect, useMemo, useState, type ReactNode } from "react"
 import {
   Check,
   CheckSquare,
@@ -200,6 +200,7 @@ export function NoteGenDesktopReplica({
   platform = "mac",
   hasUpdate = false,
   statusBarProps,
+  chatExample,
 }: {
   lang?: "cn" | "en"
   initialWorkspace?: Workspace
@@ -214,6 +215,7 @@ export function NoteGenDesktopReplica({
   platform?: NoteGenReplicaPlatform
   hasUpdate?: boolean
   statusBarProps?: Omit<NoteGenMainStatusBarProps, "lang" | "workspace">
+  chatExample?: { question: ReactNode; answer: ReactNode }
 }) {
   const [workspace, setWorkspace] = useState<Workspace>(initialWorkspace)
   const [view, setView] = useState<NoteGenReplicaView>(initialView)
@@ -296,7 +298,7 @@ export function NoteGenDesktopReplica({
               {workspace === "canvas" ? <CanvasEditorReplica lang={lang} simplified={simplified} /> : null}
             </>
           ) : null}
-          {panels.right ? <MemoizedAgentPanel lang={lang} /> : null}
+          {panels.right ? <MemoizedAgentPanel lang={lang} example={chatExample} /> : null}
         </div>}
       </div>
       {!simplified ? <NoteGenMainStatusBar lang={lang} workspace={workspace} {...statusBarProps} /> : null}
@@ -955,7 +957,7 @@ function Editor({ simplified = false }: { simplified?: boolean }) {
   )
 }
 
-function AgentPanel({ lang }: { lang: "cn" | "en" }) {
+function AgentPanel({ lang, example }: { lang: "cn" | "en"; example?: { question: ReactNode; answer: ReactNode } }) {
   const [processOpen, setProcessOpen] = useState(true)
   const agentEvents = lang === "en" ? [
     "Records · Read 3 Paris items",
@@ -973,8 +975,8 @@ function AgentPanel({ lang }: { lang: "cn" | "en" }) {
     <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
       <header className="flex h-12 shrink-0 items-center justify-between border-b px-3">
         <div className="flex min-w-0 items-center gap-1.5 font-medium">
-          <span className="truncate">{lang === "en" ? "Weekend in Paris" : "杭州周末行程"}</span>
-          <span className="text-[10px] font-normal text-muted-foreground">(3)</span>
+          <span className="truncate">{example ? (lang === "en" ? "Model setup verification" : "模型配置验证") : (lang === "en" ? "Weekend in Paris" : "杭州周末行程")}</span>
+          <span className="text-[10px] font-normal text-muted-foreground">({example ? 1 : 3})</span>
           <ChevronDown className="size-3.5 text-muted-foreground" />
         </div>
         <div className="flex items-center gap-1">
@@ -986,11 +988,11 @@ function AgentPanel({ lang }: { lang: "cn" | "en" }) {
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex justify-end">
           <div className="max-w-[88%] rounded-lg border bg-muted/35 px-3 py-2 leading-5">
-            {lang === "en" ? "Use this material to organize and save a weekend Paris itinerary." : "结合这些内容，整理周末杭州行程并保存。"}
+            {example?.question ?? (lang === "en" ? "Use this material to organize and save a weekend Paris itinerary." : "结合这些内容，整理周末杭州行程并保存。")}
           </div>
         </div>
 
-        <div>
+        {!example ? <div>
           <button
             type="button"
             aria-expanded={processOpen}
@@ -1018,13 +1020,13 @@ function AgentPanel({ lang }: { lang: "cn" | "en" }) {
               </div>
             ))}
           </div> : null}
-        </div>
+        </div> : null}
 
-        <div className="leading-5">
+        {example ? <div className="leading-5">{example.answer}</div> : <div className="leading-5">
           <p>{lang === "en" ? "I read 3 related travel records, 1 route canvas, and 2 previous notes." : "已读取关联的 3 条旅行记录、1 个路线画布和 2 篇历史笔记。"}</p>
           <p className="mt-2">{lang === "en" ? "I reorganized the two-day route and added restaurant bookings, a rainy-day alternative, and a return reminder." : "我重新安排了两天路线，减少跨区往返，并补充了餐厅预约、雨天备选和返程提醒。"}</p>
           <p className="mt-2 text-muted-foreground">{lang === "en" ? "The itinerary is saved. Opening it in Writing now." : "行程已保存，正在为你打开写作页面。"}</p>
-        </div>
+        </div>}
       </div>
 
       <div className="shrink-0 p-1">
@@ -1056,4 +1058,8 @@ function AgentPanel({ lang }: { lang: "cn" | "en" }) {
 
     </section>
   )
+}
+
+export function NoteGenChatExampleReplica({ lang = "cn", question, answer }: { lang?: "cn" | "en"; question: ReactNode; answer: ReactNode }) {
+  return <div className="h-[360px] overflow-hidden rounded-xl border bg-background text-sm"><AgentPanel lang={lang} example={{ question, answer }} /></div>
 }

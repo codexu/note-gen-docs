@@ -1,6 +1,7 @@
 "use client"
 
 import { settingsScrollbarCss } from "@/components/notegen/settings-scrollbar"
+import { NoteGenModelSettingsReplica } from "@/components/notegen/model-settings-replica"
 
 import { useMemo, useState, type ReactNode } from "react"
 import {
@@ -622,6 +623,7 @@ function NoteGenSettingsDataSection({ section, lang, icon: Icon }: { section: No
 }
 
 function NoteGenSettingsContentReplica({ lang, section }: { lang: NoteGenReplicaLanguage; section: NoteGenSettingSectionId }) {
+  if (section === "ai") return <NoteGenModelSettingsReplica lang={lang} />
   if (section === "memories") return <NoteGenMemoriesSettings lang={lang} />
   if (section === "skills") return <NoteGenSkillsSettings lang={lang} />
   if (section === "general") return <GeneralSettingsReplica lang={lang} />
@@ -629,7 +631,7 @@ function NoteGenSettingsContentReplica({ lang, section }: { lang: NoteGenReplica
   const page = noteGenSettingsPages[section]
   const navigation = navigationItems.find((item) => item.id === section) ?? navigationItems[0]
   const PageIcon = navigation.icon
-  if (section === "ai" || section === "sync" || section === "imageHosting") {
+  if (section === "sync" || section === "imageHosting") {
     const providerSection = page.sections[0]
     const selectedProvider = providerSection.rows[0]
     return <NoteGenSettingsPage icon={navigation.icon} title={page[lang]} description={lang === "en" ? page.enDescription : page.cnDescription}>

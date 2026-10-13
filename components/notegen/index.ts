@@ -30,3 +30,12 @@ export type { NoteGenKnowledgeSource } from "./knowledge-replica"
 
 export { NoteGenMemoriesSettings, NoteGenMemoriesSettingsDialog } from "./memories-replica"
 export type { NoteGenMemoryEntry, NoteGenMemoriesProps, NoteGenMemoryKind, NoteGenMemoryStatus } from "./memories-replica"
+
+export { NoteGenModelSettingsReplica, type NoteGenModelSettingsReplicaProps } from "./model-settings-replica"
+export type { DemoProvider, DemoModel, ProviderTemplate } from "./model-settings/types"
+export { NoteGenModelSetupScene, type NoteGenModelSetupStep } from "./model-setup-scenes"
+
+export { NoteGenProviderListReplica, NoteGenConnectionFormReplica, NoteGenModelCardReplica, NoteGenConnectionTestReplica } from "./model-settings-replica"
+export { NoteGenChatModelPickerReplica, NoteGenEditorAISelectionReplica } from "./model-setup-scenes"
+export { NoteGenKnowledgeModelPickerReplica } from "./knowledge-replica"
+export { TutorialMarker, TutorialLegend } from "./tutorial-marker"

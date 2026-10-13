@@ -72,13 +72,14 @@ export type NoteGenMainStatusBarProps = {
   pluginSlot?: ReactNode
   characterCount?: number
   modelLabel?: string
+  modelControl?: ReactNode
   promptLabel?: string
   className?: string
 }
 
 export function NoteGenMainStatusBar({
   lang = "cn", workspace = "writing", workspaceName, syncState = "local",
-  recentSyncActivity, pluginSlot, characterCount = 862, modelLabel = "GPT-5", promptLabel, className,
+  recentSyncActivity, pluginSlot, characterCount = 862, modelLabel = "GPT-5", modelControl, promptLabel, className,
 }: NoteGenMainStatusBarProps) {
   const en = lang === "en"
   return (
@@ -103,7 +104,7 @@ export function NoteGenMainStatusBar({
       <span className="min-w-2 flex-1" aria-hidden="true" />
       {workspace === "writing" ? <span className="px-1">T {characterCount} {en ? "characters" : "字符"}</span> : null}
       <StatusItem icon={Settings2} label={en ? "Configure sync" : "配置同步"} />
-      <StatusItem icon={Bot} label={modelLabel} endIcon={ChevronDown} />
+      {modelControl ?? <StatusItem icon={Bot} label={modelLabel} endIcon={ChevronDown} />}
       <StatusItem icon={Sparkles} label={promptLabel ?? (en ? "Default" : "默认提示词")} endIcon={ChevronDown} />
     </footer>
   )

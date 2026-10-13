@@ -16,10 +16,17 @@ import {
   type NoteGenSettingSectionId,
 } from "@/components/notegen/settings-replica"
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
+import { NoteGenModelSetupScene, type NoteGenModelSetupStep } from "@/components/notegen/model-setup-scenes"
 
 type DesktopPreviewKind = "desktop-records" | "desktop-record-detail" | "desktop-writing" | "desktop-canvas" | "desktop-files" | "desktop-agent"
 
 type NoteGenDocPreviewProps =
+  | {
+      kind: "model-setup"
+      lang?: NoteGenReplicaLanguage
+      label?: string
+      step: NoteGenModelSetupStep
+    }
   | {
       kind: DesktopPreviewKind
       lang?: NoteGenReplicaLanguage
@@ -144,6 +151,8 @@ export function NoteGenDocPreview(props: NoteGenDocPreviewProps) {
         <div className="mx-auto w-full max-w-[320px]">
           <NoteGenMobileReplica lang={lang} screen={props.screen} />
         </div>
+      ) : props.kind === "model-setup" ? (
+        <NoteGenModelSetupScene key={`${lang}-${props.step}`} lang={lang} step={props.step} />
       ) : props.kind === "settings" ? (
         <ScaledReplica>
           <NoteGenSettingsDetailReplica

@@ -1,45 +1,129 @@
 ---
 title: Configure your first AI model
-description: Add an OpenAI-compatible provider, test a model, and select defaults for individual features.
+description: Set up a model provider, test a model, and use it for chat, writing, and your knowledge base.
 icon: Bot
 ---
 
-NoteGen can use included models or connect to your own OpenAI-compatible service, Ollama, or LM Studio. Provider setup and feature-specific model selection are separate steps.
+This guide uses **[AIHubMix](https://aihubmix.com/?aff=6rfO)** to configure your first chat model and verify a reply in NoteGen. You can also connect other OpenAI-compatible providers or local services such as Ollama and LM Studio.
 
-<NoteGenDocPreview kind="settings" section="ai" lang="en" label="Model settings with simulated providers and models" />
+## Before you start
 
-## Add a provider
+- Install and open NoteGen. These steps follow desktop version `0.38.2`.
+- Sign in to [AIHubMix](https://aihubmix.com/?aff=6rfO), then open the console to create and copy an API key.
+- Open the model list on [AIHubMix](https://aihubmix.com/?aff=6rfO) and copy a model ID. This guide uses `gpt-5.6-terra` as its chat example; availability depends on the provider's current list and your account permissions.
 
-1. Open Settings → Model Services.
-2. Choose a built-in template or create a custom provider.
-3. Enter a name, Base URL, and API key.
-4. Add the model name and choose the correct type, such as `chat`, `embedding`, `rerank`, `stt`, or `tts`.
-5. Run the connection test and save.
+[AIHubMix](https://aihubmix.com/?aff=6rfO) is the provider, and `gpt-5.6-terra` is a model offered by that provider. Configure the connection first, add a model, then select it for the feature you want to use.
 
-A Base URL normally ends at the version path, such as `https://api.openai.com/v1`, without `/chat/completions`. Ollama commonly uses `http://localhost:11434/v1` and LM Studio `http://localhost:1234/v1`, but the local service must be running.
+## Configure the provider
 
-## Select models for features
+Each step below has a focused NoteGen replica. Numbered markers point to the controls described beneath it. The platform list loads templates from NoteGen’s CDN configuration center. Keys, model settings, and connection tests are local demonstrations. Switch providers, add models, or change parameters; refreshing resets your changes. Do not enter a real API key in the preview.
 
-After adding models, select them in the relevant settings:
+### 1. Select the provider
 
-| Use | Setting | Typical type |
-| --- | --- | --- |
-| Chat, Agent, organization | model selector or defaults | `chat` |
-| Image understanding | Image Recognition | vision-capable `chat` |
-| Knowledge-base indexing | Knowledge Base | `embedding` |
-| Retrieval reranking | Knowledge Base | `rerank` |
-| Transcription | Audio Settings | `stt` |
-| Read aloud | Read Aloud | `tts` |
+<NoteGenDocPreview kind="model-setup" step="platform" lang="en" label="Select a model provider" />
 
-## Proxy and compatibility
+Open settings from the top-right corner of the window. Under **AI**, open **Model Services**, then select **[AIHubMix](https://aihubmix.com/?aff=6rfO)**, marked as a sponsor, in the provider list.
 
-A provider can inherit the global proxy, force a direct connection, or use a custom proxy. If an older compatible endpoint rejects `max_completion_tokens`, switch to `max_tokens`. Leave context window, temperature, and output limits at their defaults unless the provider documents different values.
+If [AIHubMix](https://aihubmix.com/?aff=6rfO) is missing, check your network, close settings, and reopen them. You can also choose **Add custom platform**, name it [AIHubMix](https://aihubmix.com/?aff=6rfO), and enter the connection details below.
 
-## Security and troubleshooting
+### 2. Enter connection details
 
-- API keys are stored in local configuration and are only uploaded if settings sync is enabled and permits them.
-- Never publish keys in issues, screenshots, diagnostics, or shared configuration.
-- `401/403` usually indicates a key, permission, or account problem. `404` often means an incorrect Base URL or model name. For timeouts, check the network and proxy.
-- A phone cannot reach a model running on a computer through `localhost`; use the computer's LAN address and check firewall rules.
+<NoteGenDocPreview kind="model-setup" step="connection" lang="en" label="Enter connection details" />
 
-See [Model configuration](/en/docs/settings/model-config) and [Model selection and fallback](/en/docs/settings/default-model) for every field.
+Open **Connection settings** and fill in:
+
+| Field | Example value |
+| --- | --- |
+| Base URL | `https://aihubmix.com/v1`, preset for the included provider |
+| API Key | The key you created in the [AIHubMix](https://aihubmix.com/?aff=6rfO) console |
+| Network proxy | Inherit global proxy; check that any configured proxy can reach the URL |
+
+Changes save automatically. End the URL at `/v1`, without `/chat/completions` or `/embeddings`; NoteGen adds the endpoint for each model type. If the primary address is temporarily unavailable, the provider also offers `https://api.inferera.com/v1`.
+
+### 3. Add a chat model
+
+<NoteGenDocPreview kind="model-setup" step="chat-model" lang="en" label="Add a chat model and choose its type" />
+
+1. Open **Models** and click **Add model**.
+2. In the expanded model card, open the model selector, search for `gpt-5.6-terra`, and select it, or use another model ID copied from the provider's list.
+3. Set the model type to **Chat** (`chat`), the default for new models.
+4. Leave output limits, context window, Temperature, and other advanced options at their defaults initially.
+
+If the model is absent from the list, enter its full ID and choose **Use "model ID"**. If a text field appears instead, paste the ID directly. The refresh button reloads the model list.
+
+A Ready status means the required fields are filled in. You still need to test the connection.
+
+### 4. Test the connection
+
+<NoteGenDocPreview kind="model-setup" step="connection-test" lang="en" label="Simulated successful connection test" />
+
+Click **Test connection** on the model card. A successful AI connection test confirms that the current settings can call that model. Add and test additional models under the same provider as needed.
+
+## Use the model for chat and writing
+
+### 1. Select a chat model
+
+<NoteGenDocPreview kind="model-setup" step="select-chat" lang="en" label="Select a chat model in the bottom status bar" />
+
+Close settings and click the current model name on the right side of the bottom status bar. Select your chat model under **[AIHubMix](https://aihubmix.com/?aff=6rfO)**.
+
+### 2. Verify a reply
+
+<NoteGenDocPreview kind="model-setup" step="chat-reply" lang="en" label="Simulated successful model reply" />
+
+Send a short message in the right-hand chat panel, such as “Describe Markdown in one sentence.” A normal reply confirms the setup works in practice. If the panel is hidden, use the **Show right sidebar** button at the top right.
+
+### 3. Use the model in the editor
+
+<NoteGenDocPreview kind="model-setup" step="editor" lang="en" label="Editor selection toolbar and AI menu" />
+
+Editor AI features follow the current main model unless you choose a separate editor model. Select text in a note, open **AI** in the floating toolbar, and choose a writing action such as polish, shorten, expand, or translate. To select a separate model, open **Settings → Editor Settings → Default models → Editor model**.
+
+## Configure knowledge-base models (optional)
+
+A knowledge base needs an embedding model to generate vectors. A reranker is optional and improves result ordering.
+
+### 1. Add an embedding model
+
+<NoteGenDocPreview kind="model-setup" step="embedding" lang="en" label="Add an embedding model and choose its type" />
+
+Add `text-embedding-3-small` under [AIHubMix](https://aihubmix.com/?aff=6rfO), set its type to **Embedding** (`embedding`), and test the connection.
+
+### 2. Add a reranking model
+
+<NoteGenDocPreview kind="model-setup" step="rerank" lang="en" label="Add a reranking model and choose its type" />
+
+If needed, add a reranking model supported by the provider, such as `qwen3-reranker-0.6b`, set its type to **Rerank** (`rerank`), and test it.
+
+### 3. Select retrieval models
+
+<NoteGenDocPreview kind="model-setup" step="knowledge-models" lang="en" label="Select embedding and reranking models for the knowledge base" />
+
+Open **Settings → Knowledge Base → Retrieval models** and select the embedding model and optional reranker.
+
+After changing embedding models, recompute your knowledge-base vectors to avoid mixing vectors from different models. Continue with [Build and use a knowledge base](/en/docs/guides/knowledge-base).
+
+## Troubleshooting
+
+### Connection test fails
+
+Check the complete API key, Base URL, exact model ID, and model type first.
+
+- `401/403`: Check your key, account permissions, and the provider's error message.
+- `404`: Check that the URL ends at `/v1` and that the model ID is correct.
+- Timeouts or network errors: Check the network and proxy. Try the fallback URL above if the primary address is unavailable.
+- Unsupported `max_completion_tokens`: Switch the token-limit parameter to `max_tokens` in the advanced settings.
+
+### The model is missing from the model selector
+
+Return to **Settings → Model Services** and confirm that the model has an ID and its type is **Chat**. Embedding and reranking models are selected in their respective feature settings.
+
+### Chat says no main model is configured
+
+Click the model name in the bottom status bar and select a chat model under [AIHubMix](https://aihubmix.com/?aff=6rfO). Adding a provider and a model is followed by this selection step.
+
+## Other providers
+
+For another OpenAI-compatible service, create a custom provider and use its URL, key, and model ID. Ollama commonly uses `http://localhost:11434/v1`, and LM Studio commonly uses `http://localhost:1234/v1`. Start the local service before connecting.
+
+See [Model configuration](/en/docs/settings/model-config) and [Model selection and fallback](/en/docs/settings/default-model) for more details. For provider-side instructions, see [AIHubMix](https://aihubmix.com/?aff=6rfO)'s [NoteGen guide](https://docs.aihubmix.com/cn/clients/NoteGen).

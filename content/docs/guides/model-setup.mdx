@@ -1,45 +1,129 @@
 ---
 title: 配置第一个 AI 模型
-description: 添加 OpenAI 兼容服务，测试模型，并为不同功能选择默认模型。
+description: 以模型平台配置为例，添加模型、检测连接，并用于对话、写作和知识库。
 icon: Bot
 ---
 
-NoteGen 可以直接使用内置模型，也可以连接你自己的 OpenAI 兼容服务、Ollama 或 LM Studio。模型平台与具体功能的模型选择是分开的。
+本教程以 **[AIHubMix](https://aihubmix.com/?aff=6rfO)** 为例，带你配置第一个对话模型，并在 NoteGen 中验证回复。NoteGen 也支持其他 OpenAI 兼容服务，以及 Ollama、LM Studio 等本地服务。
 
-<NoteGenDocPreview kind="settings" section="ai" lang="cn" label="包含模拟平台与模型数据的模型设置" />
+## 准备工作
 
-## 添加服务
+- 安装并打开 NoteGen。以下步骤对应桌面端 `0.38.2`。
+- 登录 [AIHubMix](https://aihubmix.com/?aff=6rfO)，进入控制台创建并复制 API Key。
+- 打开 [AIHubMix](https://aihubmix.com/?aff=6rfO) 的模型列表，复制要使用的模型 ID。本教程使用 `gpt-5.6-terra` 作为对话示例，实际可用模型以供应商列表和账户权限为准。
 
-1. 打开“设置 → 模型服务”。
-2. 选择内置平台模板或新建自定义平台。
-3. 填写名称、Base URL 和 API Key。
-4. 添加模型名称并选择正确类型，例如 `chat`、`embedding`、`rerank`、`stt` 或 `tts`。
-5. 运行连接测试并保存。
+[AIHubMix](https://aihubmix.com/?aff=6rfO) 是模型平台，`gpt-5.6-terra` 是该平台下的具体模型。先配置平台的连接信息，再添加模型，最后为相应功能选择模型。
 
-Base URL 通常填写到版本路径，例如 `https://api.openai.com/v1`，不要附加 `/chat/completions`。Ollama 默认可使用 `http://localhost:11434/v1`，LM Studio 常用 `http://localhost:1234/v1`，但本地服务必须已启动。
+## 配置模型平台
 
-## 选择功能模型
+以下每一步均使用对应的 NoteGen 局部复刻组件。组件中的编号对应下方的操作说明，标出需要填写或点击的位置。平台列表从 NoteGen 的 CDN 配置中心获取；密钥、模型配置与连接检测均为本地模拟，可以切换平台、添加模型和调整参数，刷新页面后重置。请勿在演示中填写真实密钥。
 
-添加模型后，前往对应设置选择它：
+### 1. 选择模型平台
 
-| 场景 | 设置位置 | 常用类型 |
-| --- | --- | --- |
-| Chat、Agent、整理 | 模型选择或默认模型 | `chat` |
-| 图片理解 | 图像识别 | 支持视觉的 `chat` |
-| 知识库索引 | 知识库 | `embedding` |
-| 检索重排 | 知识库 | `rerank` |
-| 录音转写 | 语音设置 | `stt` |
-| 朗读 | 朗读设置 | `tts` |
+<NoteGenDocPreview kind="model-setup" step="platform" lang="cn" label="选择模型平台" />
 
-## 代理与兼容参数
+点击窗口右上角的设置按钮，在左侧 **AI** 分组中打开 **模型服务**，然后在 **模型平台** 列表中选择带有“赞助商”标识的 **[AIHubMix](https://aihubmix.com/?aff=6rfO)**。
 
-供应商可以继承全局代理、强制直连或使用自定义代理。旧兼容接口如果不接受 `max_completion_tokens`，可改用 `max_tokens`。上下文窗口、温度和最大输出长度不确定时先保留默认值。
+如果没有看到 [AIHubMix](https://aihubmix.com/?aff=6rfO)，检查网络后关闭设置并重新打开。也可以点击 **添加自定义平台**，将名称填写为 [AIHubMix](https://aihubmix.com/?aff=6rfO)，再按下一步填写连接信息。
 
-## 安全与排错
+### 2. 填写连接设置
 
-- API Key 会保存在本机配置；只有启用设置同步时才可能按同步策略上传。
-- 不要在 Issue、截图、诊断日志或共享配置中公开密钥。
-- `401/403` 通常表示 Key、权限或账户问题；`404` 常见于 Base URL 或模型名错误；超时先检查网络和代理。
-- 本地模型在手机上不能通过 `localhost` 访问电脑，需要使用局域网地址并确认防火墙规则。
+<NoteGenDocPreview kind="model-setup" step="connection" lang="cn" label="填写连接设置" />
 
-完整字段说明参见[模型配置](/cn/docs/settings/model-config)与[模型选择和回退](/cn/docs/settings/default-model)。
+切换到 **连接设置**，填写以下内容：
+
+| 字段 | 示例配置 |
+| --- | --- |
+| API 地址 | `https://aihubmix.com/v1`，内置平台已预设此地址 |
+| API Key | 在 [AIHubMix](https://aihubmix.com/?aff=6rfO) 控制台创建的密钥 |
+| 网络代理 | 继承全局代理；已有代理配置时，确认它能访问该地址 |
+
+修改会自动保存。API 地址填写到 `/v1`，不要附加 `/chat/completions` 或 `/embeddings`，NoteGen 会按模型类型拼接接口路径。主地址暂时不可用时，可使用供应商提供的备用地址 `https://api.inferera.com/v1`。
+
+### 3. 添加对话模型
+
+<NoteGenDocPreview kind="model-setup" step="chat-model" lang="cn" label="添加对话模型与能力类型" />
+
+1. 切换到 **模型列表**，点击 **添加模型**。
+2. 在新展开的模型卡片中点击 **请选择模型**，搜索并选择 `gpt-5.6-terra`，或你从供应商列表复制的其他模型 ID。
+3. 将 **模型类型** 设为 **对话**（`chat`），新模型默认就是这一类型。
+4. 最大输出 Token、上下文窗口、Temperature 等高级参数先保持默认。
+
+列表中没有目标模型时，输入完整模型 ID，点击 **Use "模型 ID"**。如果显示的是输入框，直接粘贴模型 ID；也可以点击右侧刷新按钮重新获取列表。
+
+平台显示“已就绪”表示必要字段已经填好，接下来还需要检测连接。
+
+### 4. 检测连接
+
+<NoteGenDocPreview kind="model-setup" step="connection-test" lang="cn" label="检测连接通过的模拟状态" />
+
+点击模型卡片上的 **检测连接**。出现 **AI 连接测试通过**，说明当前配置能够调用该模型。需要更多模型时，在同一平台下重复添加并逐个检测。
+
+## 在对话和写作中使用
+
+### 1. 选择对话模型
+
+<NoteGenDocPreview kind="model-setup" step="select-chat" lang="cn" label="在底部状态栏选择对话模型" />
+
+关闭设置，点击窗口底部状态栏右侧的当前模型名称，在 **[AIHubMix](https://aihubmix.com/?aff=6rfO)** 分组中选择刚添加的对话模型。
+
+### 2. 验证模型回复
+
+<NoteGenDocPreview kind="model-setup" step="chat-reply" lang="cn" label="对话模型正常回复的模拟状态" />
+
+在右侧对话面板中发送一条简单消息，例如“请用一句话介绍 Markdown”。能收到正常回复，即完成了从配置到实际调用的验证。对话面板未显示时，点击窗口右上角的 **显示右侧边栏**。
+
+### 3. 在编辑器中使用
+
+<NoteGenDocPreview kind="model-setup" step="editor" lang="cn" label="编辑器选区工具栏与 AI 菜单" />
+
+编辑器未单独指定模型时，会跟随当前主要模型。在笔记中选中文字，点击浮动工具栏中的 **AI**，即可使用润色、精简、扩展或翻译。需要单独指定时，前往 **设置 → 编辑器设置 → 默认模型 → 编辑器模型**。
+
+## 配置知识库模型（可选）
+
+知识库需要嵌入模型生成向量，重排模型用于优化检索结果排序，可按需添加。
+
+### 1. 添加嵌入模型
+
+<NoteGenDocPreview kind="model-setup" step="embedding" lang="cn" label="添加嵌入模型并选择嵌入类型" />
+
+在 [AIHubMix](https://aihubmix.com/?aff=6rfO) 的 **模型列表** 中添加 `text-embedding-3-small`，将 **模型类型** 设为 **嵌入**（`embedding`），然后检测连接。
+
+### 2. 添加重排模型
+
+<NoteGenDocPreview kind="model-setup" step="rerank" lang="cn" label="添加重排模型并选择重排序类型" />
+
+如需重排，再添加供应商支持的重排模型，例如 `qwen3-reranker-0.6b`，将类型设为 **重排序**（`rerank`），并检测连接。
+
+### 3. 选择检索模型
+
+<NoteGenDocPreview kind="model-setup" step="knowledge-models" lang="cn" label="在知识库中选择嵌入模型与重排模型" />
+
+打开 **设置 → 知识库 → 检索模型**，选择刚添加的嵌入模型，以及可选的重排模型。
+
+更换嵌入模型后，建议重新计算知识库向量，避免混用不同模型生成的向量。后续步骤参见[建立并使用知识库](/cn/docs/guides/knowledge-base)。
+
+## 常见问题
+
+### 检测连接失败
+
+先检查 API Key 是否完整、API 地址是否正确、模型 ID 是否与供应商列表一致，以及模型类型是否匹配。
+
+- `401/403`：检查密钥、账户权限和供应商返回的错误信息。
+- `404`：检查 API 地址是否只填写到 `/v1`，以及模型 ID 是否正确。
+- 超时或网络错误：检查网络与代理；主地址不可用时可尝试上文的备用地址。
+- 提示不支持 `max_completion_tokens`：在高级参数中将 Token 限制参数切换为 `max_tokens`。
+
+### 模型选择器中找不到新模型
+
+返回 **设置 → 模型服务**，确认已填写模型 ID，且类型为 **对话**。嵌入、重排等模型需要在对应功能设置中选择。
+
+### 提示未配置主模型
+
+点击底部状态栏的模型名称，在 [AIHubMix](https://aihubmix.com/?aff=6rfO) 分组下选中一个对话模型。添加平台及模型后，还需要完成这一步才能使用 AI 对话。
+
+## 其他模型服务
+
+其他 OpenAI 兼容服务也可以通过自定义平台接入，将 API 地址、密钥和模型 ID 替换为对应供应商提供的值即可。Ollama 常用 `http://localhost:11434/v1`，LM Studio 常用 `http://localhost:1234/v1`，使用前需要启动本地服务。
+
+完整字段说明参见[模型配置](/cn/docs/settings/model-config)与[模型选择和回退](/cn/docs/settings/default-model)。供应商侧操作可参考 [AIHubMix](https://aihubmix.com/?aff=6rfO) 的 [NoteGen 配置教程](https://docs.aihubmix.com/cn/clients/NoteGen)。

@@ -87,3 +87,57 @@ Use a code-native replica for product UI that already has a matching component. 
 ### 记忆管理（2026-10-02）
 
 `NoteGenMemoriesSettings` / `NoteGenMemoriesSettingsDialog` 为 PC 设置页展示复刻。通过 props 提供条目、状态页签、搜索、类型/范围筛选、自动生成开关、添加/编辑/永久删除弹窗、选择菜单和结果提示。数据不接入真实数据库；`onAction` 由使用场景处理。画廊提供固定状态。依据应用 `3144e326` 的 memories 页面与组件；已完成源码对照，尚无同状态实机截图对照。
+
+### 模型配置复刻（2026-10-13）
+
+`NoteGenModelSettingsReplica` 现在接入 `settings-replica.tsx` 的 AI 分类，中英文 MDX、设置窗口与组件画廊共用。默认展示 AIHubMix 的固定演示密钥与两个模型。平台列表通过 `/api/model-providers` 读取 NoteGen 真实 CDN manifest，再读取 `providerTemplates` 指向的数据；图标、名称、服务地址、创建密钥链接、赞助与推广信息取自远端。中文页面仍使用桌面版列表，`providerTemplatesChina` 只对应大陆 App Store 渠道，不按页面语言选择。
+
+公开 props：`lang`、`initialTab`、`initialProviders`、`providerTemplates`。省略 `providerTemplates` 时加载真实 CDN 列表；提供该参数时使用冻结场景数据，适合复用与视频编排。配置修改、复制、删除、模型选择和检测结果仅使用内存，不保存密钥，不调用真实 AI 接口。检测前清空必要字段可展示模拟失败；重新加载页面恢复初始状态。
+
+基础控件存于 `model-settings/ui`，依据当前应用 UI 源码复制并调整导入路径，限定在此功能族内；Radix 状态选择器适配官网已安装版本。表单密度、卡片尺寸、平台头像、模型类型页签、Token 参数、温度和流式开关对齐源组件。主题映射位于 `app/global.css` 的 `.ng-model-settings` 作用域；桌面复刻根据自身自然尺寸判断布局，下拉菜单与确认浮层留在缩放容器内。
+
+源码基线：NoteGen `0.38.2` / `9859c6eff90514415a1e996cdb74412113afeadd`；官网 HEAD `9cb1014d9b9b51f5b4a58f3194df1bad607e5164`，本次开始时包含上一轮教程与简化示例改动。应用工作区无未提交改动。读取范围包括 `src/app/core/setting/ai/{page,model-card,modelSelect,create,default-models}.tsx`、`setting-base.tsx`、直接依赖 UI 控件、`provider-templates-runtime.ts`、`config-center/client.ts`、`messages/{zh,en}.json` 与应用主题变量。
+
+| 来源 | 原有差异 | 本次实现 | 状态 |
+| --- | --- | --- | --- |
+| 配置中心客户端、供应商模板运行时 | 固定平台列表、统一占位图标 | manifest → 真实供应商 JSON，同源接口处理跨域限制、过滤禁用项、校验字段、60 秒缓存及失败重试 | 本地页面已看到完整远端列表与图标 |
+| `ai/page.tsx` | 简化摘要卡片、连接与模型布局缺失 | 260px 平台列、真实 UI 卡片与字段、连接与模型页签、模板信息及自定义请求头、代理校验 | 中文页面人工查看，代理下拉定位已修正 |
+| `model-card.tsx`、`modelSelect.tsx` | 模型只显示名称和类型 | 可添加/删除/展开，五种能力、可搜索的示例模型列表与手动输入、完整高级参数、模拟连接状态 | 中文页面已展开模型与高级参数 |
+| `create.tsx`、复制/删除行为、`default-models.tsx` | 无平台增删状态 | 内存中的平台添加/复制/删除确认及无平台默认模型展示 | 已实现，全部操作仍待完整人工验收 |
+| 应用主题与基础 UI 控件 | 网站控件密度和布局影响复刻 | 独立源码基础控件、主题 token 作用域、容器宽度断点及随缩放定位的菜单 | 已在现有预览检查浅色窄屏缩放；深色未视觉验证 |
+
+验证范围：使用已经运行的 localhost:3000 官网预览，人工查看中文教程，确认真实 CDN 列表、连接与模型页签、模型展开、高级参数和代理菜单。没有启动新服务器，没有运行测试、Lint、类型检查或构建。未取得同尺寸、同主题 NoteGen 实机截图，不能据此声称像素级一致。
+
+人工验收入口：中英文 `docs/guides/model-setup` 与组件画廊的 AIHubMix Connection / Models / Empty 场景。继续检查深浅色、长模型名、键盘选择、窄屏缩放、复制/删除与空状态；进入模型卡片确认不同类型字段可见性，清空示例密钥后检测模拟失败。截图只记录官网代码复刻结果，未使用供应商教程截图。
+
+2026-10-13 分享链接更新：读取 NoteGen `config/provider-templates.json` 中的 `aihubmix.apiKeyUrl`，统一使用 `https://aihubmix.com/?aff=6rfO`。中英文教程正文、组件画廊名称、默认模型说明、平台列表名称及详情标题均带分享链接；平台名称链接与选择按钮为并列元素，避免嵌套交互。API 地址仍保持供应商接口原值，资料教程保留独立链接。
+
+分享链接跳转修正：文档正文原由 Fumadocs 外链组件默认添加 `target="_blank"`，本地 Chrome 实际点击未出现新标签页。对分享链接使用原生 `AiHubMixLink` 并显式设置 `target="_self"`，其他文档链接继续由 `createRelativeLink` 处理；复刻中的同一分享入口同步使用当前页跳转。已实际点击中文教程正文，确认到达 `https://aihubmix.com/?aff=6rfO`，随后返回教程。没有运行测试、Lint、类型检查或构建。
+
+### 模型教程逐步场景（2026-10-13）
+
+`NoteGenModelSetupScene` 通过 `step` 提供十个固定状态：`platform`、`connection`、`chat-model`、`connection-test`、`select-chat`、`chat-reply`、`editor`、`embedding`、`rerank`、`knowledge-models`。中英文 MDX 使用 `<NoteGenDocPreview kind="model-setup" step="…" />`，每个操作小节都有独立展示；画廊同步列出全部状态。模型配置场景继续从真实 CDN 读取供应商列表。
+
+共享模型配置新增兼容的可选初始状态 props：`initialExpandedModels`、`initialNotice`、`initialCheckState`。连接测试场景展示模拟成功，修改模型或连接字段后清除成功状态。新增模型不继承固定场景的成功结果。桌面复刻新增 `chatExample`，状态栏新增 `modelControl` 插槽，用于复用现有布局展示底部模型选择与简单回复；原有默认场景不变。知识库新增 `rerankLabel`，同时展示教程配置的嵌入和重排模型。
+
+来源仍为 NoteGen `0.38.2` / `9859c6eff90514415a1e996cdb74412113afeadd`，本次额外对照 `chat/model-select.tsx`、`chat/chat-footer.tsx`、`main-status-bar.tsx` 与 `setting/rag/model-setting.tsx`。官网当前 checkout 保留之前的未提交改动。
+
+已在现有 localhost:3000 中文教程中人工确认十个预览均渲染，模型卡片默认展开、连接成功提示可见，并查看添加对话模型的布局；记录截图 `model-setup-step.jpg`。中英文和画廊同步的调用已作静态阅读。未运行测试、Lint、类型检查或构建，英文视觉效果及全部交互尚未完整验收，无同条件实机像素对照。
+
+### 专门组件与操作标识（2026-10-13）
+
+逐步教程已改为局部专门组件，取代每一步重复的完整设置页和桌面。`NoteGenProviderListReplica` 只展示 CDN 平台列表；`NoteGenConnectionFormReplica` 只展示连接表单；`NoteGenModelCardReplica` 展示当前步骤相关的一个模型；`NoteGenConnectionTestReplica` 只展示检测卡片与结果。它们复用完整模型设置页的实际面板 JSX 和状态逻辑，默认完整设置页的布局不变。
+
+`NoteGenChatModelPickerReplica` 展示模型选择菜单与底部触发按钮；`NoteGenChatExampleReplica` 复用现有对话面板展示简单问答；`NoteGenEditorAISelectionReplica` 展示选中文字、浮动工具栏和 AI 操作，依据 `editor/markdown/bubble-menu.tsx` 的控件样式；`NoteGenKnowledgeModelPickerReplica` 仅展示现有知识库的检索模型分组。复刻全部使用代码，不使用供应商截图。
+
+`TutorialMarker` 与 `TutorialLegend` 提供一一对应的数字标识与操作说明；连接字段标出 1 API 地址、2 API Key、3 网络代理，模型卡片标出名称、类型、检测与添加入口，其他局部组件分别标出对应操作。标识只在教程模式出现，完整设置页默认不显示。文档局部组件使用自身自然尺寸及响应式布局，取消整窗缩小后再裁剪的展示方式。
+
+本地中文教程已人工检查十个场景对应的组件类型和编号，查看连接表单的可读性并保存 `model-setup-focused-markers.jpg`。英文页同步组件调用与编号文案，未完整做英文视觉验收。未运行测试、Lint、类型检查或构建，未提交或发布。
+
+### 编辑器 AI 选区菜单重做（2026-10-13）
+
+`editor-ai-selection-replica.tsx` 独立维护真实选区工具栏的局部展示，保留 `model-setup-scenes` 原有导出路径。依据 NoteGen `9859c6eff90514415a1e996cdb74412113afeadd` 的 `editor/markdown/bubble-menu.tsx` 和 `messages/{zh,en}.json` 重排。原简化版包含文字 AI 按钮、缺少格式控件、错误地独立显示翻译且菜单位于正文下方；本次改为 icon-sm AI 图标按钮、六个文本格式按钮、链接、五个块级按钮与真实分隔符。AI 菜单包含润色/精简/扩展、四种选区生成画布操作，以及悬停/点击展开的九种翻译语言和自定义语言输入。
+
+工具栏在选区上方 8px 附近定位，AI 菜单从其按钮下方展开，翻译菜单在右侧。控件保留原图标与尺寸，编号作为外侧说明标记；选区使用系统 Highlight 颜色。自然尺寸 680px，由组件内部缩放以保留窄屏的同一工具栏顺序；翻译菜单展开时增加展示高度，避免底部裁切。格式按钮与菜单均为本地演示，不连接 AI 或编辑真实文件。
+
+同时把模型复刻的默认边框颜色规则移入 CSS base 层，避免它覆盖工具按钮的 `border-transparent`。已在现有中文教程预览确认工具栏按钮为透明边框、菜单结构、翻译语言列表与编号，保存 `editor-selection-rebuilt.jpg`。未运行测试、Lint、类型检查或构建；未做同条件实机截图对照。
