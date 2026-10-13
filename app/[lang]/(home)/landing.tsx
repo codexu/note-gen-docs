@@ -14,6 +14,7 @@ import {
   MonitorSmartphoneIcon,
   NetworkIcon,
   ServerIcon,
+  SparklesIcon,
   ShieldCheckIcon,
   UsersIcon,
   WifiOffIcon,
@@ -33,6 +34,7 @@ import { NoteGenDemo } from "@/components/home/note-gen-demo"
 import { PluginSection } from "@/components/home/plugin-section"
 import { providerReferrals } from "@/data/provider-referrals"
 import { cn } from "@/lib/utils"
+import { AIHUBMIX_SHARE_URL } from "@/src/config/providers"
 
 import HomeFooter from "./footer"
 
@@ -139,22 +141,31 @@ const supporters = {
 
 const serviceSupporters = {
   cn: [
-    { name: "硅基流动", href: "https://cloud.siliconflow.cn/i/O2ciJeZw", description: "模型服务支持" },
-    { name: "七牛云", href: "https://www.qiniu.com/products/ai-token-api?utm_source=NoteGen", description: "服务支持" },
-    { name: "302.AI", href: "https://share.302.ai/jfFrIP", description: "服务支持" },
-    { name: "胜算云", href: "https://www.shengsuanyun.com/?from=CH_KAFLGC9O", description: "服务支持" },
-    { name: "Gitee AI", href: "https://ai.gitee.com/", description: "服务支持" },
-    { name: "Netlify", href: "https://www.netlify.com", description: "服务支持" },
-    { name: "Skywork", href: "https://skywork.ai/p/bY47ky", description: "服务支持" },
+    { name: "硅基流动", href: "https://cloud.siliconflow.cn/i/O2ciJeZw", icon: providerReferrals[0].icon, description: "模型服务支持" },
+    { name: "AIHubMix", href: AIHUBMIX_SHARE_URL, icon: "https://aihubmix.com/favicon.ico?v=2", description: "模型服务支持" },
   ],
   en: [
-    { name: "SiliconFlow", href: "https://cloud.siliconflow.cn/i/O2ciJeZw", description: "Model service support" },
-    { name: "Qiniu", href: "https://www.qiniu.com/products/ai-token-api?utm_source=NoteGen", description: "Service support" },
-    { name: "302.AI", href: "https://share.302.ai/jfFrIP", description: "Service support" },
-    { name: "ShengSuanYun", href: "https://www.shengsuanyun.com/?from=CH_KAFLGC9O", description: "Service support" },
-    { name: "Gitee AI", href: "https://ai.gitee.com/", description: "Service support" },
-    { name: "Netlify", href: "https://www.netlify.com", description: "Service support" },
-    { name: "Skywork", href: "https://skywork.ai/p/bY47ky", description: "Service support" },
+    { name: "SiliconFlow", href: "https://cloud.siliconflow.cn/i/O2ciJeZw", icon: providerReferrals[0].icon, description: "Model service support" },
+    { name: "AIHubMix", href: AIHUBMIX_SHARE_URL, icon: "https://aihubmix.com/favicon.ico?v=2", description: "Model service support" },
+  ],
+} as const
+
+const acknowledgedPartners = {
+  cn: [
+    { name: "七牛云", href: "https://www.qiniu.com/products/ai-token-api?utm_source=NoteGen" },
+    { name: "302.AI", href: "https://share.302.ai/jfFrIP" },
+    { name: "胜算云", href: "https://www.shengsuanyun.com/?from=CH_KAFLGC9O" },
+    { name: "Gitee AI", href: "https://ai.gitee.com/" },
+    { name: "Netlify", href: "https://www.netlify.com" },
+    { name: "Skywork", href: "https://skywork.ai/p/bY47ky" },
+  ],
+  en: [
+    { name: "Qiniu", href: "https://www.qiniu.com/products/ai-token-api?utm_source=NoteGen" },
+    { name: "302.AI", href: "https://share.302.ai/jfFrIP" },
+    { name: "ShengSuanYun", href: "https://www.shengsuanyun.com/?from=CH_KAFLGC9O" },
+    { name: "Gitee AI", href: "https://ai.gitee.com/" },
+    { name: "Netlify", href: "https://www.netlify.com" },
+    { name: "Skywork", href: "https://skywork.ai/p/bY47ky" },
   ],
 } as const
 
@@ -165,6 +176,7 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
   const cases = isEnglish ? casesEn : casesCn
   const projectSupporters = supporters[lang]
   const projectServiceSupporters = serviceSupporters[lang]
+  const projectAcknowledgedPartners = acknowledgedPartners[lang]
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section id="top" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
@@ -463,14 +475,14 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
 
           <Card className="mt-8">
             <CardHeader className="gap-3">
-              <div className="flex items-center gap-3">
-                <Badge variant="outline">{text("模型与服务支持", "Model and service support")}</Badge>
-                <CardTitle className="text-xl">{text("项目资源支持", "Project resource support")}</CardTitle>
-              </div>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <ServerIcon className="size-5 text-muted-foreground" aria-hidden="true" />
+                {text("项目资源支持", "Project resource support")}
+              </CardTitle>
               <CardDescription className="leading-6">
                 {text(
-                  "感谢为 NoteGen 提供模型服务、基础设施和其他项目资源支持的伙伴。",
-                  "Thanks to the partners providing NoteGen with model services, infrastructure, and other project resources."
+                  "感谢为 NoteGen 提供模型服务与项目资源支持的伙伴。",
+                  "Thanks to the partners providing NoteGen with model services and project resources."
                 )}
               </CardDescription>
             </CardHeader>
@@ -483,8 +495,41 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
+                  <img
+                    src={supporter.icon}
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="size-6 shrink-0 rounded-md bg-white object-contain p-0.5"
+                  />
                   <span className="font-medium">{supporter.name}</span>
                   <span className="text-muted-foreground">{supporter.description}</span>
+                  <ExternalLinkIcon className="size-3 text-muted-foreground" aria-hidden="true" />
+                </a>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="mt-8">
+            <CardHeader className="gap-3">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <SparklesIcon className="size-5 text-muted-foreground" aria-hidden="true" />
+                {text("特别鸣谢", "Special thanks")}
+              </CardTitle>
+              <CardDescription className="leading-6">
+                {text("感谢与 NoteGen 一路同行的伙伴。", "Thanks to the partners who have been part of NoteGen’s journey.")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2">
+              {projectAcknowledgedPartners.map((partner) => (
+                <a
+                  key={partner.name}
+                  href={partner.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span className="font-medium">{partner.name}</span>
                   <ExternalLinkIcon className="size-3 text-muted-foreground" aria-hidden="true" />
                 </a>
               ))}
