@@ -9,7 +9,9 @@ This folder contains style-only, code-native replicas for documentation and mark
 - `tag-management-replica`: the vertical tag-tree/record-list layout with nested paths, deduplicated descendant counts, selection, resizing/collapse, context actions, and local create/rename/delete dialogs. Desktop scenes and record previews share this implementation; the old chip export remains available for compatibility.
 - `file-editor-replica`: file tree, tabs, editor toolbar, bubble menu, and document page.
 - `agent-replica`: message bubbles, thinking block, tool calls, execution timeline, context tray, and composer.
+- `context-usage-replica`: the PC composer context ring, capacity visibility conditions, caller-controlled tooltip and manual compaction callback. No AI requests or independent animation clock.
 - `canvas-replica`: project cards, canvas tools, nodes, edges, and grid.
+- `canvas-chart-replica`: controlled 1360×720 PC note-to-chart workspace, current chart creation panel, note selection tree, six-type menu, loading, editable JSON, bar/line results, appearance and export menus. `NoteGenChartWorkspace` receives `state`, `note` and `chart`; all values are fixed demo data, without AI or file calls. / 受控的笔记转图表工作台，包含创建、引用笔记、类型菜单、加载、JSON 编辑、柱图/折线、外观和导出状态。`state.editing` 保留编辑类型菜单，`editSource` 接受应用回填的对象数组 JSON，`loadingRotation` 由影片时间轴控制。新增 `note-canvas-ready/dragging/generating/embedded` 阶段，表现从左侧画布卡片拖到所见即所得笔记、生成并插入静态图片；`state.drag` 控制幽灵卡片坐标与透明度，`noteScroll` 控制笔记滚动，`canvasImage` 可提供真实导出图片及相对路径，未提供时用同数据的静态 SVG 复刻 PNG 外观。插图不自动同步原画布。`data-chart-target` 提供面板及操作定位；画廊保留固定状态。
 - `settings-replica`: reusable setting rows plus all current NoteGen settings categories and dialog presentation.
 - `mobile-replica`: phone frame, status bar, dock, capture, Agent, writing, and settings screens.
 - `feedback-replica`: global search, recording, sync states, image viewer, confirmation, and activity heatmap.
@@ -141,3 +143,24 @@ Use a code-native replica for product UI that already has a matching component. 
 工具栏在选区上方 8px 附近定位，AI 菜单从其按钮下方展开，翻译菜单在右侧。控件保留原图标与尺寸，编号作为外侧说明标记；选区使用系统 Highlight 颜色。自然尺寸 680px，由组件内部缩放以保留窄屏的同一工具栏顺序；翻译菜单展开时增加展示高度，避免底部裁切。格式按钮与菜单均为本地演示，不连接 AI 或编辑真实文件。
 
 同时把模型复刻的默认边框颜色规则移入 CSS base 层，避免它覆盖工具按钮的 `border-transparent`。已在现有中文教程预览确认工具栏按钮为透明边框、菜单结构、翻译语言列表与编号，保存 `editor-selection-rebuilt.jpg`。未运行测试、Lint、类型检查或构建；未做同条件实机截图对照。
+
+### 编辑器选区固定状态（2026-10-17）
+
+`NoteGenEditorAISelectionReplica` 新增可选 `state="closed" | "open" | "detail"`：分别固定 AI 菜单关闭、AI 菜单展开、翻译子菜单展开，供视频时间轴和固定预览使用。不传 `state` 保留原有官网本地交互。`showTutorialMarkers={false}` 隐藏教程编号；`canvasHeight` 固定自然画布高度，防止切换时尺寸跳动。自然宽度为 680px；同时展示翻译子菜单时建议高度 780px。影片缩放在外层处理。`data-editor-target="ai"`、`data-editor-target="translate"` 可用于定位动画指针；菜单位于复刻容器内部。无 AI 服务或伪造成功状态。
+
+### PC context usage audit for the context/memory video (2026-10-24)
+
+Source baseline: NoteGen `ab0f5bf93fb4bc0b7aba007c9d13a80cf9486809`, Tauri version `0.38.3` (`package.json` remains `0.1.0`). Website baseline: `42f55abf15d8d2145ed32868799a1a968734de49`. No earlier completed source baseline was available for this context indicator. The application checkout was clean. Existing website changes to this README, `index.ts`, and `editor-ai-selection-replica.tsx` were preserved.
+
+The audit covers PC chat headers/composer, context usage/manual compression entry, and the active, ready, non-sensitive global preference memory fixture used by this episode. Sources: `src/app/core/main/chat/{chat-header,chat-input,chat-tools-popover,context-usage-indicator,chat-content}.tsx`, `src/components/memories/{memory-list,memory-item,memory-stats}.tsx`, `src/app/core/setting/memories/page.tsx`, and Chinese/English messages. Current source has the compression summary divider, but this episode only demonstrates the real entry and its usage tooltip, without inventing a successful compression output.
+
+| Difference | Shared implementation | Acceptance/status |
+| --- | --- | --- |
+| Desktop composer had six obsolete tool icons and omitted the context ring | `components/home/notegen-desktop-replica.tsx` now uses attachment + tools, then optional context ring + permission + send | Source comparison completed; no application screenshot comparison |
+| No shared context ring or deterministic open tooltip | `context-usage-replica.tsx` uses the source 9-unit ring radius, 32px button, 16px SVG, original cn/en tooltip and K/M formatting | `user`/`learned` capacity + history show it; estimated capacity or no history hide it; temporary/loading/compacting disable; screenshot geometry unverified |
+| Chat demo title/input could not describe this episode | Optional `title`, `input`, `conversationCount` added to the existing `chatExample`; optional `contextUsage` added to desktop and local chat previews | Old calls retain their defaults; static callsites read |
+| Active memory fixture | Existing `NoteGenMemoriesSettingsDialog` already includes policy, counts, active/preference/global badges, content and more menu | This episode uses ready, non-sensitive, never-recalled fixtures and no menu. Sensitive/indexing/recall-reason/menu-promoted states were outside this episode audit |
+
+`NoteGenContextUsageIndicator` is exported from `@/components/notegen`. A fixed video frame may pass `{ usedTokens: 104960, contextWindow: 128000, usedPercent: 82, capacitySource: "user", tooltipOpen: true }`; percentages/token values are simulated fixture data. `rotation` is an explicit deterministic angle for in-progress frames, and `onCompact` is a caller-owned display callback. The real action forces conversation-history preparation; the replica does not call it. `NoteGenDesktopReplica` accepts the same object through `contextUsage`; its existing `chatExample` now accepts a title and input. `NoteGenChatExampleReplica` also accepts `contextUsage` and `height` (default 360).
+
+Manual comparison remains: PC/mac, Chinese, dark theme, natural 1360×720; compare header/control order, ring and tooltip geometry, active preference row and modal at that same size; check cn/en strings and scaling in the gallery. Observation date is 2026-10-24. No same-condition product screenshot was available, so this is source alignment, not pixel verification. No tests, lint, typecheck, app build or development server were run. The installed website Next package has no `node_modules/next/dist/docs` directory; these edits use React display props/CSS and introduce no Next API.

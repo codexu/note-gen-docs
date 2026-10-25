@@ -10,6 +10,7 @@ export * from "@/components/notegen/file-editor-replica"
 export * from "@/components/notegen/agent-replica"
 export * from "@/components/notegen/skill-agent-replica"
 export * from "@/components/notegen/canvas-replica"
+export * from "@/components/notegen/canvas-chart-replica"
 export * from "@/components/notegen/mobile-replica"
 export * from "@/components/notegen/feedback-replica"
 export * from "@/components/notegen/organize-notes-replica"
@@ -17,6 +18,7 @@ export * from "@/components/notegen/doc-preview"
 export * from "@/components/home/notegen-desktop-replica"
 
 export { NoteGenChatEmpty, type NoteGenRecentConversation } from "./chat-empty-replica"
+export { NoteGenContextUsageIndicator, type NoteGenContextUsageProps } from "./context-usage-replica"
 
 export { NoteGenSkillsSettings, type NoteGenInstalledSkill } from "./skills-settings-replica"
 export { NoteGenSkillsSettingsDialog } from "./settings-replica"
@@ -39,3 +41,5 @@ export { NoteGenProviderListReplica, NoteGenConnectionFormReplica, NoteGenModelC
 export { NoteGenChatModelPickerReplica, NoteGenEditorAISelectionReplica } from "./model-setup-scenes"
 export { NoteGenKnowledgeModelPickerReplica } from "./knowledge-replica"
 export { TutorialMarker, TutorialLegend } from "./tutorial-marker"
+
+export type { NoteGenEditorAISelectionState, NoteGenEditorAISelectionReplicaProps } from "./editor-ai-selection-replica"

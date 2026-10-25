@@ -23,6 +23,7 @@ import {
   NoteGenDesktopReplica,
   NoteGenAgentPanel,
   NoteGenChatEmpty,
+  NoteGenChatExampleReplica,
   NoteGenSkillsSettingsDialog,
   NoteGenMcpSettingsDialog,
   NoteGenMemoriesSettingsDialog,
@@ -38,6 +39,7 @@ import {
   NoteGenMainStatusBar,
   NoteGenUnifiedSyncIndicator,
   NoteGenCanvasWorkspace,
+  NoteGenChartWorkspace,
   NoteGenConfirmationDialog,
   NoteGenDialogBackdrop,
   NoteGenEditorWorkspace,
@@ -92,6 +94,13 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
   const [enabled, setEnabled] = useState(true)
   const [theme, setTheme] = useState("system")
   const text = (cn: string, en: string) => lang === "en" ? en : cn
+  const chartRows = [3200, 4100, 3600, 4800, 3900, 4500].map((value, index) => ({
+    month: lang === "en" ? ["Jan", "Feb", "Mar", "Apr", "May", "Jun"][index] : `${index + 1}月`, value,
+  }))
+  const chartNote = {
+    title: text("半年支出记录.md", "Half-year expenses.md"),
+    path: text("生活/半年支出记录.md", "Personal/Half-year expenses.md"), rows: chartRows,
+  }
 
   const navigation = [
     ["desktop", text("完整应用", "Desktop app")],
@@ -260,6 +269,7 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
             <div className="grid gap-6 xl:grid-cols-2">
               <ComponentCard desktopWidth={552} title="NoteGenAgentPanel" description={text("消息、思考过程、工具调用与上下文", "Messages, reasoning, tool calls, and context")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenAgentPanel lang={lang} /></div></ComponentCard>
               <ComponentCard desktopWidth={440} title="NoteGenChatEmpty" description={text("空白对话：淡网格、快速开始与可选最近对话", "Empty conversation with a subtle grid, quick prompts and optional recent conversations")}><div style={{ height: 560 }}><NoteGenChatEmpty lang={lang} recentConversations={[{ title: lang === "en" ? "Help me write a note" : "帮我写一篇笔记", time: lang === "en" ? "1 hour ago" : "1 小时前" }]} /></div></ComponentCard>
+              <ComponentCard desktopWidth={440} title="NoteGenChatExampleReplica · context usage" description={text("固定模拟数字：已确认模型容量、有历史消息，展示真实上下文占用圆环及其提示；点击仅触发演示回调", "Fixed simulated values with confirmed capacity and message history; the context ring exposes a display callback")}><div className="ng-model-settings"><NoteGenChatExampleReplica lang={lang} title={text("周末行程", "Weekend trip")} question={text("周六出发，预算两千，不吃海鲜。", "Leave Saturday, budget 2,000, no seafood.")} answer={text("好的，我会按这些条件安排行程。", "I'll plan the trip with those constraints.")} contextUsage={{ usedTokens: 104960, contextWindow: 128000, usedPercent: 82, tooltipOpen: true }} /></div></ComponentCard>
               <ComponentCard desktopWidth={1360} title="NoteGenKnowledgeSettingsDialog" description={text("知识库检索模型、索引状态和来源设置（固定模拟数据）", "Retrieval models, index status and source controls with fixed demo data")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenKnowledgeSettingsDialog lang={lang} /></div></ComponentCard>
               <ComponentCard desktopWidth={552} title="NoteGenKnowledgeSources" description={text("文章与记录参考来源、原文展开与入口", "Referenced articles and records with original content")}><div className="ng-skill-workspace" style={{ width: "100%", height: "auto", padding: 16 }}><NoteGenKnowledgeSources lang={lang} expanded sources={[{ type: "article", title: text("发布会议.md", "Release meeting.md"), content: text("原定 10 月 12 日发布。", "Originally scheduled for October 12."), expanded: true }, { type: "record", title: text("发布调整", "Release adjustment"), content: text("调整至 10 月 15 日。", "Moved to October 15.") }]} /></div></ComponentCard>
               <ComponentCard desktopWidth={1360} title="NoteGenSkillsSettingsDialog" description={text("设置-技能：工作区与全局技能、安装入口和启用状态", "Settings–Skills: workspace/global lists, installation entries and enable state")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenSkillsSettingsDialog lang={lang} skills={[{ name: "meeting-notes", description: lang === "en" ? "Summarize meeting notes, decisions and action items." : "将会议记录整理成讨论要点、决定与待办事项。", enabled: true }]} /></div></ComponentCard>
@@ -271,6 +281,8 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
               <ComponentCard desktopWidth={552} title="NoteGenCanvasWorkspace" description={text("画布项目、节点、连线和画布工具", "Canvas projects, nodes, edges, and canvas tools")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenCanvasWorkspace lang={lang} /></div></ComponentCard>
             </div>
             <ComponentCard desktopWidth={1152} title="NoteGenAppShell" description={text("当前桌面外壳：平台窗口控制、记录工具与全局统一状态栏", "Current desktop shell with platform controls, capture tools, and one unified status bar")}><NoteGenAppShell lang={lang}><div className="grid h-full grid-cols-[28%_42%_30%]"><div className="border-r"><NoteGenRecordWorkspace lang={lang} /></div><div className="border-r"><NoteGenEditorWorkspace lang={lang} /></div><NoteGenAgentPanel lang={lang} /></div></NoteGenAppShell></ComponentCard>
+            {(["notes-open", "edit", "appearance", "export"] as const).map(phase => <ComponentCard key={`chart-${phase}`} desktopWidth={1360} title={`NoteGenChartWorkspace · ${phase}`} description={text("固定示例：引用半年支出笔记，编辑 JSON 数据，将六月改为 4200，选择折线和暖色，再查看画布导出菜单；无模型或文件调用。", "Fixed demo: select an expense note, edit JSON to change June to 4,200, use a warm line chart, and inspect canvas export options. No AI or file calls.")}><NoteGenChartWorkspace lang={lang} state={{ phase, selected: phase === "appearance", paletteMenuOpen: phase === "appearance" }} note={chartNote} chart={{ title: text("半年支出", "Half-year expenses"), type: phase === "appearance" || phase === "export" ? "line" : "bar", rows: phase === "appearance" || phase === "export" ? chartRows.map((row, index) => index === 5 ? { ...row, value: 4200 } : row) : chartRows, palette: phase === "appearance" || phase === "export" ? "warm" : "system" }} /></ComponentCard>)}
+            {(["note-canvas-dragging", "note-canvas-embedded"] as const).map(phase => <ComponentCard key={phase} desktopWidth={1360} title={`NoteGenChartWorkspace · ${phase}`} description={text("从左侧画布卡片拖入所见即所得笔记，生成静态图片；原笔记六月仍为 4500，图表为 4200，插图不自动跟随画布变化。", "Drag a canvas card into the visual note editor to insert a static image. June remains 4,500 in the note and 4,200 in the chart; the image does not track later canvas edits.")}><NoteGenChartWorkspace lang={lang} state={{ phase, drag: phase === "note-canvas-dragging" ? { x: 530, y: 380, overEditor: true } : undefined, noteScroll: phase === "note-canvas-embedded" ? 320 : 0 }} note={chartNote} chart={{ title: text("半年支出", "Half-year expenses"), type: "line", rows: chartRows.map((row, index) => index === 5 ? { ...row, value: 4200 } : row), palette: "warm" }} /></ComponentCard>)}
           </div>
         </GallerySection>
 

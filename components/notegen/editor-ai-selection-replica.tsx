@@ -35,17 +35,30 @@ function ToolbarSeparator() {
   return <div className="mx-1 flex h-5 items-center"><Separator orientation="vertical" className="h-full" /></div>
 }
 
-export function NoteGenEditorAISelectionReplica({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
+export type NoteGenEditorAISelectionState = "closed" | "open" | "detail"
+
+export interface NoteGenEditorAISelectionReplicaProps {
+  lang?: NoteGenReplicaLanguage
+  /** Controlled state for deterministic previews and video timelines. Omit for local interaction. */
+  state?: NoteGenEditorAISelectionState
+  showTutorialMarkers?: boolean
+  /** Fixed natural canvas height; camera scaling belongs to the consuming scene. */
+  canvasHeight?: number
+}
+
+export function NoteGenEditorAISelectionReplica({ lang = "cn", state, showTutorialMarkers = true, canvasHeight }: NoteGenEditorAISelectionReplicaProps) {
   const en = lang === "en"
   const viewport = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
-  const [menuOpen, setMenuOpen] = useState(true)
-  const [translateOpen, setTranslateOpen] = useState(false)
+  const [localMenuOpen, setMenuOpen] = useState(true)
+  const menuOpen = state ? state !== "closed" : localMenuOpen
+  const [localTranslateOpen, setTranslateOpen] = useState(false)
+  const translateOpen = state ? state === "detail" : localTranslateOpen
   const [customLanguage, setCustomLanguage] = useState("")
   const [activeFormats, setActiveFormats] = useState<string[]>([])
   const [notice, setNotice] = useState("")
   const width = 680
-  const height = translateOpen ? 680 : menuOpen ? 480 : 320
+  const height = canvasHeight ?? (translateOpen ? 680 : menuOpen ? 480 : 320)
   useEffect(() => {
     const node = viewport.current
     if (!node) return
@@ -80,7 +93,7 @@ export function NoteGenEditorAISelectionReplica({ lang = "cn" }: { lang?: NoteGe
         <article className="px-12 pt-9 text-base leading-7">
           <h3 className="text-2xl font-bold tracking-tight">{text("用 Markdown 记录笔记", "Taking notes with Markdown")}</h3>
           <p className="mt-24 relative">
-            <span className="absolute -right-7 top-0 pointer-events-none"><TutorialMarker number={1} /></span>
+            <span className="absolute -right-7 top-0 pointer-events-none">{showTutorialMarkers ? <TutorialMarker number={1} /> : null}</span>
             <span className={cn("rounded-[1px] bg-[Highlight] text-[HighlightText]", activeFormats.includes("bold") && "font-bold", activeFormats.includes("italic") && "italic", activeFormats.includes("strike") && "line-through", activeFormats.includes("underline") && "underline", activeFormats.includes("code") && "font-mono")}>
               {text("Markdown 让我们用纯文本记录笔记，并通过标题和列表组织内容。", "Markdown lets us keep notes in plain text, using headings and lists to organize ideas.")}
             </span>
@@ -89,16 +102,16 @@ export function NoteGenEditorAISelectionReplica({ lang = "cn" }: { lang?: NoteGe
         </article>
         <div className="absolute left-12 top-[120px] z-20 flex w-max items-center gap-1 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10" role="toolbar" aria-label={text("选区工具栏", "Selection toolbar")}>
           <div className="relative">
-            <span className="pointer-events-none absolute -left-3 -top-3 z-30"><TutorialMarker number={2} /></span>
-            <Button type="button" variant={menuOpen ? "secondary" : "ghost"} size="icon-sm" className="text-primary" title="AI" aria-label="AI" aria-expanded={menuOpen} onClick={() => { setMenuOpen(value => !value); setTranslateOpen(false) }}><Sparkles /></Button>
+            <span className="pointer-events-none absolute -left-3 -top-3 z-30">{showTutorialMarkers ? <TutorialMarker number={2} /> : null}</span>
+            <Button type="button" variant={menuOpen ? "secondary" : "ghost"} size="icon-sm" className="text-primary" data-editor-target="ai" title="AI" aria-label="AI" aria-expanded={menuOpen} onClick={() => { setMenuOpen(value => !value); setTranslateOpen(false) }}><Sparkles /></Button>
             {menuOpen ? <div className="absolute top-full mt-1 min-w-36 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10" data-editor-menu="ai">
-              {writingActions.map(({ icon: Icon, cn, en: english }, index) => <div key={cn} className="relative">{index === 0 ? <span className="pointer-events-none absolute -left-6 top-1"><TutorialMarker number={3} /></span> : null}<Button type="button" variant="ghost" size="sm" className="w-full justify-start" onClick={() => action(text(cn, english))}><Icon data-icon="inline-start" /><span>{text(cn, english)}</span></Button></div>)}
+              {writingActions.map(({ icon: Icon, cn, en: english }, index) => <div key={cn} className="relative">{index === 0 && showTutorialMarkers ? <span className="pointer-events-none absolute -left-6 top-1"><TutorialMarker number={3} /></span> : null}<Button type="button" variant="ghost" size="sm" className="w-full justify-start" onClick={() => action(text(cn, english))}><Icon data-icon="inline-start" /><span>{text(cn, english)}</span></Button></div>)}
               <Separator className="my-1" />
               <p className="px-2 py-1 text-xs font-medium text-muted-foreground">{text("从选区生成画布", "Generate canvas from selection")}</p>
               {canvasActions.map(({ icon: Icon, cn, en: english }) => <Button key={cn} type="button" variant="ghost" size="sm" className="w-full justify-start" onClick={() => action(text(cn, english))}><Icon data-icon="inline-start" /><span>{text(cn, english)}</span></Button>)}
               <Separator className="my-1" />
               <div className="relative" onMouseEnter={() => setTranslateOpen(true)} onMouseLeave={() => setTranslateOpen(false)}>
-                <Button type="button" variant="ghost" size="sm" className="w-full justify-start" onClick={() => setTranslateOpen(value => !value)} aria-expanded={translateOpen}><Languages data-icon="inline-start" /><span>{text("翻译", "Translate")}</span><ChevronRight data-icon="inline-end" className={cn("ml-auto transition-transform", translateOpen && "rotate-90")} /></Button>
+                <Button type="button" variant="ghost" size="sm" className="w-full justify-start" onClick={() => setTranslateOpen(value => !value)} data-editor-target="translate" aria-expanded={translateOpen}><Languages data-icon="inline-start" /><span>{text("翻译", "Translate")}</span><ChevronRight data-icon="inline-end" className={cn("ml-auto transition-transform", translateOpen && "rotate-90")} /></Button>
                 {translateOpen ? <div className="absolute left-full top-0 ml-1 max-h-60 min-w-40 overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10" data-editor-menu="translate">
                   {languages.map(([english, chinese]) => <Button key={english} type="button" variant="ghost" size="sm" className="w-full justify-start" onClick={() => action(`${text("翻译", "Translate")}: ${text(chinese, english)}`)}>{text(chinese, english)}</Button>)}
                   <Separator className="my-1" /><div className="flex items-center px-1 py-1"><Input aria-label={text("自定义语言", "Custom language")} placeholder={text("自定义语言...", "Custom language...")} value={customLanguage} onChange={event => setCustomLanguage(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && customLanguage.trim()) action(`${text("翻译", "Translate")}: ${customLanguage.trim()}`); if (event.key === "Escape") setTranslateOpen(false) }} /></div>

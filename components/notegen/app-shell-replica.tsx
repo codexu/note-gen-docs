@@ -73,13 +73,14 @@ export type NoteGenMainStatusBarProps = {
   characterCount?: number
   modelLabel?: string
   modelControl?: ReactNode
+  canvasControls?: ReactNode
   promptLabel?: string
   className?: string
 }
 
 export function NoteGenMainStatusBar({
   lang = "cn", workspace = "writing", workspaceName, syncState = "local",
-  recentSyncActivity, pluginSlot, characterCount = 862, modelLabel = "GPT-5", modelControl, promptLabel, className,
+  recentSyncActivity, pluginSlot, characterCount = 862, modelLabel = "GPT-5", modelControl, canvasControls, promptLabel, className,
 }: NoteGenMainStatusBarProps) {
   const en = lang === "en"
   return (
@@ -91,7 +92,7 @@ export function NoteGenMainStatusBar({
         <StatusItem icon={Copy} label={en ? "Copy" : "复制"} />
         <StatusItem icon={Download} label={en ? "Export" : "导出"} />
         <StatusItem icon={List} label={en ? "Outline" : "大纲"} />
-      </div> : workspace === "canvas" ? <div className="flex shrink-0 items-center gap-0.5">
+      </div> : workspace === "canvas" ? canvasControls ?? <div className="flex shrink-0 items-center gap-0.5">
         <StatusItem icon={Grid3X3} label={en ? "Grid" : "网格"} />
         <StatusItem icon={Magnet} label={en ? "Snap" : "吸附"} />
         <StatusItem icon={WandSparkles} label={en ? "Layout" : "布局"} />

@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -107,51 +108,61 @@ const syncOptions = [
 const supporters = {
   cn: [
     {
+      name: "硅基流动",
+      description: "为项目提供模型服务支持。",
+      href: "https://cloud.siliconflow.cn/i/O2ciJeZw",
+      icon: providerReferrals[0].icon,
+    },
+    {
+      name: "AIHubMix",
+      description: "为项目提供赞助模型服务支持。",
+      href: AIHUBMIX_SHARE_URL,
+      icon: "https://aihubmix.com/favicon.ico?v=2",
+    },
+    {
       name: "PackyCode",
-      description: "稳定、高效的 API 中转服务商，使用统一域名和密钥接入主流模型，提供智能容灾切换与 Codex、Claude Code 高速通道。",
-      benefit: "通过 NoteGen 链接注册可获得 1 美元体验额度及首充优惠。",
+      description: "统一 API 接入主流大模型，提供 Codex、Claude Code 专属通道。",
       href: "https://www.packyapi.ai/register?aff=NqBq",
       icon: providerReferrals[1].icon,
     },
     {
-      name: "Infistar.cc 无限星河",
-      description: "提供兼容 OpenAI 标准接口的模型服务，支持 ChatGPT、Claude、Gemini、Kimi、GLM、DeepSeek 等模型，以及 OCR、Embedding、Rerank 和语音能力。",
-      benefit: "通过 NoteGen 专属链接注册并完成首次调用，可领取测试额度或首充优惠。",
+      name: "无限星河",
+      description: "兼容 OpenAI 接口，支持多模态与知识库能力。",
       href: "https://www.infistar.cc/register?aff=G55F2Z5Q&ref_source=link",
       icon: providerReferrals[2].icon,
     },
   ],
   en: [
     {
+      name: "SiliconFlow",
+      description: "Provides model service support for the project.",
+      href: "https://cloud.siliconflow.cn/i/O2ciJeZw",
+      icon: providerReferrals[0].icon,
+    },
+    {
+      name: "AIHubMix",
+      description: "Sponsors model services for the project.",
+      href: AIHUBMIX_SHARE_URL,
+      icon: "https://aihubmix.com/favicon.ico?v=2",
+    },
+    {
       name: "PackyCode",
-      description: "A stable API gateway for leading models, with one endpoint and API key, automatic failover, and dedicated high-speed routes for Codex and Claude Code.",
-      benefit: "Sign up through NoteGen to receive US$1 in trial credit and a first top-up offer.",
+      description: "Unified API access to leading AI models, with dedicated Codex and Claude Code routes.",
       href: "https://www.packyapi.ai/register?aff=NqBq",
       icon: providerReferrals[1].icon,
     },
     {
-      name: "Infistar.cc Infinity Galaxy",
-      description: "An OpenAI-compatible model service supporting ChatGPT, Claude, Gemini, Kimi, GLM, and DeepSeek, along with OCR, embeddings, reranking, and speech capabilities.",
-      benefit: "Register through NoteGen and complete a first call to receive trial credit or a first top-up offer.",
+      name: "Infistar.cc",
+      description: "OpenAI-compatible model services supporting NoteGen, with multimodal and knowledge base capabilities.",
       href: "https://www.infistar.cc/register?aff=G55F2Z5Q&ref_source=link",
       icon: providerReferrals[2].icon,
     },
-  ],
-} as const
-
-const serviceSupporters = {
-  cn: [
-    { name: "硅基流动", href: "https://cloud.siliconflow.cn/i/O2ciJeZw", icon: providerReferrals[0].icon, description: "模型服务支持" },
-    { name: "AIHubMix", href: AIHUBMIX_SHARE_URL, icon: "https://aihubmix.com/favicon.ico?v=2", description: "模型服务支持" },
-  ],
-  en: [
-    { name: "SiliconFlow", href: "https://cloud.siliconflow.cn/i/O2ciJeZw", icon: providerReferrals[0].icon, description: "Model service support" },
-    { name: "AIHubMix", href: AIHUBMIX_SHARE_URL, icon: "https://aihubmix.com/favicon.ico?v=2", description: "Model service support" },
   ],
 } as const
 
 const acknowledgedPartners = {
   cn: [
+    { name: "OpenAI", href: "https://openai.com/", support: "ChatGPT Pro 200 支持" },
     { name: "七牛云", href: "https://www.qiniu.com/products/ai-token-api?utm_source=NoteGen" },
     { name: "302.AI", href: "https://share.302.ai/jfFrIP" },
     { name: "胜算云", href: "https://www.shengsuanyun.com/?from=CH_KAFLGC9O" },
@@ -160,6 +171,7 @@ const acknowledgedPartners = {
     { name: "Skywork", href: "https://skywork.ai/p/bY47ky" },
   ],
   en: [
+    { name: "OpenAI", href: "https://openai.com/", support: "ChatGPT Pro 200 support" },
     { name: "Qiniu", href: "https://www.qiniu.com/products/ai-token-api?utm_source=NoteGen" },
     { name: "302.AI", href: "https://share.302.ai/jfFrIP" },
     { name: "ShengSuanYun", href: "https://www.shengsuanyun.com/?from=CH_KAFLGC9O" },
@@ -175,7 +187,6 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
   const capabilities = isEnglish ? capabilitiesEn : capabilitiesCn
   const cases = isEnglish ? casesEn : casesCn
   const projectSupporters = supporters[lang]
-  const projectServiceSupporters = serviceSupporters[lang]
   const projectAcknowledgedPartners = acknowledgedPartners[lang]
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -427,88 +438,47 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
             badge={text("支持与贡献", "Supporters and contributors")}
             title={text("每一次支持，都让 NoteGen 能继续维护。", "Every contribution helps keep NoteGen maintained.")}
             description={text(
-              "感谢为项目提供服务支持的合作伙伴，也感谢参与代码、文档、翻译、测试和问题反馈的每一位贡献者。",
-              "Thanks to the partners supporting the project with services, and to everyone contributing code, docs, translations, testing, and feedback."
+              "感谢赞助商对项目的支持，也感谢参与代码、文档、翻译、测试和问题反馈的每一位贡献者。",
+              "Thanks to the sponsors supporting the project, and to everyone contributing code, docs, translations, testing, and feedback."
             )}
           />
 
           <div className="mt-12 flex flex-col gap-4">
             <div className="flex items-center gap-3">
-              <Badge variant="outline">{text("AI 平台合作伙伴", "AI platform partners")}</Badge>
+              <Badge variant="outline">{text("赞助商", "Sponsors")}</Badge>
               <p className="text-sm text-muted-foreground">
-                {text("为 NoteGen 用户提供模型服务与专属权益。", "Model services and member benefits for NoteGen users.")}
+                {text("感谢以下伙伴对 NoteGen 的支持。", "Thanks to these partners for supporting NoteGen.")}
               </p>
             </div>
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {projectSupporters.map((supporter) => (
-                <Card key={supporter.name} className="h-full">
-                  <CardHeader className="gap-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <CardTitle className="flex items-center gap-3 text-xl">
-                        <img
-                          src={supporter.icon}
-                          alt=""
-                          className="size-9 rounded-xl border bg-background object-contain p-1"
-                        />
-                        {supporter.name}
-                      </CardTitle>
-                      <Badge variant="outline">{text("合作支持", "Partner")}</Badge>
-                    </div>
-                    <CardDescription className="leading-6">{supporter.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-4">
-                    <p className="text-sm leading-6 text-muted-foreground">{supporter.benefit}</p>
-                    <a
-                      href={supporter.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
-                    >
-                      {text("通过专属链接了解", "Explore through NoteGen")}
-                      <ExternalLinkIcon data-icon="inline-end" />
-                    </a>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <Card className="mt-8">
-            <CardHeader className="gap-3">
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <ServerIcon className="size-5 text-muted-foreground" aria-hidden="true" />
-                {text("项目资源支持", "Project resource support")}
-              </CardTitle>
-              <CardDescription className="leading-6">
-                {text(
-                  "感谢为 NoteGen 提供模型服务与项目资源支持的伙伴。",
-                  "Thanks to the partners providing NoteGen with model services and project resources."
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              {projectServiceSupporters.map((supporter) => (
                 <a
                   key={supporter.name}
                   href={supporter.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="block rounded-xl transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  <img
-                    src={supporter.icon}
-                    alt=""
-                    width={24}
-                    height={24}
-                    className="size-6 shrink-0 rounded-md bg-white object-contain p-0.5"
-                  />
-                  <span className="font-medium">{supporter.name}</span>
-                  <span className="text-muted-foreground">{supporter.description}</span>
-                  <ExternalLinkIcon className="size-3 text-muted-foreground" aria-hidden="true" />
+                  <Card className="h-full gap-4 py-4">
+                    <CardHeader className="gap-3 px-4">
+                      <CardTitle className="flex items-center gap-2">
+                        <img
+                          src={supporter.icon}
+                          alt=""
+                          className="size-8 shrink-0 rounded-lg border bg-background object-contain p-1"
+                        />
+                        {supporter.name}
+                      </CardTitle>
+                      <CardAction className="row-span-1 self-center">
+                        <ExternalLinkIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+                      </CardAction>
+                      <CardDescription className="col-span-2 leading-6">{supporter.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
                 </a>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           <Card className="mt-8">
             <CardHeader className="gap-3">
@@ -530,6 +500,7 @@ export default function HomeLanding({ lang }: { lang: "cn" | "en" }) {
                   className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span className="font-medium">{partner.name}</span>
+                  {"support" in partner && <span className="text-muted-foreground">{partner.support}</span>}
                   <ExternalLinkIcon className="size-3 text-muted-foreground" aria-hidden="true" />
                 </a>
               ))}
