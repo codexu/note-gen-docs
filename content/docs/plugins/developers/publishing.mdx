@@ -12,6 +12,8 @@ NoteGen 已建立公开仓库 [codexu/note-gen-plugins](https://github.com/codex
 
 `@notegen/plugin-cli` 已发布 npm，提供作者侧的 `keygen`、`pack`、`sign` 和 `verify`。也可以从 [SDK 仓库](https://github.com/codexu/note-gen-plugin-sdk)构建对应源码版本。CLI 不提供市场投稿、发布者登记或上传服务。
 
+插件可以在自己的 GitHub 仓库开发和发布；源码留在作者仓库，市场上架只需提交登记信息。具体步骤见下文“在自己的 GitHub 仓库发布插件”。
+
 ## 社区作者如何投稿
 
 1. 在自己的公开 GitHub 仓库提供源码、锁文件、许可证、离线 USAGE、截图与构建说明，固定完整源码提交 SHA。
@@ -49,29 +51,133 @@ PR 自动检查格式、历史不可变约束、新版本包摘要、签名和 m
 
 本地导入步骤见[开发第一个插件](/cn/docs/plugins/developers/getting-started)，制品与签名规则见[打包与验证](/cn/docs/plugins/developers/package-verify)。
 
-## 现在可以验证的发布制品
+## 在自己的 GitHub 仓库发布插件
 
-作者可以在本地完成以下流程：
+插件源码可以始终保存在自己的公开 GitHub 仓库，无需提交到 `note-gen-plugins/plugins/`。自用开发导入不需要 PR；希望出现在 NoteGen「发现」并参与市场更新时，才需要提交市场登记 PR。作者无需提供服务器。
+
+| 阶段 | 保存位置 | 用户如何使用 |
+| --- | --- | --- |
+| 源码与开发构建 | 作者自己的仓库与本地 `.notegen/package` | 在开发者页导入本地目录 |
+| 签名发布包 | 作者仓库固定 tag 的 GitHub Release | 供市场审核与发布流程下载 |
+| 市场登记 | `note-gen-plugins/community/registry.json` | 维护者发布后，从「发现」安装 |
+
+**当前状态：可以独立开发、开发导入和发布 GitHub Release；社区市场正式开放仍待验收。** 客户端目前没有输入任意 GitHub 仓库地址或安装本地 `.notegen-plugin` 归档的入口。发布到自己的 Release 不会自动进入「发现」。
+
+### 1. 准备作者仓库
+
+按照[开发第一个插件](/cn/docs/plugins/developers/getting-started)创建项目，把源码、依赖锁文件、README、许可证、离线 `USAGE.md` 和构建说明提交到自己的公开仓库。README 中说明权限用途、联网行为、兼容的 NoteGen 版本及实际验证的桌面系统。
+
+在 `plugin.json` 中填写自己的 `repository`（例如 `https://github.com/example/notegen-word-count`）和 `license`。仓库地址使用无 `.git` 后缀的 HTTPS GitHub 地址，必须与后续登记一致。使用自己的插件 ID，`top.notegen.*` 保留给官方插件。
+
+先完成开发导入验证：构建后，在「设置 → 通用 → 高级」启用开发者模式，再到「设置 → 插件管理 → 开发者」导入本机 `.notegen/package` 的绝对路径。源码或仓库地址不能直接作为导入路径。
+
+### 2. 固定源码并生成签名包
+
+以下命令在插件项目根目录执行。示例使用插件 ID `com.example.word-count`、版本 `0.1.0`；替换为自己的实际值。先同步 `plugin.json` 和 `package.json` 版本，提交全部发布源码与锁文件，再记录完整 40 位提交 SHA：
 
 ~~~bash
-notegen-plugin pack
-notegen-plugin keygen \
+git rev-parse HEAD
+~~~
+
+构建时使用该提交的干净检出，按照锁文件安装依赖；将实际 Node.js、pnpm、SDK 版本及构建命令写入构建说明。
+
+首次发布时创建发布者密钥；后续版本沿用同一密钥，无需重复生成：
+
+~~~bash
+pnpm install --frozen-lockfile
+pnpm exec notegen-plugin keygen \
   --private-key /安全路径/publisher-private.pem \
   --public-key ./publisher-public.json
-notegen-plugin sign \
-  .notegen/releases/com.example.plugin-0.1.0.unsigned.notegen-plugin \
+~~~
+
+公钥 JSON 可以公开。私钥必须保存在仓库外并离线备份，不能提交到源码、插件包或公共 CI 日志。生成公钥后如需将它纳入源码仓库，应先提交，再重新记录用于本次构建的源码 SHA。
+
+构建、签名并验签：
+
+~~~bash
+pnpm exec notegen-plugin pack
+pnpm exec notegen-plugin sign \
+  .notegen/releases/com.example.word-count-0.1.0.unsigned.notegen-plugin \
   --private-key /安全路径/publisher-private.pem
-notegen-plugin verify \
-  .notegen/releases/com.example.plugin-0.1.0.notegen-plugin \
+pnpm exec notegen-plugin verify \
+  .notegen/releases/com.example.word-count-0.1.0.notegen-plugin \
   --public-key ./publisher-public.json \
   --require-signature
 ~~~
 
-`pack` 只生成 unsigned 包，不读取私钥；`sign` 只处理已经构建的归档，不读取源码或执行构建。签名文档使用 [RFC 8785 JSON Canonicalization Scheme（JCS）](https://www.rfc-editor.org/rfc/rfc8785)规范化后，再组成 NoteGen 的长度分帧 Ed25519 签名消息。
+发布前，给 `pack`、`sign` 和 `verify` 增加 `--app-version` 参数，值为实际验证的 NoteGen 版本，以校验目标应用兼容性。上面的命令未指定目标版本，不能替代该检查。完整选项与包限制见[打包与验证](/cn/docs/plugins/developers/package-verify)。
 
-`verify --public-key` 只证明包内容与给定发布者公钥相符。它不校验市场根索引、发布者登记、源码可重复构建、许可证或人工审核，也不会把包上传到任何地方。本地验签成功后仍需提交登记资料并经过人工审核，不能直接上传到市场。
+`pack` 生成 unsigned 包；`sign` 只签署已构建的归档，不执行源码构建；`verify` 不执行插件代码。验签成功不代表已被市场审核或收录。
 
-`keygen` 生成的是插件发布者密钥，不是市场根密钥。公共 CLI 不提供根密钥生成、索引签名、发布者登记、索引 generation 管理或上传命令。私钥必须离线保管并备份，不能进入插件源码、包、公开 CI 日志或 `note-gen-plugins` 仓库。
+### 3. 上传到自己的 GitHub Release
+
+在自己的 GitHub 仓库创建指向上述源码提交的版本 tag（例如 `v0.1.0`），创建并发布对应 Release，将最终的 `com.example.word-count-0.1.0.notegen-plugin` 作为附件上传。不要上传 `.unsigned.notegen-plugin` 作为市场制品。
+
+下载地址应类似：
+
+~~~text
+https://github.com/example/notegen-word-count/releases/download/v0.1.0/com.example.word-count-0.1.0.notegen-plugin
+~~~
+
+使用固定 tag 的附件地址，不能使用 `releases/latest`、GitHub Raw、查询参数或其他仓库的附件。保留该 Release，同一 ID 与版本的最终包不得替换。
+
+对最终签名包计算 SHA-256；这是整个归档的摘要，不是 unsigned 包或 `integrity.json` 的摘要：
+
+~~~bash
+# macOS
+shasum -a 256 .notegen/releases/com.example.word-count-0.1.0.notegen-plugin
+
+# Linux
+sha256sum .notegen/releases/com.example.word-count-0.1.0.notegen-plugin
+~~~
+
+记录输出的 64 位小写十六进制摘要，用于登记中的 `packageSha256`。
+
+### 4. 提交市场登记 PR
+
+社区投稿开放后，fork `note-gen-plugins`，在 `community/registry.json` 的现有数组中追加自己的登记，提交 PR。首次登记需要 publisher 和 plugin；不要覆盖其他作者或历史记录。
+
+下面展示一位作者、一个插件的登记结构，所有占位内容都必须替换，不能直接提交：
+
+~~~json
+{
+  "schemaVersion": 1,
+  "publishers": [{
+    "id": "example-author",
+    "name": "Example Author",
+    "repository": "https://github.com/example/notegen-word-count",
+    "keyId": "<publisher-public.json 中的 keyId>",
+    "publicKey": "<publisher-public.json 中的 publicKey>"
+  }],
+  "plugins": [{
+    "id": "com.example.word-count",
+    "publisherId": "example-author",
+    "repository": "https://github.com/example/notegen-word-count",
+    "categories": ["productivity"],
+    "releases": [{
+      "version": "0.1.0",
+      "sourceCommit": "<本次构建使用的完整40位源码提交SHA>",
+      "packageUrl": "https://github.com/example/notegen-word-count/releases/download/v0.1.0/com.example.word-count-0.1.0.notegen-plugin",
+      "packageSha256": "<最终签名包的64位SHA256>",
+      "publisherKeyId": "<与发布者 keyId 一致>",
+      "changelog": "首次发布。",
+      "buildInstructions": "<实际 Node.js、pnpm、SDK 版本及从锁文件构建和打包的命令>",
+      "permissionsReason": "<逐项说明权限用途与范围；无权限时填写无需权限>",
+      "testedOn": "<实际验证的 NoteGen 版本、桌面系统与主要操作>"
+    }]
+  }]
+}
+~~~
+
+`keyId` 和 `publicKey` 取自 CLI 生成的公钥 JSON，不要提交私钥。插件 ID、版本、仓库和许可证必须与包内 manifest 一致。名称、介绍与权限等市场信息由验签后的 manifest 生成。字段限制、PR 模板和审核要求以[社区投稿说明](https://github.com/codexu/note-gen-plugins/blob/main/community/README.md)为准。
+
+### 5. 上架与后续更新
+
+PR 自动检查通过后仍需人工审核。合并只完成登记；维护者手动发布根签名市场索引后，用户才能在「发现」刷新并安装。社区包保留作者签名，由市场发布流程镜像到 OSS/CDN 和 GitHub Releases。
+
+发布新版本时，提升版本号，从新的固定源码提交重新构建、签名并发布新的 Release，再通过 PR 在该插件的 `releases` 开头追加记录。保留原插件 ID、publisherId、仓库及全部历史版本，不能覆盖旧包。换钥和撤销流程见[社区投稿说明](https://github.com/codexu/note-gen-plugins/blob/main/community/README.md)。
+
+开发导入版本不参与市场更新。验证市场升级前，先卸载同 ID 开发版并从市场安装旧版本，再发布新版；详见下文“安装和升级测试”。
 
 ## 官方插件的发布流程
 

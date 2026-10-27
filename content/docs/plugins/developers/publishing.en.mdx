@@ -12,6 +12,8 @@ Community authors keep source in their own repositories and submit registration 
 
 `@notegen/plugin-cli` is published on npm and provides author-side `keygen`, `pack`, `sign`, and `verify` commands. You can also build matching source from the [SDK repository](https://github.com/codexu/note-gen-plugin-sdk). The CLI does not provide marketplace submissions, publisher registration or an upload service.
 
+You can develop and release plugins in your own GitHub repository. Keep source in your repository and submit only registration metadata for marketplace listing. See “Publish from your own GitHub repository” below.
+
 ## Community submission workflow
 
 Keep source in your own public GitHub repository. Build from a fixed commit, sign with your own publisher key, upload the final archive to a versioned GitHub Release, and record its SHA-256. Never submit private keys.
@@ -44,29 +46,133 @@ The marketplace and development runtimes currently support desktop only. Even th
 
 See [Build your first plugin](/en/docs/plugins/developers/getting-started) for local import and [Packaging and verification](/en/docs/plugins/developers/package-verify) for artifact and signature rules.
 
-## Release artifacts you can verify now
+## Publish from your own GitHub repository
 
-An author can complete this workflow locally:
+Keep plugin source in your own public GitHub repository. You do not need to submit it to `note-gen-plugins/plugins/`. Local development imports require no PR. Submit a marketplace registration PR when you want users to discover, install, and update the plugin through NoteGen. You do not need to host a server.
+
+| Stage | Location | How it is used |
+| --- | --- | --- |
+| Source and development build | Your repository and local `.notegen/package` | Import the local directory from the Developer tab |
+| Signed release archive | A fixed-tag GitHub Release in your repository | Downloaded for marketplace review and publication |
+| Marketplace registration | `note-gen-plugins/community/registry.json` | Available in Discover after a maintainer publishes it |
+
+**Current status: independent development, development imports, and GitHub Releases are available; production opening of community submissions still requires acceptance.** The client has no entry point for arbitrary GitHub repository URLs or local `.notegen-plugin` archive installation. Publishing your own Release does not automatically list the plugin in Discover.
+
+### 1. Prepare your repository
+
+Follow [Build your first plugin](/en/docs/plugins/developers/getting-started), then commit source, a dependency lock file, README, license, offline `USAGE.md`, and build instructions to your public repository. Document permissions, network behavior, compatible NoteGen versions, and desktop systems you have actually tested.
+
+Set `repository` (for example, `https://github.com/example/notegen-word-count`) and `license` in `plugin.json`. Use an HTTPS GitHub repository URL without a `.git` suffix; it must match registration. Use your own plugin ID; `top.notegen.*` is reserved for official plugins.
+
+Verify a development import first: build the plugin, enable Developer mode under Settings → General → Advanced, then import the absolute path to your local `.notegen/package` under Settings → Plugin management → Developer. Source code and repository URLs are not import paths.
+
+### 2. Pin source and create a signed package
+
+Run the commands below from your plugin project root. The examples use ID `com.example.word-count` and version `0.1.0`; substitute your actual values. Synchronize versions in `plugin.json` and `package.json`, commit all release source and the lock file, then record the full 40-character source SHA:
 
 ~~~bash
-notegen-plugin pack
-notegen-plugin keygen \
+git rev-parse HEAD
+~~~
+
+Build from a clean checkout of that commit with locked dependencies. Record the actual Node.js, pnpm, and SDK versions and build commands in your build instructions.
+
+Create a publisher key for your first release. Reuse it for subsequent releases rather than generating a new key each time:
+
+~~~bash
+pnpm install --frozen-lockfile
+pnpm exec notegen-plugin keygen \
   --private-key /secure/path/publisher-private.pem \
   --public-key ./publisher-public.json
-notegen-plugin sign \
-  .notegen/releases/com.example.plugin-0.1.0.unsigned.notegen-plugin \
+~~~
+
+The public-key JSON may be public. Keep the private key outside the repository and back it up offline; never commit it or include it in a package or public CI log. If you commit the generated public-key JSON, do so before recording the final source SHA used for the build.
+
+Build, sign, and verify:
+
+~~~bash
+pnpm exec notegen-plugin pack
+pnpm exec notegen-plugin sign \
+  .notegen/releases/com.example.word-count-0.1.0.unsigned.notegen-plugin \
   --private-key /secure/path/publisher-private.pem
-notegen-plugin verify \
-  .notegen/releases/com.example.plugin-0.1.0.notegen-plugin \
+pnpm exec notegen-plugin verify \
+  .notegen/releases/com.example.word-count-0.1.0.notegen-plugin \
   --public-key ./publisher-public.json \
   --require-signature
 ~~~
 
-`pack` produces an unsigned archive and never reads a private key. `sign` accepts only an already-built archive and neither reads source nor runs a build. The signing documents are canonicalized with [RFC 8785 JSON Canonicalization Scheme (JCS)](https://www.rfc-editor.org/rfc/rfc8785) before the length-framed NoteGen Ed25519 signature message is created.
+Before releasing, add `--app-version` to `pack`, `sign`, and `verify`, using the NoteGen version you actually tested, to check target-app compatibility. The commands above omit a target version and do not replace that check. See [Packaging and verification](/en/docs/plugins/developers/package-verify) for complete options and package limits.
 
-`verify --public-key` proves only that the package contents match the provided publisher public key. It does not validate a marketplace root index, publisher registration, reproducible source build, license, or human review, and it never uploads the package. Local verification still requires registration and human review; it is not an upload operation.
+`pack` creates an unsigned archive; `sign` signs an already-built archive without building source; `verify` does not execute plugin code. Successful verification does not mean marketplace review or listing is complete.
 
-`keygen` creates a plugin publisher key, not a marketplace root key. The public CLI has no root-key generation, index-signing, publisher-registration, index-generation management, or upload commands. Keep and back up the private key offline; never put it in plugin source, a package, public CI logs, or the `note-gen-plugins` repository.
+### 3. Upload to your GitHub Release
+
+In your repository, create a version tag such as `v0.1.0` pointing to the source commit above. Create and publish its Release, attaching the final `com.example.word-count-0.1.0.notegen-plugin`. Do not use the `.unsigned.notegen-plugin` file as the marketplace artifact.
+
+The download URL should look like:
+
+~~~text
+https://github.com/example/notegen-word-count/releases/download/v0.1.0/com.example.word-count-0.1.0.notegen-plugin
+~~~
+
+Use a fixed-tag asset URL, not `releases/latest`, GitHub Raw, query parameters, or an asset in another repository. Preserve the Release and never replace the final package for an existing ID and version.
+
+Compute SHA-256 for the final signed archive, not the unsigned archive or `integrity.json`:
+
+~~~bash
+# macOS
+shasum -a 256 .notegen/releases/com.example.word-count-0.1.0.notegen-plugin
+
+# Linux
+sha256sum .notegen/releases/com.example.word-count-0.1.0.notegen-plugin
+~~~
+
+Record the 64-character lowercase hexadecimal digest as `packageSha256`.
+
+### 4. Submit a marketplace registration PR
+
+Once community submissions open, fork `note-gen-plugins`, append your registration to the existing arrays in `community/registry.json`, and submit a PR. Your first submission registers both a publisher and a plugin. Preserve other authors and historical records.
+
+This example shows one publisher and one plugin. Replace every placeholder; it is not ready to submit:
+
+~~~json
+{
+  "schemaVersion": 1,
+  "publishers": [{
+    "id": "example-author",
+    "name": "Example Author",
+    "repository": "https://github.com/example/notegen-word-count",
+    "keyId": "<keyId from publisher-public.json>",
+    "publicKey": "<publicKey from publisher-public.json>"
+  }],
+  "plugins": [{
+    "id": "com.example.word-count",
+    "publisherId": "example-author",
+    "repository": "https://github.com/example/notegen-word-count",
+    "categories": ["productivity"],
+    "releases": [{
+      "version": "0.1.0",
+      "sourceCommit": "<full 40-character source SHA used for the build>",
+      "packageUrl": "https://github.com/example/notegen-word-count/releases/download/v0.1.0/com.example.word-count-0.1.0.notegen-plugin",
+      "packageSha256": "<64-character SHA256 of the final signed archive>",
+      "publisherKeyId": "<same value as the publisher keyId>",
+      "changelog": "Initial release.",
+      "buildInstructions": "<actual Node.js, pnpm, SDK versions and locked build/package commands>",
+      "permissionsReason": "<purpose and scope of each permission, or explicitly no permissions>",
+      "testedOn": "<actual NoteGen version, desktop OS, and operations tested>"
+    }]
+  }]
+}
+~~~
+
+Copy `keyId` and `publicKey` from the CLI-generated public-key JSON; never submit a private key. The plugin ID, version, repository, and license must match the package manifest. Marketplace metadata such as names, descriptions, and permissions comes from the verified manifest. See the [community submission reference](https://github.com/codexu/note-gen-plugins/blob/main/community/README.en.md) for field limits, the PR template, and review requirements.
+
+### 5. Listing and future updates
+
+Passing automated PR checks still requires human review. Merge completes registration; users can refresh Discover and install only after a maintainer publishes the root-signed marketplace index. Community packages keep the author's signature and are mirrored to OSS/CDN and GitHub Releases by the marketplace workflow.
+
+For an update, bump the version, rebuild and sign from a new fixed source commit, publish a new Release, and submit a PR prepending the record to the plugin's `releases`. Keep the same plugin ID, publisherId, repository, and all historical versions. Never overwrite an old package. See the [community submission reference](https://github.com/codexu/note-gen-plugins/blob/main/community/README.en.md) for key rotation and revocation.
+
+Development imports do not receive marketplace updates. To verify a marketplace upgrade, uninstall the same-ID development plugin, install the old version from the marketplace, then publish the new version. See “Installation and upgrade testing” below.
 
 ## Official plugin release workflow
 
