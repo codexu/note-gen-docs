@@ -11,15 +11,15 @@ export function NoteGenChatEmpty({ lang = "cn", recentConversations = [] }: {
   const en = lang === "en"
   const prompts = [
     { icon: FileEdit, text: en ? "Help me write a note" : "帮我写一篇笔记" },
-    { icon: FileText, text: en ? "Summarize this content" : "帮我总结这段内容" },
-    { icon: Lightbulb, text: en ? "Brainstorm some ideas" : "帮我头脑风暴一些想法" },
+    { icon: FileText, text: en ? "Help me summarize this content" : "帮我总结这段内容" },
+    { icon: Lightbulb, text: en ? "Help me brainstorm some ideas" : "帮我头脑风暴一些想法" },
   ]
   return <div className="ng-chat-empty">
     <style>{chatEmptyCss}</style>
     <div className="ng-chat-empty-grid" aria-hidden="true" />
     <div className="ng-chat-empty-fade" aria-hidden="true" />
     <div className="ng-chat-empty-content">
-      <header><div><MessageCircle size={20} /><h2>{en ? "Start a conversation with AI" : "开始与 AI 对话"}</h2></div><p>{en ? "Use Chat or Agent to interact with AI" : "使用 Chat 或 Agent 模式与 AI 互动"}</p></header>
+      <header><div><MessageCircle size={20} /><h2>{en ? "Start chatting with AI" : "开始与 AI 对话"}</h2></div><p>{en ? "Interact with AI using Chat or Agent mode" : "使用 Chat 或 Agent 模式与 AI 互动"}</p></header>
       <section><p>{en ? "Quick start" : "快速开始"}</p>{prompts.map(({ icon: Icon, text }) => <div className="ng-chat-empty-prompt" key={text}><Icon size={16} /><span>{text}</span></div>)}</section>
       {recentConversations.length ? <section><p>{en ? "Recent conversations" : "最近对话"}</p>{recentConversations.slice(0, 3).map(item => <div className="ng-chat-empty-recent" key={item.title}><span>{item.title}</span><time>{item.time}</time></div>)}</section> : null}
     </div>

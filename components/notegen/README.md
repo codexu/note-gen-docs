@@ -16,8 +16,36 @@ This folder contains style-only, code-native replicas for documentation and mark
 - `mobile-replica`: phone frame, status bar, dock, capture, Agent, writing, and settings screens.
 - `feedback-replica`: global search, recording, sync states, image viewer, confirmation, and activity heatmap.
 - `organize-notes-replica`: interactive three-step record organization dialog for the Record documentation.
+- `sync-release-replica`: controlled provider-switch review/confirmation/progress/recovery scenes, workspace-to-repository binding, and the current-document sync menu.
+- `plugin-code-block-replica`: DOT source, an enabled Graphviz renderer's fixed SVG example, and conditional PNG/SVG/JPEG export menus.
+- `record-capture-replica`: text capture, inline new-tag entry, selected tag, quick-capture tag continuity, and saved-record fixtures.
+- `file-tree-release-replica`: folder/root expansion menus, expanded/collapsed trees, deletion progress and retained failures.
+- `sponsored-quota-replica`: model-service and model-picker examples with caller-supplied remaining percentages.
+- `editor-review-release-replica`: a long document, formatted AI edit preview, supplied typeset formula, and document-switch fixture.
 
 Import every public component from `@/components/notegen`. Display-state props change the rendered appearance; interactive scenes simulate local state without implementing connected product behavior.
+
+### v0.39.0 扩展状态与来源（2026-10-25）
+
+新增扩展均复用 `ReleasePane`，自然宽 900px、默认高 740px，自带限定作用域的 CSS。主示例正文 24–26px，菜单与小型控件保留自然字号；外部时间轴控制显示、滚动与镜头。中文和英文使用同一组件的 `lang` 分支。所有示例内容和计数固定，不触发平台切换、同步、标签创建、插件安装、AI、导出或删除。
+
+本次功能事实来自发布标签 `note-gen-v0.39.0`，并只读对照当前应用源码。应用工作区在扩展审计时已有大量 UI import、同步面板和样式等未提交变化，这些没有计入已发布功能。既有官网未提交修改均保留。具体差异、来源与视觉核对边界见 [release-update-audit.md](./release-update-audit.md)。
+
+| 导出与接口 | 固定状态与数据 |
+| --- | --- |
+| `NoteGenSyncSwitchReplica` | `state="review" | "confirm" | "progress" | "running" | "error" | "recovery" | "completed"`；`origin/target/workspaceName`、`strategy="merge" | "local" | "remote"`、`resolution="local" | "remote" | "both"`、`modules: NoteGenSyncModuleRow[]`、冲突两侧文本、固定进度和 `mutated`。模拟步骤为检查→差异→备份→同步→核验；中断状态显示重新扫描并重试，不伪造自动全部回滚。 |
+| `NoteGenWorkspaceRepoReplica` | `state="unbound" | "pending" | "confirm" | "bound"`；`workspaceName/workspacePath/repo/isDefault`。默认演示非默认工作区，只说明同步该工作区笔记文件。 |
+| `NoteGenDocumentSyncReplica` | `state="panel" | "menu" | "syncing" | "synced"`；`fileName/provider`。当前文档卡片、同步当前文档，以及更多菜单中的上传当前内容/获取远端版本。 |
+| `NoteGenPluginCodeBlockReplica` | `state="source" | "preview" | "export-menu" | "exported"`；`language/rendererName/source/preview`、`svgAvailable`。默认代码绘制的固定 DOT/SVG 示例；`preview` 可注入外部准备好的静态结果。菜单 PNG→SVG→JPEG；SVG 仅当渲染结果为 SVG 时启用。 |
+| `NoteGenRecordCaptureReplica` | `state="capture" | "tag-create" | "tag-selected" | "quick-capture" | "saved"`；`text/tagName/tags`。对应创建表单里的「保存到/新建标签」与快捷窗口，不替代既有记录的多标签管理。 |
+| `NoteGenFileTreeReleaseReplica` | `state="folder-menu" | "expanded" | "root-menu" | "collapsed" | "deleting" | "delete-partial" | "deleted"`；`entries/selectedFolder`。文件夹展开/折叠与全局全部展开/全部折叠；删除失败保留并选中原条目，重试由再次执行删除表现。源码没有独立结果重试按钮。 |
+| `NoteGenSponsoredQuotaReplica` | `state="available" | "exhausted"`；`limitedModel/freeModel/remainingPercent`。本期使用 `available` 的 72% 固定示例。仅本机收到的实际输入/输出 Token 计入显示百分比；免费 fallback 使用产品已有说明表达，本片不展示 0% 耗尽状态。 |
+| `NoteGenDefaultModelsReplica` | 兼容原 `DefaultModels({lang})`；可选 `limitedModelName/freeModelName/remainingPercent/dailyTokenLimit`。默认文案已从每日请求次数改为共用 Token 额度；历史示例须显式传 `legacyDailyRequestLimit`。 |
+| `NoteGenEditorReviewReleaseReplica` | `state="long-document" | "ai-preview" | "document-switched"`；`formula?: ReactNode` 注入静态排好的公式。长文档只展示内容与滚动，不伪造性能倍率；AI 修改预览保留标题、列表、表格和公式结构。 |
+
+定位标记：同步使用 `data-release-sync-strategy/resolution/action/module/count`、`data-release-sync-differences/conflict/impact/progress/recovery/complete/acknowledge`；绑定使用 `data-release-repo-binding/input/confirm/action/result`；文档同步使用 `data-release-document-sync-launcher/panel/menu/action/loader`。插件使用 `data-release-code-action/source/preview/export-menu/format/export-result`；记录使用 `data-release-record-action/tag-target/tag-input/tag-menu/tag-option/saved/result`；目录使用 `data-release-file-tree-menu/action/row`、`data-release-file-delete-progress/result/failed/retry-target`；额度使用 `data-release-quota-model/percent/picker/option/fallback`。长文档与编辑预览使用其组件中的 `data-release-long-scroll/long-section/ai-preview/preview-formula`。加载图标由影片时间轴旋转。
+
+固定场景均加入画廊 `#release-details`。人工验收顺序：自然宽 900×740 深色中文→切换英文→菜单边缘与禁用态→状态前后资料一致→24–26px 正文与原尺寸控件→镜头放大后裁切、指针落点与字幕遮挡。本次没有运行测试、Lint、类型检查、构建或官网服务器；组件完成仅代表源码实现，视觉结论以影片捕获后的逐帧核对为准。
 
 Code-native NoteGen interface replicas for documentation and marketing pages. Import from `@/components/notegen` when composing a complete scene, or import a specific file when the component is used inside the replica implementation.
 
@@ -164,3 +192,17 @@ The audit covers PC chat headers/composer, context usage/manual compression entr
 `NoteGenContextUsageIndicator` is exported from `@/components/notegen`. A fixed video frame may pass `{ usedTokens: 104960, contextWindow: 128000, usedPercent: 82, capacitySource: "user", tooltipOpen: true }`; percentages/token values are simulated fixture data. `rotation` is an explicit deterministic angle for in-progress frames, and `onCompact` is a caller-owned display callback. The real action forces conversation-history preparation; the replica does not call it. `NoteGenDesktopReplica` accepts the same object through `contextUsage`; its existing `chatExample` now accepts a title and input. `NoteGenChatExampleReplica` also accepts `contextUsage` and `height` (default 360).
 
 Manual comparison remains: PC/mac, Chinese, dark theme, natural 1360×720; compare header/control order, ring and tooltip geometry, active preference row and modal at that same size; check cn/en strings and scaling in the gallery. Observation date is 2026-10-24. No same-condition product screenshot was available, so this is source alignment, not pixel verification. No tests, lint, typecheck, app build or development server were run. The installed website Next package has no `node_modules/next/dist/docs` directory; these edits use React display props/CSS and introduce no Next API.
+### 编辑、截图与文件夹引用固定状态（2026-10-25）
+
+本次源码对照基线：应用 `1d7f150c50e29de827312c8c438b2790ff321dba`（实际版本 v0.39.0）、官网修改前 `dd6bdc9644ff276154351417177dc09855a45ae6`，两仓库读取时均无未提交改动。本期是源码对照，未获得相同尺寸和主题的运行中截图，视觉几何尚未做实机对照。没有运行测试、Lint、类型检查、构建或官网服务器。
+
+新增以下公共组件，旧组件与 props 不变。自然画布 900×850，均可传 `height={740}`；视频相机缩放由外部处理，组件没有计时器或动画。`outline-jump` 固定选中目录第 5 项「下一步安排」，保留完整文档内容并通过 `documentScroll` 设置正文初始偏移（默认 `contentFontSize * 23` 像素）。`data-release-document-target` 是可由时间轴控制 y 位移的正文内层；传 `documentScroll={0}` 后，可根据 `data-release-following-heading` 实际位置计算终点。示例仅是「项目复盘」模拟资料，未进行真实截图、文件读取、AI 请求或保存动作。公共样式统一在 `release-replica-primitives.tsx`，采用应用深色语义 token，复用窗口控制与原 Lucide 图标；片中浅绿提示不应用于产品按钮。
+
+- `NoteGenEditorReleaseReplica`：`state="color-menu" | "color-result" | "heading-menu" | "heading-result" | "outline-open" | "outline-folded" | "outline-jump" | "table-menu" | "table-result"`，可传 `lang`、`fileName`、`document`、`colorMode="text" | "highlight"`、`colorPhase="none" | "text" | "both"`。颜色演示中的 `document.highlightText` 是结论行，`document.questionText` 是问题行；`text` 阶段仅结论使用实际绿色 `#348358`，`both` 阶段同时给问题使用黄色高亮 `#fef08a` 与深色文字。文字颜色菜单选中结论，高亮菜单选中问题，支持先后展示再同时保留。`document` 是部分 `NoteGenReleaseDocumentData`，用于标题、正文、目录与表格数据。`contentFontSize` 默认 16；视频传 26，表示演示编辑器的可配置正文字号，控件仍保持自然尺寸。颜色值来自 `src/lib/text-colors.ts`；菜单顺序来自 `editor/markdown/bubble-menu.tsx` 和 `color-menu.tsx`；标题折叠箭头位于标题文字末尾，来自 `heading-folding.ts` 与 `style.css`；大纲来自 `left-sidebar.tsx`、`outline.tsx`；表格浮层顺序来自 `table-context-toolbar.tsx`。
+- `NoteGenScreenshotReplica`：`state="annotate" | "pin"`，可传 `lang`、`selectionLabel`、`annotation` 与固定屏幕 `children`。截图浮层、标注颜色、选择框与贴图工具顺序来自 `src/app/screenshot/page.tsx`、`src/app/screenshot-pin/page.tsx`。贴图状态展示鼠标悬停后的工具条，输入画面为代码绘制的模拟屏幕。
+- `NoteGenChatFolderReplica`：`state="folder-select" | "folder-context" | "folder-answer"`，可传 `lang`、`folderName`、`entryCount`、`question` 与 `answer: string[]`。`@` 资源菜单的文件夹分组和输入区附件来自 `chat-composer-menu.tsx`、`chat-file-attachments.tsx`，条目数为明确提供的固定模拟数据。
+
+固定场景位于组件画廊 `#release-details`，中英文均由同一组件的 `lang` 分支提供。人工核对时，在自然宽 900px、深色、中文条件下依次查看菜单展开/结果、正文/标题转换、大纲/折叠、表格新增行/对齐、截图/贴图、文件夹选择/输入上下文/回答；再切换英文查看换行、菜单边缘与裁切。在视频预览检查原尺寸、1.12–1.2 倍特写与过渡。
+
+时间轴定位标记：根 `data-release-state`；菜单 `data-release-menu="selection|color|heading|table|folders"`；动作 `data-release-target="text-color|highlight-color|block-type|heading-fold|add-row|table-align-center|screenshot-pin|select-folder|folder-send"`；内容 `data-release-selected-text`、`data-release-text-color`、`data-release-heading-selected`、`data-release-converted-heading`、`data-release-fold-body`、`data-release-following-heading`、`data-release-outline-item`、`data-release-table-row`；截图 `data-release-annotation`、`data-release-screenshot-selection`、`data-release-screenshot-toolbar`、`data-release-pinned-window`；聊天 `data-release-folder-attachment`、`data-release-folder-input`、`data-release-folder-answer`。聊天空白区域复用 `NoteGenChatEmpty`（`chat-empty.tsx` 与中英文翻译核对），展示真实标题、说明与三条快速开始，不使用自造产品标语；本期不展示最近对话。切换状态时可使用分别导出的静态快照或外部控制显示，不在视频里复制维护组件实现。
+

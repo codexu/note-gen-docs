@@ -43,6 +43,17 @@ import {
   NoteGenConfirmationDialog,
   NoteGenDialogBackdrop,
   NoteGenEditorWorkspace,
+  NoteGenEditorReleaseReplica,
+  NoteGenScreenshotReplica,
+  NoteGenChatFolderReplica,
+  NoteGenSyncSwitchReplica,
+  NoteGenWorkspaceRepoReplica,
+  NoteGenDocumentSyncReplica,
+  NoteGenPluginCodeBlockReplica,
+  NoteGenRecordCaptureReplica,
+  NoteGenSponsoredQuotaReplica,
+  NoteGenFileTreeReleaseReplica,
+  NoteGenEditorReviewReleaseReplica,
   NoteGenGlobalSearch,
   NoteGenImageViewer,
   NoteGenMobileReplica,
@@ -106,6 +117,7 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
     ["desktop", text("完整应用", "Desktop app")],
     ["chrome", text("窗口与工具栏", "Chrome and toolbars")],
     ["workspaces", text("核心工作区", "Core workspaces")],
+    ["release-details", text("编辑与截图细节", "Editor and screenshot details")],
     ["mobile", text("移动端", "Mobile")],
     ["overlays", text("弹窗与状态", "Overlays and states")],
     ["settings-primitives", text("设置组件", "Settings primitives")],
@@ -283,6 +295,27 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
             <ComponentCard desktopWidth={1152} title="NoteGenAppShell" description={text("当前桌面外壳：平台窗口控制、记录工具与全局统一状态栏", "Current desktop shell with platform controls, capture tools, and one unified status bar")}><NoteGenAppShell lang={lang}><div className="grid h-full grid-cols-[28%_42%_30%]"><div className="border-r"><NoteGenRecordWorkspace lang={lang} /></div><div className="border-r"><NoteGenEditorWorkspace lang={lang} /></div><NoteGenAgentPanel lang={lang} /></div></NoteGenAppShell></ComponentCard>
             {(["notes-open", "edit", "appearance", "export"] as const).map(phase => <ComponentCard key={`chart-${phase}`} desktopWidth={1360} title={`NoteGenChartWorkspace · ${phase}`} description={text("固定示例：引用半年支出笔记，编辑 JSON 数据，将六月改为 4200，选择折线和暖色，再查看画布导出菜单；无模型或文件调用。", "Fixed demo: select an expense note, edit JSON to change June to 4,200, use a warm line chart, and inspect canvas export options. No AI or file calls.")}><NoteGenChartWorkspace lang={lang} state={{ phase, selected: phase === "appearance", paletteMenuOpen: phase === "appearance" }} note={chartNote} chart={{ title: text("半年支出", "Half-year expenses"), type: phase === "appearance" || phase === "export" ? "line" : "bar", rows: phase === "appearance" || phase === "export" ? chartRows.map((row, index) => index === 5 ? { ...row, value: 4200 } : row) : chartRows, palette: phase === "appearance" || phase === "export" ? "warm" : "system" }} /></ComponentCard>)}
             {(["note-canvas-dragging", "note-canvas-embedded"] as const).map(phase => <ComponentCard key={phase} desktopWidth={1360} title={`NoteGenChartWorkspace · ${phase}`} description={text("从左侧画布卡片拖入所见即所得笔记，生成静态图片；原笔记六月仍为 4500，图表为 4200，插图不自动跟随画布变化。", "Drag a canvas card into the visual note editor to insert a static image. June remains 4,500 in the note and 4,200 in the chart; the image does not track later canvas edits.")}><NoteGenChartWorkspace lang={lang} state={{ phase, drag: phase === "note-canvas-dragging" ? { x: 530, y: 380, overEditor: true } : undefined, noteScroll: phase === "note-canvas-embedded" ? 320 : 0 }} note={chartNote} chart={{ title: text("半年支出", "Half-year expenses"), type: "line", rows: chartRows.map((row, index) => index === 5 ? { ...row, value: 4200 } : row), palette: "warm" }} /></ComponentCard>)}
+          </div>
+        </GallerySection>
+
+        <GallerySection
+          id="release-details"
+          eyebrow="v0.39.0 · Fixed source states"
+          title={text("编辑器、桌面截图与文件夹引用", "Editor, desktop screenshots, and folder references")}
+          description={text("固定模拟资料：当前源码中的颜色菜单、标题转换、侧栏大纲、标题折叠、表格工具条、截图与贴图，以及引用文件夹。自然宽 900px；主正文按演示编辑器字号设置为 26px，菜单保持产品尺寸。", "Fixed simulated data showing color menus, heading conversion, outline, folding, table actions, screenshot annotation, pinned images, and folder references. Natural width: 900px. Demo document font: 26px; controls retain product dimensions.")}
+        >
+          <div className="grid gap-6 xl:grid-cols-2">
+            {(["color-menu", "color-result", "heading-menu", "heading-result", "outline-open", "outline-folded", "outline-jump", "table-menu", "table-result"] as const).map(state => <ComponentCard key={state} desktopWidth={900} title={`NoteGenEditorReleaseReplica · ${state}`} description={text("纯展示固定状态，无文件或编辑器副作用；视频由外部时间轴控制。", "Display-only fixed state with no file or editor effects; the video timeline controls presentation.")}><NoteGenEditorReleaseReplica state={state} lang={lang} height={740} contentFontSize={26} /></ComponentCard>)}
+            {(["annotate", "pin"] as const).map(state => <ComponentCard key={state} desktopWidth={900} title={`NoteGenScreenshotReplica · ${state}`} description={text("代码绘制的模拟屏幕；工具顺序与当前桌面截图源码一致。", "Code-rendered simulated screen; tool order follows the current desktop screenshot source.")}><NoteGenScreenshotReplica state={state} lang={lang} height={740} /></ComponentCard>)}
+            {(["folder-select", "folder-context", "folder-answer"] as const).map(state => <ComponentCard key={state} desktopWidth={900} title={`NoteGenChatFolderReplica · ${state}`} description={text("固定的项目复盘文件夹与模拟回答；不读取文件，不发送请求。", "A fixed project-review folder and simulated reply; no files are read and no requests are sent.")}><NoteGenChatFolderReplica state={state} lang={lang} height={740} /></ComponentCard>)}
+            {(["review", "confirm", "progress", "recovery", "completed"] as const).map(state => <ComponentCard key={`sync-${state}`} desktopWidth={900} title={`NoteGenSyncSwitchReplica · ${state}`} description={text("平台切换、差异、冲突选择、进度与中断重试；固定示例，不实际同步。", "Provider switching, differences, conflict choices, progress, and interrupted retry. Fixed examples; no sync occurs.")}><NoteGenSyncSwitchReplica state={state} lang={lang} /></ComponentCard>)}
+            {(["confirm", "bound"] as const).map(state => <ComponentCard key={`repo-${state}`} desktopWidth={900} title={`NoteGenWorkspaceRepoReplica · ${state}`} description={text("非默认工作区与仓库绑定，仅同步该工作区文件。", "Repository binding for a non-default workspace; only that workspace's files are included.")}><NoteGenWorkspaceRepoReplica state={state} lang={lang} /></ComponentCard>)}
+            <ComponentCard desktopWidth={900} title="NoteGenDocumentSyncReplica · menu" description={text("底部同步入口、当前文档与上传/获取远端版本菜单。", "Bottom sync entry, current document, and upload/download actions.")}><NoteGenDocumentSyncReplica state="menu" lang={lang} /></ComponentCard>
+            {(["source", "preview", "export-menu", "exported"] as const).map(state => <ComponentCard key={`code-${state}`} desktopWidth={900} title={`NoteGenPluginCodeBlockReplica · ${state}`} description={text("已启用 Graphviz 的固定模拟状态；DOT 源码与 SVG 预览，SVG 来源才允许 SVG 导出。", "Fixed simulation of an enabled Graphviz renderer with DOT source and SVG preview. SVG export requires SVG output.")}><NoteGenPluginCodeBlockReplica state={state} lang={lang} svgAvailable /></ComponentCard>)}
+            {(["tag-create", "tag-selected", "quick-capture", "saved"] as const).map(state => <ComponentCard key={`capture-${state}`} desktopWidth={900} title={`NoteGenRecordCaptureReplica · ${state}`} description={text("创建记录时新建标签、选中新标签与快捷窗口使用同一标签。", "Create a tag while capturing, select it, and use the same tag in quick capture.")}><NoteGenRecordCaptureReplica state={state} lang={lang} /></ComponentCard>)}
+            <ComponentCard desktopWidth={900} title="NoteGenSponsoredQuotaReplica · available" description={text("固定示例剩余 72%；不读取真实余额，不承诺具体额度。", "Fixed 72% example, without reading real usage or promising an allowance.")}><NoteGenSponsoredQuotaReplica lang={lang} remainingPercent={72} /></ComponentCard>
+            {(["folder-menu", "expanded", "root-menu", "collapsed", "deleting", "delete-partial", "deleted"] as const).map(state => <ComponentCard key={`tree-${state}`} desktopWidth={900} title={`NoteGenFileTreeReleaseReplica · ${state}`} description={text("目录右键展开/折叠、删除进度与部分失败保留；固定示例，无文件操作。", "Folder expansion/collapse, deletion progress, and retained failures. Fixed examples; no file actions.")}><NoteGenFileTreeReleaseReplica state={state} lang={lang} /></ComponentCard>)}
+            {(["long-document", "ai-preview", "document-switched"] as const).map(state => <ComponentCard key={`review-${state}`} desktopWidth={900} title={`NoteGenEditorReviewReleaseReplica · ${state}`} description={text("长文档滚动与 AI 修改预览的格式、公式状态；文档切换仅为模拟状态。", "Long-document scrolling and formatted AI edit previews, including formulas; document switching is simulated.")}><NoteGenEditorReviewReleaseReplica state={state} lang={lang} /></ComponentCard>)}
           </div>
         </GallerySection>
 
