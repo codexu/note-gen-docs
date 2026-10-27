@@ -40,6 +40,7 @@ import { toast } from "sonner";
 
 type DownloadKey =
   | "windows"
+  | "windowsMsi"
   | "macosAppleSilicon"
   | "macosIntel"
   | "linuxAppImage"
@@ -78,6 +79,7 @@ type NavigatorWithUserAgentData = Navigator & {
 type DownloadClientProps = {
   version: string;
   downloadUrls: DownloadUrls;
+  windowsNsisAvailable: boolean;
 };
 
 const copy = {
@@ -124,9 +126,15 @@ const copy = {
     downloads: {
       windows: {
         title: "Windows 64 位",
-        description: "标准安装程序",
-        format: ".msi",
+        description: "推荐 · 安装到当前用户，通常无需管理员权限",
+        format: ".exe",
         action: "下载 Windows 版",
+      },
+      windowsMsi: {
+        title: "Windows 64 位 MSI",
+        description: "安装到所有用户，需要管理员权限；已有 MSI 用户可继续使用",
+        format: ".msi",
+        action: "下载 MSI 安装包",
       },
       macosAppleSilicon: {
         title: "Apple 芯片",
@@ -243,9 +251,15 @@ const copy = {
     downloads: {
       windows: {
         title: "Windows 64-bit",
-        description: "Standard installer",
-        format: ".msi",
+        description: "Recommended · Installs for your user, usually without admin rights",
+        format: ".exe",
         action: "Download for Windows",
+      },
+      windowsMsi: {
+        title: "Windows 64-bit MSI",
+        description: "Installs for all users and requires admin rights; suitable for existing MSI users",
+        format: ".msi",
+        action: "Download MSI installer",
       },
       macosAppleSilicon: {
         title: "Apple silicon",
@@ -322,6 +336,7 @@ const copy = {
 export default function DownloadClient({
   version,
   downloadUrls,
+  windowsNsisAvailable,
 }: DownloadClientProps) {
   const params = useParams();
   const lang = (params?.lang as "cn" | "en") || "cn";
@@ -337,7 +352,13 @@ export default function DownloadClient({
       id: "windows",
       href: downloadUrls.windows,
       icon: Monitor,
-      ...t.downloads.windows,
+      ...(windowsNsisAvailable ? t.downloads.windows : t.downloads.windowsMsi),
+    },
+    {
+      id: "windowsMsi",
+      href: downloadUrls.windowsMsi,
+      icon: Monitor,
+      ...t.downloads.windowsMsi,
     },
     {
       id: "macosAppleSilicon",
@@ -388,7 +409,8 @@ export default function DownloadClient({
     {
       icon: Monitor,
       ...t.groups.windows,
-      items: downloads.filter((item) => item.id === "windows"),
+      items: downloads.filter((item) => item.id === "windows"
+        || (item.id === "windowsMsi" && windowsNsisAvailable)),
     },
     {
       icon: Apple,

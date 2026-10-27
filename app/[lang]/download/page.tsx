@@ -9,6 +9,7 @@ import {
 
 type LatestUpdate = {
   version?: unknown;
+  platforms?: Record<string, { url?: unknown }>;
 };
 
 const LATEST_UPDATE_URL = 'https://download.notegen.top/updates/latest.json';
@@ -64,17 +65,18 @@ export async function generateMetadata({
 }
 
 export default async function DownloadPage() {
-  const version = await getLatestVersion();
+  const { version, windowsNsisAvailable } = await getLatestRelease();
 
   return (
     <DownloadClient
       version={version}
-      downloadUrls={getDownloadUrls(version)}
+      downloadUrls={getDownloadUrls(version, windowsNsisAvailable)}
+      windowsNsisAvailable={windowsNsisAvailable}
     />
   );
 }
 
-async function getLatestVersion() {
+async function getLatestRelease() {
   try {
     const response = await fetch(LATEST_UPDATE_URL, {
       next: { revalidate },
@@ -91,9 +93,14 @@ async function getLatestVersion() {
       throw new Error('Invalid latest version payload');
     }
 
-    return version;
+    const nsisUrl = data.platforms?.['windows-x86_64-nsis']?.url;
+    return {
+      version,
+      windowsNsisAvailable: typeof nsisUrl === 'string'
+        && nsisUrl.endsWith(`/NoteGen_${version}_x64-setup.exe`),
+    };
   } catch (error) {
     console.warn('[download] Falling back to bundled version', error);
-    return FALLBACK_VERSION;
+    return { version: FALLBACK_VERSION, windowsNsisAvailable: false };
   }
 }

@@ -18,11 +18,14 @@ export type ReleaseHistoryPage = {
   nextPage: number | null;
 };
 
-export function getDownloadUrls(version: string) {
+export function getDownloadUrls(version: string, windowsNsisAvailable = false) {
   const releasePath = `${CDN_BASE_URL}/releases/note-gen-v${version}`;
 
   return {
-    windows: `${releasePath}/NoteGen_${version}_x64_en-US.msi`,
+    windows: windowsNsisAvailable
+      ? `${releasePath}/NoteGen_${version}_x64-setup.exe`
+      : `${releasePath}/NoteGen_${version}_x64_en-US.msi`,
+    windowsMsi: `${releasePath}/NoteGen_${version}_x64_en-US.msi`,
     macosAppleSilicon: `${releasePath}/NoteGen_${version}_aarch64.dmg`,
     macosIntel: `${releasePath}/NoteGen_${version}_x64.dmg`,
     linuxAppImage: `${releasePath}/NoteGen_${version}_amd64.AppImage`,
