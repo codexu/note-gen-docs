@@ -54,6 +54,7 @@ import {
   ZoomIn,
 } from "lucide-react"
 
+import { NoteGenPluginSettings } from "./plugin-settings-replica"
 import { NoteGenMemoriesSettings } from "./memories-replica"
 import { NoteGenSkillsSettings } from "./skills-settings-replica"
 import { skillsSettingsCss } from "./skills-settings-style"
@@ -666,6 +667,7 @@ function NoteGenSettingsContentReplica({ lang, section, version = NOTEGEN_REPLIC
   if (section === "skills") return <NoteGenSkillsSettings lang={lang} />
   if (section === "general") return <GeneralSettingsReplica lang={lang} />
 
+  if (section === "plugins") return <NoteGenPluginSettings lang={lang} />
   const sourcePage = noteGenSettingsPages[section]
   const page = section === "about" ? { ...sourcePage, sections: sourcePage.sections.map((group, index) => index === 0 ? { ...group, rows: group.rows.map(row => ({ ...row, cnValue: `v${version}`, enValue: `v${version}` })) } : group) } : sourcePage
   const navigation = navigationItems.find((item) => item.id === section) ?? navigationItems[0]

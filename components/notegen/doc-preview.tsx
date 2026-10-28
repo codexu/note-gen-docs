@@ -7,6 +7,7 @@ import { NoteGenChatFeatureScene, type NoteGenChatScene } from "./chat-demo-scen
 import { NoteGenChatResponseScene, type NoteGenChatResponseScene as ResponseScene } from "./chat-response-scenes"
 import { NoteGenMessageActionsScene, type NoteGenMessageActionsScene as MessageScene } from "./message-actions-scenes"
 import { NoteGenSkillsSettingsScene, type NoteGenSkillsSettingsScene as SkillsScene } from "./skills-settings-scenes"
+import { NoteGenPluginSettingsScene, type NoteGenPluginSettingsScene as PluginScene } from "./plugin-settings-scenes"
 import {
   NoteGenActivityHeatmap,
   NoteGenDialogBackdrop,
@@ -25,6 +26,7 @@ import { NoteGenModelSetupScene, type NoteGenModelSetupStep } from "@/components
 type DesktopPreviewKind = "desktop-records" | "desktop-record-detail" | "desktop-writing" | "desktop-canvas" | "desktop-files" | "desktop-agent"
 
 type NoteGenDocPreviewProps =
+  | { kind: "plugins"; lang?: NoteGenReplicaLanguage; label?: string; scene: PluginScene }
   | { kind: "chat-actions"; lang?: NoteGenReplicaLanguage; label?: string; scene: MessageScene }
   | { kind: "skills"; lang?: NoteGenReplicaLanguage; label?: string; scene: SkillsScene }
   | {
@@ -173,7 +175,8 @@ export function NoteGenDocPreview(props: NoteGenDocPreviewProps) {
         <div className={props.scene.startsWith("mobile") ? "mx-auto w-full max-w-[390px]" : "mx-auto w-full max-w-[760px]"}><NoteGenMessageActionsScene lang={lang} scene={props.scene} /></div>
       ) : props.kind === "skills" ? (
         <div className={props.scene === "mobile" ? "mx-auto w-full max-w-[390px]" : "mx-auto w-full max-w-[980px]"}><NoteGenSkillsSettingsScene lang={lang} scene={props.scene} /></div>
-
+      ) : props.kind === "plugins" ? (
+        <div className="mx-auto w-full max-w-[980px]"><NoteGenPluginSettingsScene lang={lang} scene={props.scene} /></div>
 
       ) : props.kind === "mobile" ? (
         <div className="mx-auto w-full max-w-[320px]">
