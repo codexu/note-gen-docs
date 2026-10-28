@@ -22,9 +22,20 @@ import {
 import {
   NoteGenDesktopReplica,
   NoteGenAgentPanel,
+  NoteGenAgentComposer,
+  NoteGenChatFeatureScene,
+  NoteGenChatResponseScene,
+  type NoteGenChatResponseScene as ResponseScene,
+  noteGenResponseFixture,
+  NoteGenApprovalPanel,
+  NoteGenQuestionPanel,
+  noteGenQuestionFixture,
+  type NoteGenChatScene,
   NoteGenChatEmpty,
   NoteGenChatExampleReplica,
   NoteGenSkillsSettingsDialog,
+  NoteGenMessageActionsScene,
+  type NoteGenMessageActionsScene as MessageScene,
   NoteGenMcpSettingsDialog,
   NoteGenMemoriesSettingsDialog,
   NoteGenModelSettingsReplica,
@@ -75,6 +86,9 @@ import {
   NoteGenUpdatePrompt,
   NoteGenWindowTitleBar,
   NoteGenWorkspaceSwitcher,
+  NoteGenOutlinePanel,
+  NoteGenOutlineSettings,
+  noteGenOutlineFixture,
   type NoteGenReplicaLanguage,
   type NoteGenSyncIndicatorState,
   type NoteGenWorkspace,
@@ -202,19 +216,32 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
               <ComponentCard key={platform} desktopWidth={760} title={`NoteGenWindowTitleBar · ${platform}`} description={text("系统窗口控制在右侧", "Window controls on the right")}>
                 <div className="overflow-hidden rounded-lg border bg-background">
                   <NoteGenWindowTitleBar lang={lang} platform={platform} />
-                  <div className="h-12" />
+                  <div className="flex h-10 items-center px-4 text-xs text-muted-foreground">{text("普通窗口 / 下方为最大化后的还原图标", "Normal window / maximized restore icon below")}</div>
+                  <NoteGenWindowTitleBar lang={lang} platform={platform} maximized />
                 </div>
               </ComponentCard>
             ))}
 
             <ComponentCard desktopWidth={900} title="NoteGenMainStatusBar" description={text("统一同步、工作区、编辑器、插件槽位和模型入口", "Unified sync, workspace, editor, plugin slot, and model display")}>
-              <div className="overflow-hidden rounded-lg border bg-background">
-                <div className="h-16" />
-                <NoteGenMainStatusBar lang={lang} syncState="synced" recentSyncActivity={text("最近同步成功：Markdown 文件 · 2026/10/1 09:40", "Last successful sync: Markdown files · 2026/10/1 09:40")} pluginSlot={<span className="px-1.5">{text("示例插件", "Example plugin")}</span>} />
+              <div className="flex h-[390px] flex-col justify-end overflow-hidden rounded-lg border bg-background">
+                <NoteGenMainStatusBar lang={lang} syncState="synced" syncPopoverOpen currentDocument={{ path: text("旅行/周末杭州行程.md", "Travel/Weekend in Paris.md"), provider: "GitHub", phase: "idle" }} showSyncHistory recentSyncActivity={text("最近同步成功：Markdown 文件 · 2026/10/27 09:40", "Last successful sync: Markdown files · 2026/10/27 09:40")} pluginSlot={<span className="px-1.5">{text("示例插件", "Example plugin")}</span>} />
               </div>
             </ComponentCard>
 
-            <ComponentCard title="NoteGenUnifiedSyncIndicator" description={text("固定状态样例；悬停查看说明，键盘可聚焦并读取状态", "Fixed state examples; hover for descriptions or focus to read each status")}>
+            <ComponentCard desktopWidth={560} title="NoteGenOutlinePanel" description={text("共享大纲：标题搜索、二三级折叠和无活动文档空态", "Shared outline: heading search, folding, and no-document state")}>
+              <div className="grid h-[360px] grid-cols-2 overflow-hidden rounded-lg border"><NoteGenOutlinePanel lang={lang} items={noteGenOutlineFixture(lang)} activeId="2" className="border-r" /><NoteGenOutlinePanel lang={lang} documentAvailable={false} /></div>
+            </ComponentCard>
+            <ComponentCard desktopWidth={760} title="NoteGenOutlineSettings" description={text("编辑器内或左侧栏；默认启用和左右位置遵循条件展示", "Editor or sidebar placement with conditional enable and position controls")}>
+              <div className="rounded-lg border bg-background p-4"><NoteGenOutlineSettings lang={lang} /></div>
+            </ComponentCard>
+            <ComponentCard desktopWidth={1152} title="NoteGenDesktopReplica · sidebar outline" description={text("完整场景的大纲标签与正文标题定位", "Sidebar outline and heading navigation in the full scene")}>
+              <div className="h-[650px]"><NoteGenDesktopReplica lang={lang} initialWorkspace="writing" autoCycle={false} fill initialOutlineActive initialOutlinePreferences={{ placement: "sidebar", position: "right", enabled: false }} /></div>
+            </ComponentCard>
+            {(["left", "right"] as const).map(position => <ComponentCard key={position} desktopWidth={1152} title={`NoteGenDesktopReplica · editor outline ${position}`} description={text("编辑器内大纲固定状态；底部大纲入口可控制显隐", "Fixed editor outline placement with the status bar toggle")}>
+              <div className="h-[650px]"><NoteGenDesktopReplica lang={lang} initialWorkspace="writing" autoCycle={false} fill panelLayout="two" initialOutlinePreferences={{ placement: "editor", position, enabled: true }} /></div>
+            </ComponentCard>)}
+
+            <ComponentCard title="NoteGenUnifiedSyncIndicator" description={text("固定状态样例；状态文字、小灯与展开箭头", "Fixed status labels, indicator lights, and expand arrows")}>
               <div className="flex flex-col gap-2 rounded-lg border bg-background p-3">
                 {syncIndicatorStates.map((state) => (
                   <div key={state} className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -279,12 +306,21 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
             <ComponentCard desktopWidth={1152} title="NoteGenRecordWorkspace · NoteGenTagManagementReplica" description={text("上方层级标签树，下方所选标签与子级的记录；可拖动分隔条、右键管理标签", "Hierarchical tags above matching records; drag the divider or right-click a tag to manage it")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenRecordWorkspace lang={lang} /></div></ComponentCard>
             <ComponentCard desktopWidth={1152} title="NoteGenEditorWorkspace" description={text("文件树、标签页与 Markdown 编辑器", "File tree, tabs, and Markdown editor")}><div className="h-[520px] overflow-hidden rounded-lg border"><NoteGenEditorWorkspace lang={lang} /></div></ComponentCard>
             <div className="grid gap-6 xl:grid-cols-2">
-              <ComponentCard desktopWidth={552} title="NoteGenAgentPanel" description={text("消息、思考过程、工具调用与上下文", "Messages, reasoning, tool calls, and context")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenAgentPanel lang={lang} /></div></ComponentCard>
+              <ComponentCard desktopWidth={552} title="NoteGenAgentPanel" description={text("共享消息、工具分组、上下文与输入框；展开已处理可查看轨迹", "Shared messages, grouped tools, context, and composer; expand Processed to inspect the trace")}><div className="h-[560px] overflow-hidden rounded-lg border"><NoteGenAgentPanel lang={lang} /></div></ComponentCard>
+              <ComponentCard desktopWidth={760} title="NoteGenAgentComposer · interactive" description={text("可交互的添加、引用、技能、工具与权限菜单；只更新演示数据", "Interactive add, context, skills, tools, and permission menus using local fixture data")}><div className="h-[520px]"><NoteGenReplicaFrame fill><div className="flex h-full flex-col justify-end"><NoteGenAgentComposer lang={lang} defaultContexts={[{ id: "file:review", kind: "file", label: text("项目复盘.md", "Project review.md") }]} /></div></NoteGenReplicaFrame></div></ComponentCard>
+              {(["add", "commands", "resources", "skills", "tools", "model", "mcp", "permission", "running", "approval", "questions", "history", "stopped", "error"] as NoteGenChatScene[]).map(scene => <ComponentCard key={scene} desktopWidth={760} title={`NoteGenChatFeatureScene · ${scene}`} description={text("固定状态，无自动轮播；菜单与事件参数由场景控制", "Fixed state without auto-cycling; the scene controls menus and trace inputs")}><NoteGenChatFeatureScene lang={lang} scene={scene} /></ComponentCard>)}
+              {(["complete", "preview", "text", "text-streaming", "fallback", "media", "artifacts", "opening", "saving", "partial", "missing", "mobile", "action-error"] as ResponseScene[]).map(scene => <ComponentCard key={`response-${scene}`} desktopWidth={760} title={`NoteGenChatResponseScene · ${scene}`} description={text("结构化回复与生成文件固定状态；仅本地演示回调", "Fixed structured response and generated file states; local demo callbacks only")}><NoteGenChatResponseScene lang={lang} scene={scene} /></ComponentCard>)}
+              <ComponentCard desktopWidth={1120} title="NoteGenDesktopReplica · structured response" description={text("完整桌面复用同一份结果组件", "The full desktop shares the response renderer")}><NoteGenDesktopReplica lang={lang} autoCycle={false} initialWorkspace="writing" chatExample={{ question: text("整理项目资料", "Review the project notes"), answer: "", response: { blocks: noteGenResponseFixture(lang) } }} /></ComponentCard>
+              <ComponentCard desktopWidth={760} title="NoteGenApprovalPanel · warning" description={text("警告始终可见，参数可折叠；取消、单次确认与会话授权", "Warnings remain visible with collapsible parameters and approval scopes")}><NoteGenApprovalPanel lang={lang} embedded={false} title={text("确认安装第三方 Skill", "Confirm third-party Skill installation")} summary="example-skill · global" confirmLabel={text("继续安装", "Continue installation")} warnings={[{ message: text("此技能包含脚本，请检查来源与内容。", "This Skill contains scripts. Review its source and contents."), paths: ["scripts/prepare.py"] }]} fields={[{ label: text("来源", "Source"), value: "https://example.com/skill.zip" }]} canApproveForSession /></ComponentCard>
+              <ComponentCard desktopWidth={552} title="NoteGenQuestionPanel · multiple" description={text("第二题多选；未选择时完成按钮禁用，选择后显式提交", "Second question with multiple choices; completion requires a selection")}><NoteGenQuestionPanel lang={lang} questions={noteGenQuestionFixture(lang)} defaultAnswers={{ format: [text("简短摘要", "Short summary")] }} questionIndex={1} /></ComponentCard>
+              <ComponentCard desktopWidth={552} title="NoteGenQuestionPanel · cancelled" description={text("只读历史：取消、未作答与已选项展示", "Read-only recorded answers, cancellation, and unanswered options")}><NoteGenQuestionPanel lang={lang} questions={noteGenQuestionFixture(lang)} state="cancelled" answers={{ format: [text("简短摘要", "Short summary")] }} /></ComponentCard>
+              {(["loading", "disabled", "empty", "no-model"] as const).map(state => <ComponentCard key={state} desktopWidth={760} title={`NoteGenAgentComposer · ${state}`} description={text("条件状态固定样例：加载、技能关闭、空列表或未配置模型", "Fixed conditional loading, disabled Skills, empty list, or missing-model state")}><div className="h-[450px]"><NoteGenReplicaFrame fill><div className="flex h-full flex-col justify-end"><NoteGenAgentComposer lang={lang} menu={state === "no-model" ? "tools" : "skill"} contextState={state === "loading" ? "loading" : state === "disabled" ? "disabled" : "ready"} options={state === "empty" ? [] : undefined} hasModel={state !== "no-model"} loadingRotation={state === "loading" ? 0 : undefined} /></div></NoteGenReplicaFrame></div></ComponentCard>)}
               <ComponentCard desktopWidth={440} title="NoteGenChatEmpty" description={text("空白对话：淡网格、快速开始与可选最近对话", "Empty conversation with a subtle grid, quick prompts and optional recent conversations")}><div style={{ height: 560 }}><NoteGenChatEmpty lang={lang} recentConversations={[{ title: lang === "en" ? "Help me write a note" : "帮我写一篇笔记", time: lang === "en" ? "1 hour ago" : "1 小时前" }]} /></div></ComponentCard>
               <ComponentCard desktopWidth={440} title="NoteGenChatExampleReplica · context usage" description={text("固定模拟数字：已确认模型容量、有历史消息，展示真实上下文占用圆环及其提示；点击仅触发演示回调", "Fixed simulated values with confirmed capacity and message history; the context ring exposes a display callback")}><div className="ng-model-settings"><NoteGenChatExampleReplica lang={lang} title={text("周末行程", "Weekend trip")} question={text("周六出发，预算两千，不吃海鲜。", "Leave Saturday, budget 2,000, no seafood.")} answer={text("好的，我会按这些条件安排行程。", "I'll plan the trip with those constraints.")} contextUsage={{ usedTokens: 104960, contextWindow: 128000, usedPercent: 82, tooltipOpen: true }} /></div></ComponentCard>
               <ComponentCard desktopWidth={1360} title="NoteGenKnowledgeSettingsDialog" description={text("知识库检索模型、索引状态和来源设置（固定模拟数据）", "Retrieval models, index status and source controls with fixed demo data")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenKnowledgeSettingsDialog lang={lang} /></div></ComponentCard>
               <ComponentCard desktopWidth={552} title="NoteGenKnowledgeSources" description={text("文章与记录参考来源、原文展开与入口", "Referenced articles and records with original content")}><div className="ng-skill-workspace" style={{ width: "100%", height: "auto", padding: 16 }}><NoteGenKnowledgeSources lang={lang} expanded sources={[{ type: "article", title: text("发布会议.md", "Release meeting.md"), content: text("原定 10 月 12 日发布。", "Originally scheduled for October 12."), expanded: true }, { type: "record", title: text("发布调整", "Release adjustment"), content: text("调整至 10 月 15 日。", "Moved to October 15.") }]} /></div></ComponentCard>
               <ComponentCard desktopWidth={1360} title="NoteGenSkillsSettingsDialog" description={text("设置-技能：工作区与全局技能、安装入口和启用状态", "Settings–Skills: workspace/global lists, installation entries and enable state")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenSkillsSettingsDialog lang={lang} skills={[{ name: "meeting-notes", description: lang === "en" ? "Summarize meeting notes, decisions and action items." : "将会议记录整理成讨论要点、决定与待办事项。", enabled: true }]} /></div></ComponentCard>
+              {(["history", "mobile-hidden", "mobile-visible", "summary", "translation-menu", "translated", "translating", "copied", "read-loading", "reading", "recorded", "convert", "clipboard", "generating"] as MessageScene[]).map(scene => <ComponentCard key={`actions-${scene}`} desktopWidth={scene.startsWith("mobile") ? 390 : 760} title={`NoteGenMessageActionsScene · ${scene}`} description={text("消息操作栏固定状态；历史消息支持悬停、聚焦或移动端点按", "Fixed message actions; hover/focus desktop history or tap mobile messages")}><NoteGenMessageActionsScene lang={lang} scene={scene} /></ComponentCard>)}
               <ComponentCard desktopWidth={1360} title="NoteGenMcpRecordWorkspace" description={text("MCP 记录结果：固定示例数据，完整 PC 工作台", "MCP record result: fixed demo data, full desktop workspace")}><NoteGenMcpRecordWorkspace lang={lang} title={text("项目调研结论", "Project findings")} content={text("先完成模板，再检查文案，最后确定上线日期。", "Finish the template, review the copy, then confirm the launch date.")} tag={text("项目调研", "Research")} time="2026-10-02 14:00" /></ComponentCard>
               <ComponentCard desktopWidth={1360} title="NoteGenMemoriesSettingsDialog" description={text("记忆管理：自动生成、状态筛选、记忆表单和操作菜单（固定模拟数据）", "Memory management: generation, status filters, forms and actions with fixed demo data")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenMemoriesSettingsDialog lang={lang} memories={[{ id: "writing", content: lang === "en" ? "Give the conclusion first, then list the steps." : "回答先给结论，再列出操作步骤。", kind: "preference", scope: "global", status: "active", always: true }]} /></div></ComponentCard>
               <ComponentCard desktopWidth={1360} title="NoteGenMcpSettingsDialog" description={text("MCP：访问 NoteGen、本机服务和连接配置（展示状态）", "MCP: local access and connection config (display only)")}><div className="ng-skill-workspace" style={{ position: "relative", width: 1360, height: 720 }}><NoteGenMcpSettingsDialog lang={lang} state="running" /></div></ComponentCard>

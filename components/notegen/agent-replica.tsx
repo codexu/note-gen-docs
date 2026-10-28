@@ -1,73 +1,69 @@
+"use client"
+
 import type { ReactNode } from "react"
-import {
-  Bot,
-  Brain,
-  Check,
-  ChevronDown,
-  Circle,
-  Clock3,
-  Copy,
-  FileText,
-  Globe2,
-  History,
-  Paperclip,
-  Plus,
-  Search,
-  Send,
-  ShieldCheck,
-  Sparkles,
-  Terminal,
-  User,
-  Wrench,
-} from "lucide-react"
-
-import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
+import { ChevronDown, FileText, MessageSquareDashed, MessageSquarePlus, ToolCase } from "lucide-react"
+import type { NoteGenReplicaLanguage } from "./types"
 import { cn } from "@/lib/utils"
+import { Button } from "./model-settings/ui/button"
+import { NoteGenAgentComposer, type NoteGenComposerProps } from "./chat-composer-replica"
+import { NoteGenExecutionTimeline, type NoteGenTimelineProps } from "./chat-timeline-replica"
+import { NoteGenApprovalPanel, type NoteGenApprovalProps } from "./chat-interaction-replica"
+import { NoteGenAgentMessageActions, NoteGenAssistantMessage, type NoteGenMessageActionsProps } from "./message-actions-replica"
+export { NoteGenAgentMessageActions, NoteGenAssistantMessage } from "./message-actions-replica"
+export type { NoteGenMessageActionsProps } from "./message-actions-replica"
+import { NoteGenChatResponse, type NoteGenChatResponseProps } from "./chat-response-replica"
 
-export function NoteGenAgentHeader({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <header className="flex h-10 items-center gap-2 border-b px-3"><Bot className="size-4" /><span className="font-medium">{lang === "en" ? "NoteGen Agent" : "NoteGen 助手"}</span><span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[7px] text-emerald-600">GPT-5</span><div className="ml-auto flex gap-2 text-muted-foreground"><Search className="size-3.5" /><History className="size-3.5" /><Plus className="size-3.5" /></div></header>
+export { NoteGenAgentComposer } from "./chat-composer-replica"
+export { NoteGenExecutionTimeline, NoteGenToolCall } from "./chat-timeline-replica"
+
+export function NoteGenAgentHeader({ lang = "cn", title, count = 0 }: { lang?: NoteGenReplicaLanguage; title?: string; count?: number }) {
+  return <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-4 text-sm"><div className="flex min-w-0 items-center gap-1.5 font-medium"><span className="max-w-40 truncate">{title ?? (lang === "en" ? "Conversation history" : "历史对话")}</span><span className="text-xs font-normal text-muted-foreground">({count})</span><ChevronDown className="size-4 shrink-0 text-muted-foreground" /></div><div className="flex gap-1 text-muted-foreground"><Button type="button" variant="ghost" size="icon" aria-label={lang === "en" ? "Temporary conversation" : "临时对话"}><MessageSquareDashed /></Button><Button type="button" variant="ghost" size="icon" aria-label={lang === "en" ? "New conversation" : "新建对话"}><MessageSquarePlus /></Button></div></header>
 }
 
 export function NoteGenAgentMessage({ role, children, time = "10:28" }: { role: "user" | "assistant"; children: ReactNode; time?: string }) {
-  const Icon = role === "assistant" ? Sparkles : User
-  return <div className={cn("flex gap-2.5", role === "user" && "flex-row-reverse")}><span className={cn("flex size-6 shrink-0 items-center justify-center rounded-full border", role === "assistant" ? "bg-foreground text-background" : "bg-muted")}><Icon className="size-3" /></span><div className={cn("max-w-[82%]", role === "user" && "text-right")}><div className={cn("rounded-xl px-3 py-2 text-left text-[9px] leading-4", role === "assistant" ? "rounded-tl-sm bg-muted/60" : "rounded-tr-sm bg-foreground text-background")}>{children}</div><span className="mt-1 block text-[7px] text-muted-foreground">{time}</span></div></div>
+  return <div className={cn("group/assistant-message flex min-w-0 flex-col gap-1", role === "user" && "items-end")}><div className={cn("min-w-0 text-sm leading-6", role === "user" ? "max-w-[85%] rounded-lg border bg-muted/35 px-3 py-2" : "w-full")}>{children}</div><span className="text-xs text-muted-foreground">{time}</span></div>
 }
 
 export function NoteGenThinkingBlock({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="rounded-lg border bg-muted/20 p-2.5"><div className="flex items-center gap-2 text-[8px] font-medium"><Brain className="size-3.5" />{lang === "en" ? "Thinking" : "思考过程"}<ChevronDown className="ml-auto size-3 text-muted-foreground" /></div><p className="mt-2 border-l pl-2 text-[8px] leading-4 text-muted-foreground">{lang === "en" ? "I’ll compare the selected notes, identify repeated ideas, and preserve the original references." : "我会对比选中的笔记，识别重复观点，并保留原始引用。"}</p></div>
+  return <NoteGenExecutionTimeline lang={lang} defaultOpen expandedEvents={{ thinking: true }} events={[{ id: "thinking", kind: "thought", title: lang === "en" ? "Thinking" : "思考过程", status: "done", output: lang === "en" ? "Compare the notes, find repeated ideas, and keep the references." : "对比选中的笔记，识别重复观点，并保留原始引用。" }]} />
 }
 
-export function NoteGenToolCall({ type = "search", lang = "cn", status = "done" }: { type?: "search" | "file" | "terminal"; lang?: NoteGenReplicaLanguage; status?: "running" | "done" }) {
-  const icons = { search: Globe2, file: FileText, terminal: Terminal }
-  const Icon = icons[type]
-  const labels = { search: lang === "en" ? "Search workspace" : "搜索工作区", file: lang === "en" ? "Read document" : "读取文档", terminal: lang === "en" ? "Run tool" : "运行工具" }
-  return <div className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-2"><span className="flex size-6 items-center justify-center rounded bg-muted"><Icon className="size-3" /></span><div className="min-w-0 flex-1"><div className="text-[8px] font-medium">{labels[type]}</div><div className="truncate text-[7px] text-muted-foreground">{type === "file" ? "notes/product/design.md" : "NoteGen design principles"}</div></div>{status === "done" ? <Check className="size-3 text-emerald-500" /> : <Clock3 className="size-3 animate-pulse text-muted-foreground" />}</div>
+export function NoteGenAgentApproval({ lang = "cn", ...props }: NoteGenApprovalProps) {
+  return <NoteGenApprovalPanel lang={lang} summary="notes/product/design.md" fields={[{ label: lang === "en" ? "File path" : "文件路径", value: "notes/product/design.md" }]} {...props} />
 }
 
-export function NoteGenExecutionTimeline({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="rounded-lg border p-2.5"><div className="mb-2 flex items-center gap-2 text-[8px] font-medium"><Wrench className="size-3.5" />{lang === "en" ? "3 actions completed" : "已完成 3 个操作"}</div><div className="space-y-1.5"><NoteGenToolCall lang={lang} /><NoteGenToolCall lang={lang} type="file" /><NoteGenToolCall lang={lang} type="terminal" /></div></div>
-}
-
-export function NoteGenAgentApproval({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="rounded-lg border border-amber-500/35 bg-amber-500/5 p-3"><div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 size-4 text-amber-600" /><div><h4 className="text-[9px] font-medium">{lang === "en" ? "Permission required" : "需要你的确认"}</h4><p className="mt-1 text-[8px] leading-4 text-muted-foreground">{lang === "en" ? "Allow Agent to update notes/product/design.md?" : "允许 Agent 更新 notes/product/design.md？"}</p></div></div><div className="mt-3 flex justify-end gap-2"><span className="rounded-md border bg-background px-2.5 py-1 text-[8px]">{lang === "en" ? "Deny" : "拒绝"}</span><span className="rounded-md bg-foreground px-2.5 py-1 text-[8px] text-background">{lang === "en" ? "Allow" : "允许"}</span></div></div>
-}
-
-export function NoteGenAgentMessageActions({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="inline-flex items-center gap-1 rounded-md border bg-background p-1 text-muted-foreground shadow-xs"><span className="flex size-6 items-center justify-center"><Copy className="size-3" /></span><span className="flex size-6 items-center justify-center"><Check className="size-3" /></span><span className="px-1 text-[7px]">{lang === "en" ? "Insert into note" : "插入笔记"}</span></div>
-}
-
+/** Retained compatibility export; model selection now lives in the shared tools panel. */
 export function NoteGenAgentModelControl({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="flex items-center gap-1.5"><span className="flex items-center gap-1 rounded-md border px-2 py-1 text-[7px]"><Bot className="size-3" />GPT-5<ChevronDown className="size-2.5" /></span><span className="flex items-center gap-1 rounded-md border px-2 py-1 text-[7px]"><ShieldCheck className="size-3" />{lang === "en" ? "Ask first" : "操作前询问"}<ChevronDown className="size-2.5" /></span></div>
+  return <span className="flex size-8 items-center justify-center text-muted-foreground" role="img" aria-label={lang === "en" ? "Tools" : "工具"}><ToolCase className="size-4" /></span>
 }
 
 export function NoteGenContextTray({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="flex items-center gap-1.5 overflow-hidden border-t px-3 py-2"><span className="flex items-center gap-1.5 rounded-md border bg-muted/30 px-2 py-1 text-[7px]"><FileText className="size-3" />design.md <span className="text-muted-foreground">4.2k</span></span><span className="flex items-center gap-1.5 rounded-md border bg-muted/30 px-2 py-1 text-[7px]"><Circle className="size-2 fill-violet-500 text-violet-500" />{lang === "en" ? "Product notes" : "产品笔记"}</span><span className="ml-auto text-[7px] text-muted-foreground">12k / 128k</span></div>
+  return <div className="flex items-center gap-1.5 p-1 text-xs text-muted-foreground"><FileText className="size-3.5" /><span>design.md</span><span>· {lang === "en" ? "Product notes" : "产品笔记"}</span></div>
 }
 
-export function NoteGenAgentComposer({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="m-2 rounded-xl border bg-background p-2 shadow-sm"><p className="min-h-10 px-1 text-[9px] text-muted-foreground">{lang === "en" ? "Ask about your notes, or describe what to create…" : "询问笔记内容，或描述你想创建的内容……"}</p><div className="flex items-center gap-2 text-muted-foreground"><Paperclip className="size-3.5" /><NoteGenAgentModelControl lang={lang} /><span className="ml-auto flex size-7 items-center justify-center rounded-lg bg-foreground text-background"><Send className="size-3" /></span></div></div>
+export type NoteGenAgentPanelProps = {
+  lang?: NoteGenReplicaLanguage
+  className?: string
+  title?: string
+  count?: number
+  question?: ReactNode
+  answer?: ReactNode
+  messageActions?: NoteGenMessageActionsProps
+  response?: NoteGenChatResponseProps
+  timeline?: NoteGenTimelineProps | false
+  composer?: NoteGenComposerProps
 }
-
-export function NoteGenAgentPanel({ lang = "cn", className }: { lang?: NoteGenReplicaLanguage; className?: string }) {
-  return <aside className={cn("flex h-full min-h-0 flex-col bg-background", className)}><NoteGenAgentHeader lang={lang} /><div className="min-h-0 flex-1 space-y-4 overflow-hidden p-3"><NoteGenAgentMessage role="user">{lang === "en" ? "Turn these fragments into a short design note." : "把这些碎片整理成一篇简短的设计说明。"}</NoteGenAgentMessage><NoteGenAgentMessage role="assistant"><div className="space-y-2"><NoteGenThinkingBlock lang={lang} /><NoteGenExecutionTimeline lang={lang} /><p>{lang === "en" ? "I found three recurring principles: low interruption, progressive structure, and visible context." : "我找到三个反复出现的原则：低打扰、渐进式结构和始终可见的上下文。"}</p></div></NoteGenAgentMessage></div><NoteGenContextTray lang={lang} /><NoteGenAgentComposer lang={lang} /></aside>
+export function NoteGenAgentPanel({ lang = "cn", className, title, count = 1, question, answer, response, timeline, composer, messageActions }: NoteGenAgentPanelProps) {
+  return <aside data-notegen-chat-boundary className={cn("relative flex h-full min-h-0 min-w-0 flex-col bg-background text-sm", className)}>
+    <NoteGenAgentHeader lang={lang} title={title} count={count} />
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
+      <NoteGenAgentMessage role="user">{question ?? (lang === "en" ? "Turn these fragments into a short design note." : "把这些碎片整理成一篇简短的设计说明。")}</NoteGenAgentMessage>
+      <NoteGenAssistantMessage platform={messageActions?.platform}>
+        {timeline !== false && <NoteGenExecutionTimeline lang={lang} hasFinalResponse={response ? response.state !== "preview" && !response.streaming : undefined} {...timeline} />}
+        <div className="mt-3 leading-6">{response ? <NoteGenChatResponse lang={lang} {...response} /> : answer ?? (lang === "en" ? "The notes share three principles: low interruption, progressive structure, and visible context." : "这些笔记包含三个共同原则：低打扰、渐进式结构和始终可见的上下文。")}</div>
+        {(response ? response.state !== "preview" && !response.streaming : answer !== "") && <NoteGenAgentMessageActions lang={lang} extra="record" content={typeof answer === "string" ? answer : undefined} {...messageActions} />}
+      </NoteGenAssistantMessage>
+    </div>
+    <NoteGenAgentComposer lang={lang} {...composer} />
+  </aside>
 }

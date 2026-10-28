@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
 import { NoteGenDesktopReplica } from "@/components/home/notegen-desktop-replica"
+import { NoteGenChatFeatureScene, type NoteGenChatScene } from "./chat-demo-scenes"
+import { NoteGenChatResponseScene, type NoteGenChatResponseScene as ResponseScene } from "./chat-response-scenes"
+import { NoteGenMessageActionsScene, type NoteGenMessageActionsScene as MessageScene } from "./message-actions-scenes"
 import {
   NoteGenActivityHeatmap,
   NoteGenDialogBackdrop,
@@ -21,6 +24,19 @@ import { NoteGenModelSetupScene, type NoteGenModelSetupStep } from "@/components
 type DesktopPreviewKind = "desktop-records" | "desktop-record-detail" | "desktop-writing" | "desktop-canvas" | "desktop-files" | "desktop-agent"
 
 type NoteGenDocPreviewProps =
+  | { kind: "chat-actions"; lang?: NoteGenReplicaLanguage; label?: string; scene: MessageScene }
+  | {
+      kind: "chat-response"
+      lang?: NoteGenReplicaLanguage
+      label?: string
+      scene: ResponseScene
+    }
+  | {
+      kind: "chat"
+      lang?: NoteGenReplicaLanguage
+      label?: string
+      scene: NoteGenChatScene
+    }
   | {
       kind: "model-setup"
       lang?: NoteGenReplicaLanguage
@@ -147,6 +163,15 @@ export function NoteGenDocPreview(props: NoteGenDocPreviewProps) {
     >
       {isDesktopPreview(props.kind) ? (
         <DesktopScene kind={props.kind} lang={lang} />
+      ) : props.kind === "chat" ? (
+        <div className="mx-auto w-full max-w-[760px]"><NoteGenChatFeatureScene lang={lang} scene={props.scene} /></div>
+      ) : props.kind === "chat-response" ? (
+        <div className="mx-auto w-full max-w-[760px]"><NoteGenChatResponseScene lang={lang} scene={props.scene} /></div>
+      ) : props.kind === "chat-actions" ? (
+        <div className={props.scene.startsWith("mobile") ? "mx-auto w-full max-w-[390px]" : "mx-auto w-full max-w-[760px]"}><NoteGenMessageActionsScene lang={lang} scene={props.scene} /></div>
+
+
+
       ) : props.kind === "mobile" ? (
         <div className="mx-auto w-full max-w-[320px]">
           <NoteGenMobileReplica lang={lang} screen={props.screen} />

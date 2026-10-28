@@ -1,9 +1,11 @@
+import { NoteGenAgentComposer } from "./chat-composer-replica"
+import { NoteGenAgentHeader } from "./agent-replica"
 import { FileText, Filter, Search, SlidersHorizontal, Tag, Sparkles, Trash2, FolderOpen, Undo2, Redo2, Plus, PanelRight, MoreHorizontal } from "lucide-react"
 import { NoteGenAppShell } from "@/components/notegen/app-shell-replica"
 import { NoteGenWorkspaceSidebar } from "@/components/notegen/workspace-switcher"
 import { NoteGenChatEmpty } from "@/components/notegen/chat-empty-replica"
 import { NoteGenTagPlusIcon } from "@/components/notegen/tag-plus-icon"
-import { skillWorkspaceCss } from "@/components/notegen/skill-agent-replica"
+import { skillWorkspaceCss } from "@/components/notegen/skill-workspace-style"
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
 
 /** Natural-size record scene for MCP tutorials; all contents supplied by the caller. */
@@ -12,7 +14,7 @@ export function NoteGenMcpRecordWorkspace({ title, content, tag, time, lang = "c
   return <div className="ng-skill-workspace replica ng-mcp-record-workspace" data-icon-animation="timeline"><style>{skillWorkspaceCss + mcpRecordCss}</style><NoteGenAppShell lang={lang} workspace="records" className="ng-skill-shell" titleBarProps={{showShortcutHints:false}} statusBarProps={{workspaceName:en?"Default workspace":"默认工作区"}}><div className="ng-skill-layout">
     <NoteGenWorkspaceSidebar lang={lang} value="records"><div className="ng-mcp-record-search"><Search size={14} /><span>{en?"Search records":"搜索记录"}</span><NoteGenTagPlusIcon size={16} /><Filter size={16} /><SlidersHorizontal size={16} /></div><div className="ng-mcp-record-tags"><div><Tag size={14} />{en?"All records":"全部记录"}<small>1</small></div><div className="ng-mcp-record-tag-active"><Tag size={14} />{tag}<small>1</small></div></div><div className="ng-mcp-record-date">{en?"Today":"今天"}</div><article className="ng-mcp-record-item"><div><span><FileText size={12} />{en?"Text":"文本"}</span><small>{en?"Just now":"刚刚"}</small></div><strong>{title}</strong><p>{content}</p><b>{tag}</b></article></NoteGenWorkspaceSidebar>
     <section className="ng-skill-editor"><div className="ng-skill-tabs"><Undo2 size={16}/><Redo2 size={16}/><div className="ng-skill-active-tab"><FileText size={14}/><span>{title}</span></div><Plus size={16}/><PanelRight size={16}/><MoreHorizontal size={16}/></div><header className="ng-mcp-record-head"><FileText size={34}/><div><p><b>{en?"Text":"文本"}</b><time>{time}</time></p><span>{title}</span></div><div className="ng-mcp-record-actions"><Tag size={16}/><FolderOpen size={16}/><Sparkles size={16}/><Trash2 size={16}/></div></header><div className="ng-mcp-record-content"><span>{en?"Content":"内容"}</span><p>{content}</p></div></section>
-    <section className="ng-skill-agent"><header><span>{en?"Conversations (0)":"历史对话 (0)"}</span><MoreHorizontal size={16}/></header><div className="ng-mcp-record-chat"><NoteGenChatEmpty lang={lang} recentConversations={[]} /></div><footer className="ng-mcp-record-composer"><p>{en?"Ask a question or organize records into an article…":"你可以提问或将记录整理为文章..."}</p><small>{en?"Confirm before edits":"修改前确认"}</small></footer></section>
+    <section className="ng-skill-agent"><NoteGenAgentHeader lang={lang} /><div className="ng-mcp-record-chat"><NoteGenChatEmpty lang={lang} recentConversations={[]} /></div><NoteGenAgentComposer lang={lang} /></section>
   </div></NoteGenAppShell></div>
 }
 export const mcpRecordCss = `

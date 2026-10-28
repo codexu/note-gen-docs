@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useEffect, useMemo, useState, type ReactNode } from "react"
+import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import {
   Check,
   CheckSquare,
@@ -45,6 +45,11 @@ import {
   X,
 } from "lucide-react"
 
+import { NoteGenAgentPanel } from "@/components/notegen/agent-replica"
+import type { NoteGenComposerProps } from "@/components/notegen/chat-composer-replica"
+import type { NoteGenTimelineProps, NoteGenTraceEvent } from "@/components/notegen/chat-timeline-replica"
+import type { NoteGenMessageActionsProps } from "@/components/notegen/message-actions-replica"
+import type { NoteGenChatResponseProps } from "@/components/notegen/chat-response-replica"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { CanvasThumbnail } from "@/components/home/canvas-thumbnail"
@@ -58,6 +63,7 @@ import type { NoteGenReplicaView } from "@/components/notegen/types"
 import { NoteGenWindowTitleBar, type NoteGenReplicaPanelVisibility, type NoteGenTitleBarMode } from "@/components/notegen/window-title-bar"
 import { NoteGenWorkspaceSidebar, type NoteGenWorkspace } from "@/components/notegen/workspace-switcher"
 import { cn } from "@/lib/utils"
+import { NoteGenOutlinePanel, noteGenOutlineFixture, defaultNoteGenOutlinePreferences, type NoteGenOutlinePreferences } from "@/components/notegen/outline-replica"
 
 export type NoteGenReplicaRecord = {
   kind: "audio" | "link" | "text" | "image"
@@ -203,6 +209,13 @@ export function NoteGenDesktopReplica({
   statusBarProps,
   chatExample,
   contextUsage,
+  maximized = false,
+  version,
+  initialSettingsSection,
+  outlinePreferences: controlledOutline,
+  initialOutlinePreferences = defaultNoteGenOutlinePreferences,
+  onOutlinePreferencesChange,
+  initialOutlineActive = false,
 }: {
   lang?: "cn" | "en"
   initialWorkspace?: Workspace
@@ -216,12 +229,40 @@ export function NoteGenDesktopReplica({
   recordGroupLabel?: string
   platform?: NoteGenReplicaPlatform
   hasUpdate?: boolean
+  maximized?: boolean
+  version?: string
+  initialSettingsSection?: import("@/components/notegen/settings-data").NoteGenSettingSectionId
+  outlinePreferences?: NoteGenOutlinePreferences
+  initialOutlinePreferences?: NoteGenOutlinePreferences
+  onOutlinePreferencesChange?: (value: NoteGenOutlinePreferences) => void
+  initialOutlineActive?: boolean
   statusBarProps?: Omit<NoteGenMainStatusBarProps, "lang" | "workspace">
   chatExample?: NoteGenChatExample
   contextUsage?: Omit<NoteGenContextUsageProps, "lang">
 }) {
   const [workspace, setWorkspace] = useState<Workspace>(initialWorkspace)
   const [view, setView] = useState<NoteGenReplicaView>(initialView)
+  const [settingsSection, setSettingsSection] = useState(initialSettingsSection)
+  const sceneRoot = useRef<HTMLDivElement>(null)
+  const [localOutline, setLocalOutline] = useState(initialOutlinePreferences)
+  const outlinePreferences = controlledOutline ?? localOutline
+  const [outlineActive, setOutlineActive] = useState(initialOutlineActive)
+  useEffect(() => {
+    if (outlinePreferences.placement !== "sidebar") setOutlineActive(false)
+  }, [outlinePreferences.placement])
+  const [activeHeading, setActiveHeading] = useState("0")
+  const updateOutline = (next: NoteGenOutlinePreferences) => {
+    if (!controlledOutline) setLocalOutline(next)
+    if (next.placement !== "sidebar") setOutlineActive(false)
+    onOutlinePreferencesChange?.(next)
+  }
+  const selectHeading = (id: string) => {
+    setActiveHeading(id)
+    const article = sceneRoot.current?.querySelector<HTMLElement>("[data-notegen-writing] article")
+    const heading = article?.querySelector<HTMLElement>(`[data-note-heading="${id}"]`)
+    if (article && heading) article.scrollTo({ top: article.scrollTop + heading.getBoundingClientRect().top - article.getBoundingClientRect().top })
+  }
+  const outlineProps = { preferences: outlinePreferences, activeHeading, onSelectHeading: selectHeading }
   const [pinned, setPinned] = useState(false)
   const [panels, setPanels] = useState<NoteGenReplicaPanelVisibility>(() => panelsForLayout(panelLayout))
   useEffect(() => { setPanels(panelsForLayout(panelLayout)) }, [panelLayout])
@@ -261,6 +302,7 @@ export function NoteGenDesktopReplica({
           view={view}
           onViewChange={setView}
           platform={platform}
+          maximized={maximized}
           panels={panels}
           onPanelToggle={togglePanel}
           pinned={pinned}
@@ -269,7 +311,7 @@ export function NoteGenDesktopReplica({
           className="shrink-0"
         />
       ) : null}
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div ref={sceneRoot} className="min-h-0 flex-1 overflow-hidden">
         {view === "settings" ? (
           <NoteGenSettingsReplica lang={lang} onClose={() => setView("workspace")} />
         ) : <div
@@ -288,7 +330,11 @@ export function NoteGenDesktopReplica({
             <WorkspaceSidebar
               lang={lang}
               workspace={workspace}
-              onWorkspaceChange={setWorkspace}
+              onWorkspaceChange={next => { setOutlineActive(false); setWorkspace(next) }}
+              showOutline={outlinePreferences.placement === "sidebar"}
+              outlineActive={outlineActive}
+              onOutlineSelect={() => setOutlineActive(true)}
+              outlineContent={<NoteGenOutlinePanel lang={lang} documentAvailable={workspace === "writing" && panels.center} items={noteGenOutlineFixture(lang)} activeId={activeHeading} onSelect={selectHeading} />}
               simplified={simplified}
               recordItems={recordItems}
               recordGroupLabel={recordGroupLabel}
@@ -297,14 +343,14 @@ export function NoteGenDesktopReplica({
           {panels.center ? (
             <>
               {workspace === "records" ? <RecordDetailReplica lang={lang} simplified={simplified} /> : null}
-              {workspace === "writing" && (lang === "en" ? <MemoizedEnglishEditor simplified={simplified} /> : <MemoizedEditor simplified={simplified} />)}
+              {workspace === "writing" && (lang === "en" ? <MemoizedEnglishEditor simplified={simplified} {...outlineProps} /> : <MemoizedEditor simplified={simplified} {...outlineProps} />)}
               {workspace === "canvas" ? <CanvasEditorReplica lang={lang} simplified={simplified} /> : null}
             </>
           ) : null}
-          {panels.right ? <MemoizedAgentPanel lang={lang} example={chatExample} contextUsage={contextUsage} /> : null}
+          {panels.right ? <MemoizedAgentPanel lang={lang} example={chatExample} contextUsage={contextUsage} onManageSkills={() => { setSettingsSection("skills"); setView("settings") }} /> : null}
         </div>}
       </div>
-      {!simplified ? <NoteGenMainStatusBar lang={lang} workspace={workspace} {...statusBarProps} /> : null}
+      {!simplified ? <NoteGenMainStatusBar lang={lang} workspace={workspace} showOutlineToggle={outlinePreferences.placement === "editor" && panels.center} outlineOpen={outlinePreferences.enabled} onToggleOutline={() => updateOutline({ ...outlinePreferences, enabled: !outlinePreferences.enabled })} onConfigureSync={() => { setSettingsSection("sync"); setView("settings") }} {...statusBarProps} /> : null}
     </NoteGenReplicaFrame>
   )
 }
@@ -318,7 +364,12 @@ function WorkspaceSidebar({
   simplified = false,
   recordItems,
   recordGroupLabel,
+  showOutline, outlineActive, onOutlineSelect, outlineContent,
 }: {
+  showOutline?: boolean
+  outlineActive?: boolean
+  onOutlineSelect?: () => void
+  outlineContent?: ReactNode
   lang: "cn" | "en"
   workspace: Workspace
   onWorkspaceChange: (workspace: Workspace) => void
@@ -328,7 +379,8 @@ function WorkspaceSidebar({
 }) {
   const [tagCreateRequest, setTagCreateRequest] = useState(0)
   return (
-    <NoteGenWorkspaceSidebar lang={lang} value={workspace} onValueChange={onWorkspaceChange} compact={simplified} actions={!simplified ? <WorkspaceActions workspace={workspace} lang={lang} onCreateTag={() => setTagCreateRequest(current => current + 1)} /> : undefined}>
+    <NoteGenWorkspaceSidebar lang={lang} value={workspace} onValueChange={onWorkspaceChange} showOutline={showOutline} outlineActive={outlineActive} onOutlineSelect={onOutlineSelect} compact={simplified} actions={!simplified ? <WorkspaceActions workspace={workspace} lang={lang} onCreateTag={() => setTagCreateRequest(current => current + 1)} /> : undefined}>
+        {showOutline && outlineActive ? outlineContent : <div className="absolute inset-0">
         <div className={cn("absolute inset-0 transition-opacity duration-150", workspace === "writing" ? "opacity-100" : "pointer-events-none opacity-0")}>
           <WritingSidebarContent lang={lang} />
         </div>
@@ -344,6 +396,7 @@ function WorkspaceSidebar({
         <div className={cn("absolute inset-0 transition-opacity duration-150", workspace === "canvas" ? "opacity-100" : "pointer-events-none opacity-0")}>
           <CanvasSidebarContent lang={lang} />
         </div>
+        </div>}
     </NoteGenWorkspaceSidebar>
   )
 }
@@ -757,13 +810,31 @@ function CanvasEditorReplica({ lang, simplified = false }: { lang: "cn" | "en"; 
   )
 }
 
-function EnglishEditor({ simplified = false }: { simplified?: boolean }) {
+type WritingLayoutProps = {
+  simplified?: boolean
+  preferences?: NoteGenOutlinePreferences
+  activeHeading?: string
+  onSelectHeading?: (id: string) => void
+}
+
+function WritingLayout({ lang, simplified, preferences = defaultNoteGenOutlinePreferences, activeHeading, onSelectHeading, children }: WritingLayoutProps & { lang: "cn" | "en"; children: ReactNode }) {
+  const outline = preferences.placement === "editor" && preferences.enabled
+    ? <aside className={cn("w-64 max-w-[45%] shrink-0", preferences.position === "left" ? "border-r" : "border-l")}><NoteGenOutlinePanel lang={lang} items={noteGenOutlineFixture(lang)} activeId={activeHeading} onSelect={onSelectHeading} /></aside> : null
+  return <section data-notegen-writing className="flex min-h-0 min-w-0 flex-col border-r">
+    <SharedEditorTabs lang={lang} workspace="writing" simplified={simplified} />
+    <div className="flex min-h-0 flex-1">
+      {preferences.position === "left" ? outline : null}
+      <article className="min-h-0 min-w-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{children}</article>
+      {preferences.position === "right" ? outline : null}
+    </div>
+  </section>
+}
+
+function EnglishEditor({ simplified = false, ...outline }: WritingLayoutProps) {
   return (
-    <section className="flex min-h-0 min-w-0 flex-col border-r">
-      <SharedEditorTabs lang="en" workspace="writing" simplified={simplified} />
-      <article className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <WritingLayout lang="en" simplified={simplified} {...outline}>
         <div className="mx-auto max-w-[590px] px-[8%] py-[7%]">
-          <h1 className="text-[clamp(20px,2.1vw,30px)] font-bold tracking-tight">Weekend in Paris</h1>
+          <h1 data-note-heading="0" className="text-[clamp(20px,2.1vw,30px)] font-bold tracking-tight">Weekend in Paris</h1>
           <p className="mt-4 leading-6 text-muted-foreground">
             Focus the two days on <strong className="font-semibold text-foreground">the Seine, Le Marais, and Montmartre</strong>,
             leaving more time for walks, meals, and spontaneous stops.
@@ -771,7 +842,7 @@ function EnglishEditor({ simplified = false }: { simplified?: boolean }) {
           <blockquote className="my-5 border-l-2 pl-4 italic leading-5 text-muted-foreground">
             Choose one main route each day. If a place feels right, stay a little longer.
           </blockquote>
-          <h2 className="mt-6 text-sm font-semibold">Itinerary overview</h2>
+          <h2 data-note-heading="1" className="mt-6 text-sm font-semibold">Itinerary overview</h2>
           <ul className="mt-2 list-disc pl-5 leading-6 text-muted-foreground">
             <li>Saturday: the Seine, the Louvre courtyard, Le Marais, and a Paris bistro</li>
             <li>Sunday: Montmartre, Musée d’Orsay, and gifts before departure</li>
@@ -799,20 +870,20 @@ function EnglishEditor({ simplified = false }: { simplified?: boolean }) {
               </tbody>
             </table>
           </div>
-          <h2 className="mt-6 text-sm font-semibold">Saturday · The Seine and Le Marais</h2>
-          <h3 className="mt-3 font-medium">09:00—12:00　Seine walk</h3>
+          <h2 data-note-heading="2" className="mt-6 text-sm font-semibold">Saturday · The Seine and Le Marais</h2>
+          <h3 data-note-heading="3" className="mt-3 font-medium">09:00—12:00　Seine walk</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             Start on Île Saint-Louis and walk past the Louvre courtyard to the Tuileries, leaving time for unplanned stops.
           </p>
-          <h3 className="mt-4 font-medium">12:15—13:30　Lunch</h3>
+          <h3 data-note-heading="4" className="mt-4 font-medium">12:15—13:30　Lunch</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             Have a simple lunch near the Palais Royal and save the classic Paris bistro for dinner.
           </p>
-          <h3 className="mt-4 font-medium">15:00—17:30　Le Marais</h3>
+          <h3 data-note-heading="5" className="mt-4 font-medium">15:00—17:30　Le Marais</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             Explore the architecture and public spaces, with time for coffee before leaving.
           </p>
-          <h2 className="mt-6 text-sm font-semibold">Before departure</h2>
+          <h2 data-note-heading="6" className="mt-6 text-sm font-semibold">Before departure</h2>
           <div className="mt-3 flex flex-col gap-2 text-muted-foreground">
             {(["Book Saturday dinner", "Confirm Musée d’Orsay hours", "Download the offline route", "Pack rain gear"] as const).map((item, index) => (
               <div key={item} className="flex items-center gap-2">
@@ -824,19 +895,15 @@ function EnglishEditor({ simplified = false }: { simplified?: boolean }) {
             ))}
           </div>
         </div>
-      </article>
-    </section>
+    </WritingLayout>
   )
 }
 
-function Editor({ simplified = false }: { simplified?: boolean }) {
+function Editor({ simplified = false, ...outline }: WritingLayoutProps) {
   return (
-    <section className="flex min-h-0 min-w-0 flex-col border-r">
-      <SharedEditorTabs lang="cn" workspace="writing" simplified={simplified} />
-
-      <article className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <WritingLayout lang="cn" simplified={simplified} {...outline}>
         <div className="mx-auto max-w-[590px] px-[8%] py-[7%]">
-          <h1 className="text-[clamp(20px,2.1vw,30px)] font-bold tracking-tight">
+          <h1 data-note-heading="0" className="text-[clamp(20px,2.1vw,30px)] font-bold tracking-tight">
             周末杭州行程
           </h1>
           <p className="mt-4 leading-6 text-muted-foreground">
@@ -849,7 +916,7 @@ function Editor({ simplified = false }: { simplified?: boolean }) {
             不赶景点，只确定每天的一条主线；如果遇到喜欢的地方，就多停一会儿。
           </blockquote>
 
-          <h2 className="mt-6 text-sm font-semibold">行程概览</h2>
+          <h2 data-note-heading="1" className="mt-6 text-sm font-semibold">行程概览</h2>
           <ul className="mt-2 list-disc pl-5 leading-6 text-muted-foreground">
             <li>周六：西湖慢走、中国美院象山校区、杭帮菜</li>
             <li>周日：法喜寺、天目里、返程前购买伴手礼</li>
@@ -879,42 +946,42 @@ function Editor({ simplified = false }: { simplified?: boolean }) {
             </table>
           </div>
 
-          <h2 className="mt-6 text-sm font-semibold">周六 · 西湖与象山</h2>
-          <h3 className="mt-3 font-medium">09:00—12:00　西湖慢走</h3>
+          <h2 data-note-heading="2" className="mt-6 text-sm font-semibold">周六 · 西湖与象山</h2>
+          <h3 data-note-heading="3" className="mt-3 font-medium">09:00—12:00　西湖慢走</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             从<mark className="rounded bg-muted px-1 text-foreground">曲院风荷</mark>
             出发，沿北山街走到孤山。途中经过荷区、秋水山庄和西泠桥，不安排固定打卡时间。
           </p>
-          <h3 className="mt-4 font-medium">12:15—13:30　午餐</h3>
+          <h3 data-note-heading="4" className="mt-4 font-medium">12:15—13:30　午餐</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             在孤山附近简单吃面，避开热门餐厅排队，把正式的杭帮菜留到晚上。
           </p>
-          <h3 className="mt-4 font-medium">15:00—17:30　中国美院象山校区</h3>
+          <h3 data-note-heading="5" className="mt-4 font-medium">15:00—17:30　中国美院象山校区</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             从西湖打车前往象山，重点看建筑与公共空间；离开前预留半小时在附近喝咖啡。
           </p>
-          <h3 className="mt-4 font-medium">19:00　杭帮菜晚餐</h3>
+          <h3 data-note-heading="6" className="mt-4 font-medium">19:00　杭帮菜晚餐</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             选择收藏里的餐厅，提前预约靠窗座位。想吃龙井虾仁、东坡肉和时令蔬菜。
           </p>
 
           <Separator className="my-6" />
 
-          <h2 className="text-sm font-semibold">周日 · 法喜寺与天目里</h2>
-          <h3 className="mt-3 font-medium">08:30—11:00　法喜寺</h3>
+          <h2 data-note-heading="7" className="text-sm font-semibold">周日 · 法喜寺与天目里</h2>
+          <h3 data-note-heading="8" className="mt-3 font-medium">08:30—11:00　法喜寺</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             早一点出发避开人流，按收藏的预约说明提前准备证件。寺内慢慢走，不再叠加灵隐寺行程。
           </p>
-          <h3 className="mt-4 font-medium">13:30—16:30　天目里</h3>
+          <h3 data-note-heading="9" className="mt-4 font-medium">13:30—16:30　天目里</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             按画布中的路线逛建筑、书店和小店，中间留出一小时坐下来休息。
           </p>
-          <h3 className="mt-4 font-medium">17:00　返程</h3>
+          <h3 data-note-heading="10" className="mt-4 font-medium">17:00　返程</h3>
           <p className="mt-1 leading-6 text-muted-foreground">
             前往车站前购买茶叶和糕点，至少提前四十五分钟到达。
           </p>
 
-          <h2 className="mt-6 text-sm font-semibold">出发前确认</h2>
+          <h2 data-note-heading="11" className="mt-6 text-sm font-semibold">出发前确认</h2>
           <div className="mt-3 flex flex-col gap-2 text-muted-foreground">
             {([
               ["预约周六晚餐", true],
@@ -936,7 +1003,7 @@ function Editor({ simplified = false }: { simplified?: boolean }) {
             ))}
           </div>
 
-          <h2 className="mt-6 text-sm font-semibold">雨天备选</h2>
+          <h2 data-note-heading="12" className="mt-6 text-sm font-semibold">雨天备选</h2>
           <p className="mt-2 leading-6 text-muted-foreground">
             如果天气显示{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground">
@@ -955,8 +1022,7 @@ function Editor({ simplified = false }: { simplified?: boolean }) {
             最后更新：周五 22:30 · <em>天气和开放时间以出发前查询为准</em>
           </p>
         </div>
-      </article>
-    </section>
+    </WritingLayout>
   )
 }
 
@@ -966,106 +1032,23 @@ export interface NoteGenChatExample {
   title?: string
   input?: string
   conversationCount?: number
+  composer?: NoteGenComposerProps
+  timeline?: NoteGenTimelineProps | false
+  messageActions?: NoteGenMessageActionsProps
+  response?: NoteGenChatResponseProps
 }
 
-function AgentPanel({ lang, example, contextUsage }: { lang: "cn" | "en"; example?: NoteGenChatExample; contextUsage?: Omit<NoteGenContextUsageProps, "lang"> }) {
-  const [processOpen, setProcessOpen] = useState(true)
-  const agentEvents = lang === "en" ? [
-    "Records · Read 3 Paris items",
-    "Canvas · Read weekend Paris route",
-    "Notes · Search Paris travel history",
-    "Notes · Write Weekend Itinerary.md",
-  ] : [
-    "记录 · 读取 3 条杭州收藏",
-    "画布 · 读取杭州周末路线",
-    "笔记 · 检索杭州旅行历史",
-    "笔记 · 写入周末杭州行程.md",
-  ]
-
-  return (
-    <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden text-sm">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b px-4">
-        <div className="flex min-w-0 items-center gap-1.5 font-medium">
-          <span className="max-w-30 truncate">{example?.title ?? (example ? (lang === "en" ? "Model setup verification" : "模型配置验证") : (lang === "en" ? "Weekend in Paris" : "杭州周末行程"))}</span>
-          <span className="text-xs font-normal text-muted-foreground">({example?.conversationCount ?? (example ? 1 : 3)})</span>
-          <ChevronDown className="size-4 text-muted-foreground" />
-        </div>
-        <div className="flex items-center gap-1">
-          <IconButton icon={MessageSquareDashed} />
-          <IconButton icon={MessageSquarePlus} />
-        </div>
-      </header>
-
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex justify-end">
-          <div className="max-w-[85%] rounded-lg border bg-muted/35 px-3 py-2 leading-6">
-            {example?.question ?? (lang === "en" ? "Use this material to organize and save a weekend Paris itinerary." : "结合这些内容，整理周末杭州行程并保存。")}
-          </div>
-        </div>
-
-        {!example ? <div>
-          <button
-            type="button"
-            aria-expanded={processOpen}
-            onClick={() => setProcessOpen((open) => !open)}
-            className="flex w-full cursor-pointer items-center justify-between rounded-md px-1 py-1.5 text-left transition-colors hover:bg-muted/50"
-          >
-            <div className="flex items-center gap-2 font-medium">
-              <Check className="size-3.5" />
-              {lang === "en" ? "Processed" : "已处理"}
-            </div>
-            <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
-              {lang === "en" ? "3.7s · 4 actions" : "3.7s · 执行 4 次"}
-              <ChevronRight className={cn("size-3 transition-transform", processOpen && "rotate-90")} />
-            </span>
-          </button>
-          {processOpen ? <div className="ml-1 border-l pl-3 pt-1">
-            <div className="mb-1 flex items-center gap-2 py-1 text-[10px] text-muted-foreground">
-              <Cloud className="size-3" />
-              <span>{lang === "en" ? "Found 2 knowledge sources · Used trip-planner" : "检索到 2 个知识库来源 · 已使用 trip-planner"}</span>
-            </div>
-            {agentEvents.map((label) => (
-              <div key={label} className="flex items-center gap-2 py-1 text-[10px] text-muted-foreground">
-                <Wrench className="size-3" />
-                <span className="truncate">{label}</span>
-              </div>
-            ))}
-          </div> : null}
-        </div> : null}
-
-        {example ? <div className="leading-6">{example.answer}</div> : <div className="leading-6">
-          <p>{lang === "en" ? "I read 3 related travel records, 1 route canvas, and 2 previous notes." : "已读取关联的 3 条旅行记录、1 个路线画布和 2 篇历史笔记。"}</p>
-          <p className="mt-2">{lang === "en" ? "I reorganized the two-day route and added restaurant bookings, a rainy-day alternative, and a return reminder." : "我重新安排了两天路线，减少跨区往返，并补充了餐厅预约、雨天备选和返程提醒。"}</p>
-          <p className="mt-2 text-muted-foreground">{lang === "en" ? "The itinerary is saved. Opening it in Writing now." : "行程已保存，正在为你打开写作页面。"}</p>
-        </div>}
-      </div>
-
-      <div className="shrink-0 p-1">
-        <div className="flex flex-col gap-1 rounded-xl border bg-background p-1">
-          <div className="min-h-9 p-2 text-muted-foreground">
-            {example?.input || (lang === "en" ? "Ask a question or organize records into an article..." : "你可以提问或将记录整理为文章...")}
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <IconButton icon={Plus} />
-              <IconButton icon={ToolCase} />
-            </div>
-            <div className="flex items-center gap-2 pr-1">
-              {contextUsage ? <NoteGenContextUsageIndicator lang={lang} {...contextUsage} /> : null}
-              <span className="flex h-8 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground">
-                <ShieldQuestion className="size-4" />
-                <span>{lang === "en" ? "Ask" : "询问"}</span>
-              </span>
-              <span className="flex h-8 items-center justify-center rounded-md bg-primary px-3 text-primary-foreground">
-                <Send className="size-4" />
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </section>
-  )
+function AgentPanel({ lang, example, contextUsage, onManageSkills }: { lang: "cn" | "en"; example?: NoteGenChatExample; contextUsage?: Omit<NoteGenContextUsageProps, "lang">; onManageSkills?: () => void }) {
+  const en = lang === "en"
+  return <NoteGenAgentPanel lang={lang}
+    response={example?.response}
+    messageActions={example?.messageActions}
+    title={example?.title ?? (example ? (en ? "Model setup verification" : "模型配置验证") : (en ? "Weekend in Paris" : "杭州周末行程"))}
+    count={example?.conversationCount ?? (example ? 1 : 3)}
+    question={example?.question ?? (en ? "Use this material to organize and save a weekend Paris itinerary." : "结合这些内容，整理周末杭州行程并保存。")}
+    answer={example?.answer ?? <><p>{en ? "I read 3 related travel records, 1 route canvas, and 2 previous notes." : "已读取关联的 3 条旅行记录、1 个路线画布和 2 篇历史笔记。"}</p><p className="mt-2">{en ? "The two-day itinerary is saved, including meal bookings and a rainy-day alternative." : "两天行程已保存，补充了餐厅预约、雨天备选和返程提醒。"}</p></>}
+    timeline={example ? (example.timeline ?? false) : { label: en ? "Processed 3.7s" : "已处理 3.7 秒", events: (en ? ["Read 3 travel records", "Read route canvas", "Search past travel notes", "Write Weekend Itinerary.md"] : ["读取 3 条旅行记录", "读取路线画布", "检索旅行历史笔记", "写入周末杭州行程.md"]).map((title, i): NoteGenTraceEvent => ({ id: String(i), kind: "tool", tool: "file", title, status: "done", output: en ? "Completed" : "已完成" })) }}
+    composer={{ onManageSkills, value: typeof example?.input === "string" ? example.input : undefined, contextUsage: contextUsage ? <NoteGenContextUsageIndicator lang={lang} {...contextUsage} /> : undefined, ...example?.composer }} />
 }
 
 export function NoteGenChatExampleReplica({ lang = "cn", contextUsage, height = 360, ...example }: NoteGenChatExample & { lang?: "cn" | "en"; contextUsage?: Omit<NoteGenContextUsageProps, "lang">; height?: number }) {
