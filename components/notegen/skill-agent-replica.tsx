@@ -1,5 +1,6 @@
 "use client"
 
+import { NoteGenEditorTabs, type NoteGenEditorTabsProps } from "./editor-tabs-replica"
 import type { CSSProperties, ReactNode } from "react"
 import { skillWorkspaceCss } from "./skill-workspace-style"
 import { NoteGenKnowledgeSources, type NoteGenKnowledgeSource } from "@/components/notegen/knowledge-replica"
@@ -82,13 +83,14 @@ export function noteGenSkillApprovalProps(value: NoteGenSkillApproval, lang: Not
   ] }
 }
 
-export function NoteGenSkillAgentWorkspace({ states, documents, fileName, lang = "cn", modelLabel = "已配置模型", theme = "dark", conversationTitle, conversationCount = 0, characterCount = 0, recentConversations, skillChecks = [], iconAnimation = "interactive", fileNames, attachCurrentDocument = true, activeStateId, className }: {
+export function NoteGenSkillAgentWorkspace({ states, documents, fileName, editorTabsProps, lang = "cn", modelLabel = "已配置模型", theme = "dark", conversationTitle, conversationCount = 0, characterCount = 0, recentConversations, skillChecks = [], iconAnimation = "interactive", fileNames, attachCurrentDocument = true, activeStateId, className }: {
   activeStateId?: string
   fileNames?: string[]
   attachCurrentDocument?: boolean
   iconAnimation?: "interactive" | "timeline"
   states: NoteGenSkillAgentState[]
   documents: { id: string; content: ReactNode }[]
+  editorTabsProps?: NoteGenEditorTabsProps
   fileName: string
   lang?: NoteGenReplicaLanguage
   modelLabel?: string
@@ -109,7 +111,7 @@ export function NoteGenSkillAgentWorkspace({ states, documents, fileName, lang =
           <div className="ng-skill-files"><div><Search size={14} />{en ? "Search notes, records and canvases…" : "搜索笔记、记录和画布..."}</div>{(fileNames ?? [fileName]).map(name => <p key={name} data-file-name={name} className={name === fileName ? "ng-skill-file-active" : undefined}><FileText size={16} />{name}</p>)}</div>
         </NoteGenWorkspaceSidebar>
         <section className="ng-skill-editor">
-          <div className="ng-skill-tabs"><div className="ng-skill-history"><Undo2 size={16} /><Redo2 size={16} /></div><div className="ng-skill-active-tab"><FileText size={14} /><span>{fileName}</span></div><Plus size={16} /><div className="ng-skill-tab-actions"><PanelRight size={16} /><MoreHorizontal size={16} /></div></div>
+          <NoteGenEditorTabs lang={lang} tabs={[{ id: "document", kind: "file", label: fileName }]} activeId="document" {...editorTabsProps} />
           <div className="ng-skill-documents">{documents.map((doc, index) => <article key={doc.id} data-skill-document={doc.id} style={{ opacity: index === 0 ? 1 : 0 }}>{doc.content}</article>)}</div>
         </section>
         <aside className="ng-skill-agent">

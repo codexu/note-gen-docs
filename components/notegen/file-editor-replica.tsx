@@ -1,29 +1,9 @@
-import {
-  AlignLeft,
-  Bold,
-  ChevronDown,
-  ChevronRight,
-  Code,
-  File,
-  FilePlus2,
-  Folder,
-  FolderPlus,
-  Hash,
-  Heading1,
-  Image,
-  Italic,
-  Link,
-  List,
-  MoreHorizontal,
-  Quote,
-  Redo2,
-  Search,
-  Sparkles,
-  Strikethrough,
-  Table,
-  Undo2,
-  X,
-} from "lucide-react"
+import { NoteGenEditorTabs, type NoteGenEditorTabsProps } from "./editor-tabs-replica"
+import { NoteGenEditorFormatControls, type NoteGenEditorFormatProps } from "./editor-format-controls"
+import { Sparkles as SelectionSparkles } from "lucide-react"
+export { NoteGenEditorTabs } from "./editor-tabs-replica"
+export type { NoteGenEditorTabsProps, NoteGenEditorTab } from "./editor-tabs-replica"
+import { ChevronDown, ChevronRight, File, FilePlus2, Folder, FolderPlus, Hash, MoreHorizontal, Search } from "lucide-react"
 
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
 import { cn } from "@/lib/utils"
@@ -40,23 +20,19 @@ export function NoteGenFileSidebar({ lang = "cn" }: { lang?: NoteGenReplicaLangu
   return <aside className="flex h-full min-h-0 flex-col bg-sidebar"><NoteGenFileToolbar lang={lang} /><div className="min-h-0 flex-1 space-y-0.5 overflow-hidden p-2"><NoteGenFileTreeRow name={lang === "en" ? "My notes" : "我的笔记"} kind="folder" open /><NoteGenFileTreeRow name={lang === "en" ? "Product" : "产品"} kind="folder" depth={1} open /><NoteGenFileTreeRow name={lang === "en" ? "NoteGen design principles.md" : "NoteGen 设计原则.md"} depth={2} active /><NoteGenFileTreeRow name={lang === "en" ? "Release plan.md" : "版本计划.md"} depth={2} /><NoteGenFileTreeRow name={lang === "en" ? "Research" : "资料"} kind="folder" depth={1} /><NoteGenFileTreeRow name={lang === "en" ? "Daily" : "每日记录"} kind="folder" depth={1} meta="12" /></div></aside>
 }
 
-export function NoteGenEditorTabs({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="flex h-9 items-end overflow-hidden border-b bg-muted/15 px-1"><div className="flex h-8 min-w-32 max-w-48 items-center gap-2 border-x border-t bg-background px-3 text-[9px]"><File className="size-3 text-muted-foreground" /><span className="truncate">{lang === "en" ? "Design principles.md" : "设计原则.md"}</span><X className="ml-auto size-3 text-muted-foreground" /></div><div className="flex h-8 min-w-28 items-center gap-2 px-3 text-[9px] text-muted-foreground"><File className="size-3" /><span className="truncate">README.md</span></div></div>
+
+export function NoteGenEditorToolbar(props: NoteGenEditorFormatProps = {}) {
+  return <div role="toolbar" aria-label={props.lang === "en" ? "Formatting" : "格式工具栏"} className="relative flex h-10 items-center border-b px-2 text-muted-foreground"><NoteGenEditorFormatControls {...props} /></div>
 }
 
-export function NoteGenEditorToolbar() {
-  const tools = [Undo2, Redo2, Heading1, Bold, Italic, Strikethrough, Link, Quote, Code, List, Table, Image]
-  return <div className="flex h-9 items-center gap-0.5 overflow-hidden border-b px-2 text-muted-foreground">{tools.map((Icon, index) => <span key={index} className={cn("flex size-6 shrink-0 items-center justify-center rounded", index === 3 && "bg-accent text-foreground")}><Icon className="size-3" /></span>)}<span className="ml-auto flex items-center gap-1 rounded-md border px-2 py-1 text-[8px]"><Sparkles className="size-3" />AI</span></div>
-}
-
-export function NoteGenBubbleMenu() {
-  return <div className="inline-flex items-center gap-0.5 rounded-md border bg-popover p-1 text-popover-foreground shadow-lg"><span className="flex size-6 items-center justify-center rounded bg-accent"><Bold className="size-3" /></span><span className="flex size-6 items-center justify-center"><Italic className="size-3" /></span><span className="flex size-6 items-center justify-center"><Link className="size-3" /></span><span className="mx-0.5 h-4 w-px bg-border" /><span className="flex size-6 items-center justify-center"><Sparkles className="size-3" /></span></div>
+export function NoteGenBubbleMenu(props: NoteGenEditorFormatProps = {}) {
+  return <div role="toolbar" aria-label={props.lang === "en" ? "Selection toolbar" : "选区工具栏"} className="relative inline-flex items-center gap-1 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10"><span className="flex size-7 items-center justify-center text-primary"><SelectionSparkles className="size-4" /></span><NoteGenEditorFormatControls {...props} /></div>
 }
 
 export function NoteGenDocumentPage({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <article className="mx-auto w-full max-w-2xl px-8 py-8"><div className="mb-4 flex items-center gap-2 text-[8px] text-muted-foreground"><Hash className="size-3" />product · design</div><h1 className="text-2xl font-bold tracking-tight">{lang === "en" ? "Design principles for calm writing" : "安静写作的设计原则"}</h1><p className="mt-3 text-[10px] leading-5 text-muted-foreground">{lang === "en" ? "A workspace should make capture effortless and leave enough room for thought." : "一个好的工作区，应该让记录毫不费力，同时给思考留下足够的空间。"}</p><h2 className="mt-7 text-base font-semibold">{lang === "en" ? "Capture without interruption" : "不打断地记录"}</h2><p className="mt-2 text-[10px] leading-5">{lang === "en" ? "Text, voice, images and links enter the same stream. Structure is added only when it becomes useful." : "文本、语音、图片与链接进入同一条信息流。只有当结构真正有用时，再进行整理。"}</p><blockquote className="mt-5 border-l-2 pl-4 text-[10px] italic leading-5 text-muted-foreground">{lang === "en" ? "Tools should disappear while ideas remain visible." : "工具应当隐去，而想法始终清晰可见。"}</blockquote><div className="mt-4"><NoteGenBubbleMenu /></div></article>
+  return <article className="mx-auto w-full max-w-2xl px-8 py-8"><div className="mb-4 flex items-center gap-2 text-[8px] text-muted-foreground"><Hash className="size-3" />product · design</div><h1 className="text-2xl font-bold tracking-tight">{lang === "en" ? "Design principles for calm writing" : "安静写作的设计原则"}</h1><p className="mt-3 text-[10px] leading-5 text-muted-foreground">{lang === "en" ? "A workspace should make capture effortless and leave enough room for thought." : "一个好的工作区，应该让记录毫不费力，同时给思考留下足够的空间。"}</p><h2 className="mt-7 text-base font-semibold">{lang === "en" ? "Capture without interruption" : "不打断地记录"}</h2><p className="mt-2 text-[10px] leading-5">{lang === "en" ? "Text, voice, images and links enter the same stream. Structure is added only when it becomes useful." : "文本、语音、图片与链接进入同一条信息流。只有当结构真正有用时，再进行整理。"}</p><blockquote className="mt-5 border-l-2 pl-4 text-[10px] italic leading-5 text-muted-foreground">{lang === "en" ? "Tools should disappear while ideas remain visible." : "工具应当隐去，而想法始终清晰可见。"}</blockquote><div className="mt-4"><NoteGenBubbleMenu lang={lang} /></div></article>
 }
 
-export function NoteGenEditorWorkspace({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
-  return <div className="grid h-full min-h-0 grid-cols-[30%_70%]"><NoteGenFileSidebar lang={lang} /><section className="flex min-h-0 flex-col border-l bg-background"><NoteGenEditorTabs lang={lang} /><div className="min-h-0 flex-1 overflow-hidden"><NoteGenDocumentPage lang={lang} /></div></section></div>
+export function NoteGenEditorWorkspace({ lang = "cn", tabsProps }: { lang?: NoteGenReplicaLanguage; tabsProps?: NoteGenEditorTabsProps }) {
+  return <div className="grid h-full min-h-0 grid-cols-[30%_70%]"><NoteGenFileSidebar lang={lang} /><section className="flex min-h-0 flex-col border-l bg-background"><NoteGenEditorTabs lang={lang} {...tabsProps} /><div className="min-h-0 flex-1 overflow-hidden"><NoteGenDocumentPage lang={lang} /></div></section></div>
 }

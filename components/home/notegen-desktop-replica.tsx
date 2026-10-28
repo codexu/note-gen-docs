@@ -1,5 +1,7 @@
 "use client"
 
+import { NoteGenEditorTabs, type NoteGenEditorTabsProps } from "@/components/notegen/editor-tabs-replica"
+
 import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import {
   Check,
@@ -208,6 +210,7 @@ export function NoteGenDesktopReplica({
   hasUpdate = false,
   statusBarProps,
   chatExample,
+  editorExample,
   contextUsage,
   maximized = false,
   version,
@@ -238,6 +241,7 @@ export function NoteGenDesktopReplica({
   initialOutlineActive?: boolean
   statusBarProps?: Omit<NoteGenMainStatusBarProps, "lang" | "workspace">
   chatExample?: NoteGenChatExample
+  editorExample?: { tabs?: NoteGenEditorTabsProps; content: ReactNode }
   contextUsage?: Omit<NoteGenContextUsageProps, "lang">
 }) {
   const [workspace, setWorkspace] = useState<Workspace>(initialWorkspace)
@@ -342,9 +346,11 @@ export function NoteGenDesktopReplica({
           ) : null}
           {panels.center ? (
             <>
+              {editorExample ? <section className="flex h-full min-h-0 min-w-0 flex-col bg-background"><NoteGenEditorTabs lang={lang} {...editorExample.tabs} /><div className="min-h-0 flex-1 overflow-hidden">{editorExample.content}</div></section> : <>
               {workspace === "records" ? <RecordDetailReplica lang={lang} simplified={simplified} /> : null}
               {workspace === "writing" && (lang === "en" ? <MemoizedEnglishEditor simplified={simplified} {...outlineProps} /> : <MemoizedEditor simplified={simplified} {...outlineProps} />)}
               {workspace === "canvas" ? <CanvasEditorReplica lang={lang} simplified={simplified} /> : null}
+              </>}
             </>
           ) : null}
           {panels.right ? <MemoizedAgentPanel lang={lang} example={chatExample} contextUsage={contextUsage} onManageSkills={() => { setSettingsSection("skills"); setView("settings") }} /> : null}
@@ -624,37 +630,8 @@ function SharedEditorTabs({
     },
   ]
 
-  return (
-    <div className="flex h-12 shrink-0 items-center border-b bg-background">
-      {!simplified ? <div className="flex h-full shrink-0 items-center gap-0.5 border-r px-2">
-        <IconButton icon={Undo2} className="text-foreground" />
-        <IconButton icon={Redo2} className="opacity-35" />
-      </div> : null}
-      <div className="flex min-w-0 flex-1 items-center overflow-hidden px-1">
-        {tabs.map((tab) => (
-          <div
-            key={tab.id}
-            className={cn(
-              "relative flex h-9 min-w-0 flex-1 items-center gap-1.5 px-2.5",
-              tab.active ? "font-medium text-foreground" : "text-muted-foreground"
-            )}
-          >
-            {tab.kind === "record" ? (
-              <Mic className={cn("size-3.5 shrink-0 text-rose-500", tab.active && "text-rose-600")} />
-            ) : tab.kind === "canvas" ? (
-              <Palette className={cn("size-3.5 shrink-0", tab.active && "text-primary")} />
-            ) : (
-              <FileText className={cn("size-3.5 shrink-0", tab.active && "text-primary")} />
-            )}
-            <span className="truncate">{tab.label}</span>
-            {tab.active ? <X className="size-3 shrink-0 text-muted-foreground/70" /> : null}
-            {tab.active ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" /> : null}
-          </div>
-        ))}
-        <IconButton icon={Plus} className="ml-auto mr-1" />
-      </div>
-    </div>
-  )
+  return <NoteGenEditorTabs lang={lang} tabs={tabs.map(tab => ({ id: tab.id, label: tab.label, kind: tab.kind, recordType: isEnglish ? "Audio" : "录音" }))} activeId={workspace} showUndoRedo={!simplified} canUndo />
+
 }
 
 function RecordDetailReplica({ lang, simplified = false }: { lang: "cn" | "en"; simplified?: boolean }) {

@@ -1,31 +1,17 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Bold, BrainCircuit, CheckSquare, ChevronRight, Code, Highlighter, Italic, Languages, Link, List, ListOrdered, ListTodo, Maximize2, Minimize2, Quote, Sparkles, Strikethrough, Timer, Underline, Workflow, type LucideIcon } from "lucide-react"
+import { BrainCircuit, ChevronRight, Languages, ListTodo, Maximize2, Minimize2, Sparkles, Timer, Workflow } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./model-settings/ui/button"
 import { Input } from "./model-settings/ui/input"
 import { Separator } from "./model-settings/ui/separator"
+import { NoteGenEditorFormatControls, type NoteGenEditorFormatProps } from "./editor-format-controls"
 import { TutorialMarker } from "./tutorial-marker"
 import type { NoteGenReplicaLanguage } from "./types"
 
 // Geometry, order, and control styles follow editor/markdown/bubble-menu.tsx.
 // Plugin-contributed buttons are omitted for the default, plugins-disabled scene.
-const formats: Array<{ key: string; icon: LucideIcon; cn: string; en: string }> = [
-  { key: "bold", icon: Bold, cn: "粗体", en: "Bold" },
-  { key: "italic", icon: Italic, cn: "斜体", en: "Italic" },
-  { key: "strike", icon: Strikethrough, cn: "删除线", en: "Strikethrough" },
-  { key: "underline", icon: Underline, cn: "下划线", en: "Underline" },
-  { key: "code", icon: Code, cn: "行内代码", en: "Inline code" },
-  { key: "highlight", icon: Highlighter, cn: "高亮", en: "Highlight" },
-]
-const blocks: Array<{ key: string; icon: LucideIcon; cn: string; en: string }> = [
-  { key: "quote", icon: Quote, cn: "引用", en: "Blockquote" },
-  { key: "bullet", icon: List, cn: "无序列表", en: "Bullet list" },
-  { key: "ordered", icon: ListOrdered, cn: "有序列表", en: "Ordered list" },
-  { key: "task", icon: CheckSquare, cn: "任务列表", en: "Task list" },
-  { key: "codeBlock", icon: Code, cn: "代码块", en: "Code block" },
-]
 const languages = [
   ["English", "英语"], ["Japanese", "日语"], ["Korean", "韩语"], ["French", "法语"],
   ["German", "德语"], ["Spanish", "西班牙语"], ["Portuguese", "葡萄牙语"], ["Russian", "俄语"], ["Arabic", "阿拉伯语"],
@@ -44,9 +30,10 @@ export interface NoteGenEditorAISelectionReplicaProps {
   showTutorialMarkers?: boolean
   /** Fixed natural canvas height; camera scaling belongs to the consuming scene. */
   canvasHeight?: number
+  formatProps?: NoteGenEditorFormatProps
 }
 
-export function NoteGenEditorAISelectionReplica({ lang = "cn", state, showTutorialMarkers = true, canvasHeight }: NoteGenEditorAISelectionReplicaProps) {
+export function NoteGenEditorAISelectionReplica({ lang = "cn", state, showTutorialMarkers = true, canvasHeight, formatProps }: NoteGenEditorAISelectionReplicaProps) {
   const en = lang === "en"
   const viewport = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
@@ -55,7 +42,6 @@ export function NoteGenEditorAISelectionReplica({ lang = "cn", state, showTutori
   const [localTranslateOpen, setTranslateOpen] = useState(false)
   const translateOpen = state ? state === "detail" : localTranslateOpen
   const [customLanguage, setCustomLanguage] = useState("")
-  const [activeFormats, setActiveFormats] = useState<string[]>([])
   const [notice, setNotice] = useState("")
   const width = 680
   const height = canvasHeight ?? (translateOpen ? 680 : menuOpen ? 480 : 320)
@@ -69,13 +55,11 @@ export function NoteGenEditorAISelectionReplica({ lang = "cn", state, showTutori
     return () => observer.disconnect()
   }, [])
   const text = (cn: string, english: string) => en ? english : cn
-  const toggle = (key: string) => setActiveFormats(items => items.includes(key) ? items.filter(item => item !== key) : [...items, key])
   const action = (label: string) => {
     setMenuOpen(false)
     setTranslateOpen(false)
     setNotice(text(`模拟选择：${label}`, `Simulated selection: ${label}`))
   }
-  const renderFormat = ({ key, icon: Icon, cn, en: english }: typeof formats[number]) => <Button key={key} type="button" variant={activeFormats.includes(key) ? "secondary" : "ghost"} size="icon-sm" title={text(cn, english)} aria-label={text(cn, english)} aria-pressed={activeFormats.includes(key)} onClick={() => toggle(key)}><Icon /></Button>
   const writingActions = [
     { icon: Sparkles, cn: "润色", en: "Polish" },
     { icon: Minimize2, cn: "精简", en: "Concise" },
@@ -119,9 +103,7 @@ export function NoteGenEditorAISelectionReplica({ lang = "cn", state, showTutori
               </div>
             </div> : null}
           </div>
-          <ToolbarSeparator /><div className="flex gap-0.5">{formats.map(renderFormat)}</div>
-          <ToolbarSeparator /><Button type="button" variant={activeFormats.includes("link") ? "secondary" : "ghost"} size="icon-sm" title={text("链接", "Link")} aria-label={text("链接", "Link")} onClick={() => toggle("link")}><Link /></Button>
-          <ToolbarSeparator /><div className="flex gap-0.5">{blocks.map(renderFormat)}</div>
+          <ToolbarSeparator /><NoteGenEditorFormatControls lang={lang} {...formatProps} />
         </div>
       </div>
     </div>
