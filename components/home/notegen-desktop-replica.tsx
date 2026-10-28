@@ -313,7 +313,7 @@ export function NoteGenDesktopReplica({
       ) : null}
       <div ref={sceneRoot} className="min-h-0 flex-1 overflow-hidden">
         {view === "settings" ? (
-          <NoteGenSettingsReplica lang={lang} onClose={() => setView("workspace")} />
+          <NoteGenSettingsReplica lang={lang} initialSection={settingsSection} version={version} outlinePreferences={outlinePreferences} onOutlinePreferencesChange={updateOutline} onClose={() => setView("workspace")} />
         ) : <div
           className={cn(
             "grid min-w-0 origin-top-left",

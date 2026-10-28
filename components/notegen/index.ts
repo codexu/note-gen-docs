@@ -36,7 +36,12 @@ export * from "@/components/home/notegen-desktop-replica"
 export { NoteGenChatEmpty, type NoteGenRecentConversation } from "./chat-empty-replica"
 export { NoteGenContextUsageIndicator, type NoteGenContextUsageProps } from "./context-usage-replica"
 
-export { NoteGenSkillsSettings, type NoteGenInstalledSkill } from "./skills-settings-replica"
+export { NoteGenSkillsSettings } from "./skills-settings-replica"
+export * from "./skills-settings-types"
+export * from "./skills-settings-scenes"
+export { noteGenRecommendedSkillsFixture } from "./skills-settings-data"
+export { NoteGenSkillEnvironmentDialog } from "./skill-environment-replica"
+export { NoteGenSkillInstallDialog } from "./skill-install-replica"
 export { NoteGenSkillsSettingsDialog } from "./settings-replica"
 
 export { NoteGenMcpAccessSettings, NoteGenMcpSettingsDialog, type NoteGenMcpAccessState } from "./mcp-access-replica"

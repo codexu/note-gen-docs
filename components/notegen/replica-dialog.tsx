@@ -6,6 +6,7 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { X } from "lucide-react"
 import { Button } from "./model-settings/ui/button"
 import { cn } from "@/lib/utils"
+import { skillsSettingsUiCss } from "./skills-settings-style"
 import { noteGenChatCss } from "./chat-replica-style"
 
 /** A dialog bounded to its replica window. Nonmodal so multiple fixed gallery scenes can coexist. */
@@ -30,7 +31,7 @@ export function NoteGenReplicaDialog({ open, onClose, title, description, childr
       ?? element?.closest<HTMLElement>('[data-notegen-settings-boundary]') ?? null)
   }, [open])
   const content = open ? <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/10 p-4 supports-backdrop-filter:backdrop-blur-xs" data-replica-dialog-layer>
-    <style>{noteGenChatCss}</style>
+    <style>{noteGenChatCss + skillsSettingsUiCss}</style>
     <DialogPrimitive.Root open modal={false} onOpenChange={value => { if (!value && !locked) onClose() }}>
       <DialogPrimitive.Content onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()} onInteractOutside={event => event.preventDefault()} onEscapeKeyDown={event => { if (locked) event.preventDefault() }} className={cn("ng-chat-surface ng-skills-ui relative flex max-h-full w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 shadow-lg outline-none", mobile && "absolute inset-x-0 bottom-0 max-w-none rounded-b-none")}>
         <header className="flex flex-col gap-2 pr-8"><DialogPrimitive.Title className="text-lg font-semibold">{title}</DialogPrimitive.Title><DialogPrimitive.Description className={cn("text-sm text-muted-foreground", !description && "sr-only")}>{description ?? title}</DialogPrimitive.Description></header>

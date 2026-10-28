@@ -12,6 +12,10 @@ import {
   Book,
   BotMessageSquare,
   Brain,
+  Blocks,
+  ListTree,
+  PanelLeft,
+  PanelRight,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -51,10 +55,14 @@ import {
 } from "lucide-react"
 
 import { NoteGenMemoriesSettings } from "./memories-replica"
-import { NoteGenSkillsSettings, skillsSettingsCss, type NoteGenInstalledSkill } from "@/components/notegen/skills-settings-replica"
+import { NoteGenSkillsSettings } from "./skills-settings-replica"
+import { skillsSettingsCss } from "./skills-settings-style"
+import type { NoteGenInstalledSkill, NoteGenSkillsSettingsProps } from "./skills-settings-types"
 import { noteGenSettingsPages, type NoteGenSettingRowData, type NoteGenSettingSectionData, type NoteGenSettingSectionId } from "@/components/notegen/settings-data"
 import type { NoteGenReplicaIcon, NoteGenReplicaLanguage } from "@/components/notegen/types"
 import { cn } from "@/lib/utils"
+import { NOTEGEN_REPLICA_VERSION } from "./replica-baseline"
+import { defaultNoteGenOutlinePreferences, type NoteGenOutlinePreferences } from "./outline-replica"
 
 export type { NoteGenSettingSectionId } from "@/components/notegen/settings-data"
 
@@ -63,7 +71,7 @@ type NavigationItem = {
   icon: NoteGenReplicaIcon
   cn: string
   en: string
-  group: "basic" | "aiExtensions" | "data"
+  group: "basic" | "aiExtensions" | "data" | "extensions"
 }
 const navigationItems: NavigationItem[] = [
   { id: "about", icon: Store, cn: "关于", en: "About", group: "basic" },
@@ -86,6 +94,7 @@ const navigationItems: NavigationItem[] = [
   { id: "backup", icon: ArchiveRestore, cn: "备份与恢复", en: "Backup & Restore", group: "data" },
   { id: "imageHosting", icon: ImageUp, cn: "图片存储", en: "Image Storage", group: "data" },
   { id: "file", icon: FolderOpen, cn: "文件管理", en: "File Settings", group: "data" },
+  { id: "plugins", icon: Blocks, cn: "插件", en: "Plugins", group: "extensions" },
 ]
 export const noteGenSettingsNavigation = navigationItems
 
@@ -93,6 +102,7 @@ const groupLabels = {
   basic: { cn: "基础设置", en: "Basic" },
   aiExtensions: { cn: "AI", en: "AI" },
   data: { cn: "数据与存储", en: "Data & Storage" },
+  extensions: { cn: "扩展", en: "Extensions" },
 }
 
 function updateSettingsScrollbar(node: HTMLElement) {
@@ -131,7 +141,7 @@ export function NoteGenSettingsSidebar({
   onValueChange,
   query,
   onQueryChange,
-  hasUpdate = true,
+  hasUpdate = false,
 }: {
   lang: NoteGenReplicaLanguage
   value: NoteGenSettingSectionId
@@ -175,7 +185,7 @@ export function NoteGenSettingsSidebar({
           <span>{lang === "en" ? "No matching settings found" : "没有找到相关设置"}</span>
         </div>
       ) : <nav className="ng-settings-scroll ng-settings-sidebar-viewport min-h-0 flex-1 overflow-y-auto px-3" ref={(node) => { if (node) updateSettingsScrollbar(node) }} onScroll={(event) => updateSettingsScrollbar(event.currentTarget)}>
-        {(["basic", "aiExtensions", "data"] as const).map((group) => {
+        {(["basic", "aiExtensions", "data", "extensions"] as const).map((group) => {
           const items = filtered.filter((item) => item.group === group)
           if (items.length === 0) return null
 
@@ -548,8 +558,8 @@ function GenericSettingsReplica({
 }) {
   const item = navigationItems.find((candidate) => candidate.id === section) ?? navigationItems[0]
   const text = (cnText: string, enText: string) => lang === "en" ? enText : cnText
-  const blueprints: Record<Exclude<NoteGenSettingSectionId, "general">, { description: [string, string]; group: [string, string]; rows: Array<[string, string, string, string, "switch" | "select", string, string]> }> = {
-    about: { description: ["查看版本、更新渠道与开源信息。", "View version, update channel, and open-source information."], group: ["应用信息", "Application"], rows: [["当前版本", "Current version", "你正在使用 NoteGen 0.36.0", "You are using NoteGen 0.36.0", "select", "检查更新", "Check for updates"], ["更新渠道", "Update channel", "选择接收稳定版或预览版更新", "Choose stable or preview releases", "select", "稳定版", "Stable"]] },
+  const blueprints: Record<Exclude<NoteGenSettingSectionId, "general" | "plugins">, { description: [string, string]; group: [string, string]; rows: Array<[string, string, string, string, "switch" | "select", string, string]> }> = {
+    about: { description: ["查看版本、更新渠道与开源信息。", "View version, update channel, and open-source information."], group: ["应用信息", "Application"], rows: [["当前版本", "Current version", `你正在使用 NoteGen ${NOTEGEN_REPLICA_VERSION}`, `You are using NoteGen ${NOTEGEN_REPLICA_VERSION}`, "select", "检查更新", "Check for updates"], ["更新渠道", "Update channel", "选择接收稳定版或预览版更新", "Choose stable or preview releases", "select", "稳定版", "Stable"]] },
     record: { description: ["配置快速记录的输入方式、列表密度和整理行为。", "Configure capture inputs, list density, and organization behavior."], group: ["记录体验", "Capture experience"], rows: [["标题栏记录工具", "Title bar capture tools", "显示文字、录音、OCR、图片与链接入口", "Show text, audio, OCR, image, and link actions", "switch", "", ""], ["默认列表样式", "Default list style", "选择记录列表的内容密度", "Choose the density of the capture list", "select", "紧凑", "Compact"], ["自动生成描述", "Generate descriptions", "使用 AI 为新记录生成简短描述", "Use AI to describe new captures", "switch", "", ""]] },
     editor: { description: ["配置写作界面、Markdown 行为与自动保存。", "Configure writing UI, Markdown behavior, and autosave."], group: ["编辑体验", "Editing experience"], rows: [["默认编辑模式", "Default editing mode", "打开文件时使用的编辑器模式", "Editor mode used when opening files", "select", "所见即所得", "WYSIWYG"], ["自动保存", "Autosave", "停止输入后自动保存当前文档", "Save the document after typing stops", "switch", "", ""], ["显示大纲", "Show outline", "在编辑器右侧显示标题大纲", "Show heading outline beside the editor", "switch", "", ""]] },
     canvas: { description: ["配置画布网格、节点样式和默认交互。", "Configure canvas grid, node style, and default interaction."], group: ["画布体验", "Canvas experience"], rows: [["显示网格", "Show grid", "在画布背景显示对齐参考点", "Show alignment points on the canvas", "switch", "", ""], ["默认连接线", "Default edge", "新连接使用的线条样式", "Line style for new connections", "select", "曲线", "Curved"], ["自动整理节点", "Auto-layout nodes", "创建内容后自动调整节点位置", "Arrange nodes after creating content", "switch", "", ""]] },
@@ -569,7 +579,7 @@ function GenericSettingsReplica({
     imageHosting: { description: ["配置笔记图片上传和链接生成方式。", "Configure image uploads and generated links."], group: ["图片上传", "Image uploads"], rows: [["图床服务", "Image host", "粘贴图片时使用的上传服务", "Upload service used when pasting images", "select", "本地文件", "Local files"], ["自动上传", "Upload automatically", "插入图片时自动转换为远程链接", "Convert inserted images to remote links", "switch", "", ""], ["文件命名", "File naming", "上传图片的默认命名规则", "Default naming rule for uploaded images", "select", "日期 + 哈希", "Date + hash"]] },
     file: { description: ["配置笔记目录、附件位置和文件监控。", "Configure notes directory, attachments, and file watching."], group: ["文件与目录", "Files and folders"], rows: [["笔记目录", "Notes directory", "Markdown 文件保存的位置", "Location of Markdown files", "select", "~/Documents/NoteGen", "~/Documents/NoteGen"], ["监听文件变化", "Watch file changes", "自动刷新由其他应用修改的内容", "Refresh content changed by other apps", "switch", "", ""], ["附件目录", "Attachments folder", "图片与音频文件的保存位置", "Location for image and audio files", "select", "attachments", "attachments"]] },
   }
-  const blueprint = blueprints[section as Exclude<NoteGenSettingSectionId, "general">] ?? blueprints.about
+  const blueprint = blueprints[section as Exclude<NoteGenSettingSectionId, "general" | "plugins">] ?? blueprints.about
 
   return (
     <NoteGenSettingsPage icon={item.icon} title={item[lang]} description={blueprint.description[lang === "en" ? 1 : 0]}>
@@ -622,13 +632,42 @@ function NoteGenSettingsDataSection({ section, lang, icon: Icon }: { section: No
   </NoteGenSettingsSection>
 }
 
-function NoteGenSettingsContentReplica({ lang, section }: { lang: NoteGenReplicaLanguage; section: NoteGenSettingSectionId }) {
+export function NoteGenOutlineSettings({ lang = "cn", value, onValueChange }: {
+  lang?: NoteGenReplicaLanguage
+  value?: NoteGenOutlinePreferences
+  onValueChange?: (value: NoteGenOutlinePreferences) => void
+}) {
+  const [local, setLocal] = useState(defaultNoteGenOutlinePreferences)
+  const prefs = value ?? local
+  const update = (patch: Partial<NoteGenOutlinePreferences>) => {
+    const next = { ...prefs, ...patch }
+    if (!value) setLocal(next)
+    onValueChange?.(next)
+  }
+  const en = lang === "en"
+  return <NoteGenSettingsSection title={en ? "Outline" : "大纲"}>
+    <NoteGenSettingRow icon={ListTree} title={en ? "Outline display area" : "大纲显示区域"} description={en ? "Display the outline inside the editor or in the left sidebar." : "在编辑器内显示大纲，或通过左侧栏的大纲标签页查看当前笔记的标题结构。"} action={<NoteGenSettingSegmentedControl label={en ? "Outline display area" : "大纲显示区域"} value={prefs.placement} options={[{ value: "editor", label: en ? "Inside editor" : "编辑器内" }, { value: "sidebar", label: en ? "Left sidebar" : "左侧栏" }]} onValueChange={placement => { if (placement === "editor" || placement === "sidebar") update({ placement }) }} />} />
+    {prefs.placement === "editor" ? <>
+      <NoteGenSettingRow icon={ListTree} title={en ? "Enable outline by default" : "默认启用大纲"} description={en ? "Show the outline by default in the editor." : "启用后，编辑器将默认显示大纲。"} action={<NoteGenSettingSwitch label={en ? "Enable outline by default" : "默认启用大纲"} checked={prefs.enabled} onCheckedChange={enabled => update({ enabled })} />} />
+      <NoteGenSettingRow icon={prefs.position === "left" ? PanelLeft : PanelRight} title={en ? "Outline position" : "大纲位置"} disabled={!prefs.enabled} action={<div className={!prefs.enabled ? "pointer-events-none" : undefined} inert={!prefs.enabled ? true : undefined}><NoteGenSettingSegmentedControl label={en ? "Outline position" : "大纲位置"} value={prefs.position} options={[{ value: "left", label: en ? "Left" : "左侧" }, { value: "right", label: en ? "Right" : "右侧" }]} onValueChange={position => { if (prefs.enabled && (position === "left" || position === "right")) update({ position }) }} /></div>} />
+    </> : null}
+  </NoteGenSettingsSection>
+}
+
+function NoteGenSettingsContentReplica({ lang, section, version = NOTEGEN_REPLICA_VERSION, outlinePreferences, onOutlinePreferencesChange }: {
+  lang: NoteGenReplicaLanguage
+  section: NoteGenSettingSectionId
+  version?: string
+  outlinePreferences?: NoteGenOutlinePreferences
+  onOutlinePreferencesChange?: (value: NoteGenOutlinePreferences) => void
+}) {
   if (section === "ai") return <NoteGenModelSettingsReplica lang={lang} />
   if (section === "memories") return <NoteGenMemoriesSettings lang={lang} />
   if (section === "skills") return <NoteGenSkillsSettings lang={lang} />
   if (section === "general") return <GeneralSettingsReplica lang={lang} />
 
-  const page = noteGenSettingsPages[section]
+  const sourcePage = noteGenSettingsPages[section]
+  const page = section === "about" ? { ...sourcePage, sections: sourcePage.sections.map((group, index) => index === 0 ? { ...group, rows: group.rows.map(row => ({ ...row, cnValue: `v${version}`, enValue: `v${version}` })) } : group) } : sourcePage
   const navigation = navigationItems.find((item) => item.id === section) ?? navigationItems[0]
   const PageIcon = navigation.icon
   if (section === "sync" || section === "imageHosting") {
@@ -650,17 +689,24 @@ function NoteGenSettingsContentReplica({ lang, section }: { lang: NoteGenReplica
     </NoteGenSettingsPage>
   }
   return <NoteGenSettingsPage icon={navigation.icon} title={page[lang]} description={lang === "en" ? page.enDescription : page.cnDescription}>
-    {page.sections.map((settingSection) => <NoteGenSettingsDataSection key={settingSection.cn} section={settingSection} lang={lang} icon={navigation.icon} />)}
+    {section === "editor" ? <NoteGenOutlineSettings lang={lang} value={outlinePreferences} onValueChange={onOutlinePreferencesChange} /> : null}
+    {page.sections.map((settingSection) => <NoteGenSettingsDataSection key={settingSection.cn} section={section === "editor" ? { ...settingSection, rows: settingSection.rows.filter(row => row.cn !== "显示大纲") } : settingSection} lang={lang} icon={navigation.icon} />)}
   </NoteGenSettingsPage>
 }
 
 export function NoteGenSettingsDetailReplica({
   lang = "cn",
   section = "general",
+  version,
+  outlinePreferences,
+  onOutlinePreferencesChange,
   className,
 }: {
   lang?: NoteGenReplicaLanguage
   section?: NoteGenSettingSectionId
+  version?: string
+  outlinePreferences?: NoteGenOutlinePreferences
+  onOutlinePreferencesChange?: (value: NoteGenOutlinePreferences) => void
   className?: string
 }) {
   return (
@@ -669,28 +715,39 @@ export function NoteGenSettingsDetailReplica({
       data-active-section={section}
       className={cn("h-full min-h-0 overflow-hidden rounded-xl border bg-background", className)}
     >
-      <NoteGenSettingsContentReplica lang={lang} section={section} />
+      <NoteGenSettingsContentReplica lang={lang} section={section} version={version} outlinePreferences={outlinePreferences} onOutlinePreferencesChange={onOutlinePreferencesChange} />
     </div>
   )
 }
 
-export function NoteGenSettingsDialogReplica({ lang = "cn", initialSection = "general", className }: { lang?: NoteGenReplicaLanguage; initialSection?: NoteGenSettingSectionId; className?: string }) {
-  return <div className={cn("relative flex min-h-[520px] items-center justify-center overflow-hidden rounded-xl border bg-muted/30 p-4 before:absolute before:inset-0 before:bg-background/45 before:backdrop-blur-[2px]", className)}><div className="relative z-10 h-[min(840px,calc(100%-16px))] min-h-[480px] w-[calc(100%-16px)] max-w-[1280px] overflow-hidden rounded-xl border bg-background shadow-2xl"><NoteGenSettingsReplica lang={lang} initialSection={initialSection} /><span aria-label={lang === "en" ? "Close settings" : "关闭设置"} className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"><X className="size-4" /></span></div></div>
+export function NoteGenSettingsDialogReplica({ lang = "cn", initialSection = "general", version, className }: { lang?: NoteGenReplicaLanguage; initialSection?: NoteGenSettingSectionId; version?: string; className?: string }) {
+  return <div className={cn("relative flex min-h-[520px] items-center justify-center overflow-hidden rounded-xl border bg-muted/30 p-4 before:absolute before:inset-0 before:bg-background/45 before:backdrop-blur-[2px]", className)}><div className="relative z-10 h-[min(840px,calc(100%-16px))] min-h-[480px] w-[calc(100%-16px)] max-w-[1280px] overflow-hidden rounded-xl border bg-background shadow-2xl"><NoteGenSettingsReplica lang={lang} initialSection={initialSection} version={version} /><span aria-label={lang === "en" ? "Close settings" : "关闭设置"} className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"><X className="size-4" /></span></div></div>
 }
 
 export function NoteGenSettingsReplica({
   lang = "cn",
   initialSection = "general",
+  version,
+  outlinePreferences,
+  onOutlinePreferencesChange,
   onClose,
   className,
 }: {
   lang?: NoteGenReplicaLanguage
   initialSection?: NoteGenSettingSectionId
+  version?: string
+  outlinePreferences?: NoteGenOutlinePreferences
+  onOutlinePreferencesChange?: (value: NoteGenOutlinePreferences) => void
   onClose?: () => void
   className?: string
 }) {
   const [section, setSection] = useState<NoteGenSettingSectionId>(initialSection)
   const [query, setQuery] = useState("")
+  const [localOutline, setLocalOutline] = useState(defaultNoteGenOutlinePreferences)
+  const updateOutline = (next: NoteGenOutlinePreferences) => {
+    if (!outlinePreferences) setLocalOutline(next)
+    onOutlinePreferencesChange?.(next)
+  }
 
   return (
     <div data-active-section={section} className={cn("relative h-full min-h-0 overflow-hidden", className)}>
@@ -705,7 +762,7 @@ export function NoteGenSettingsReplica({
           />
         }
       >
-        <NoteGenSettingsContentReplica lang={lang} section={section} />
+        <NoteGenSettingsContentReplica lang={lang} section={section} version={version} outlinePreferences={outlinePreferences ?? localOutline} onOutlinePreferencesChange={updateOutline} />
       </NoteGenSettingsShell>
       {onClose ? (
         <button
@@ -722,13 +779,15 @@ export function NoteGenSettingsReplica({
 }
 
 
-export function NoteGenSkillsSettingsDialog({ lang = "cn", skills = [], activeSection = "skills", onClose }: {
+export function NoteGenSkillsSettingsDialog({ lang = "cn", skills = [], activeSection = "skills", version, onClose, skillsProps }: {
   lang?: NoteGenReplicaLanguage
   skills?: NoteGenInstalledSkill[]
+  skillsProps?: Omit<NoteGenSkillsSettingsProps, "lang">
   activeSection?: "about" | "skills"
+  version?: string
   onClose?: () => void
 }) {
   return <div className="ng-skills-dialog-backdrop"><style>{skillsSettingsCss}</style><div className="ng-skills-dialog" role="dialog" aria-label={lang === "en" ? "Settings" : "设置"}><NoteGenSettingsShell sidebar={<NoteGenSettingsSidebar lang={lang} value={activeSection} hasUpdate={false} />}>
-    {activeSection === "skills" ? <NoteGenSkillsSettings lang={lang} globalSkills={skills} /> : <NoteGenSettingsContentReplica lang={lang} section="about" />}
+    {activeSection === "skills" ? <NoteGenSkillsSettings lang={lang} globalSkills={skills} {...skillsProps} /> : <NoteGenSettingsContentReplica lang={lang} section="about" version={version} />}
   </NoteGenSettingsShell><button type="button" className="ng-skills-dialog-close" data-settings-action="close" onClick={onClose} aria-label={lang === "en" ? "Close settings" : "关闭设置"}><X size={16} /></button></div></div>
 }
