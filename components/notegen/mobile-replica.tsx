@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { CSSProperties, ReactNode } from "react"
 import {
   ArrowLeft, BatteryFull, Book, Bot, BotMessageSquare, Bold, Brain, CheckSquare,
   ChevronDown, ChevronRight, Cloud, Code2, DatabaseBackup, Drama, EllipsisVertical,
@@ -12,6 +12,7 @@ import {
 
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
 import { cn } from "@/lib/utils"
+import { NoteGenMobileChatProvider, NoteGenMobileComposerLeading, NoteGenMobileComposerMenu, NoteGenMobileContextStrip, NoteGenMobilePermissionButton, NoteGenMobileSendButton, NoteGenMobileTextInput, type NoteGenMobileChatProps, type NoteGenMobileChatSheet } from "./mobile-chat-composer"
 
 export type NoteGenMobileScreen = "capture" | "chat" | "writing" | "canvas" | "me" | "settings" | "settings-general"
 
@@ -40,7 +41,7 @@ export function NoteGenMobileFrame({ children, className }: { children: ReactNod
       <i className="absolute left-0 top-[194px] h-[43px] w-[7px] rounded-l-[3px] bg-[#202124]" />
       <i className="absolute right-0 top-[169px] h-[66px] w-[7px] rounded-r-[3px] bg-[#202124]" />
       <div className="absolute inset-y-0 left-[5px] z-10 h-[594px] w-[284px] overflow-hidden rounded-[36px] border-[10px] border-[#090909] bg-white shadow-[0_22px_50px_rgba(0,0,0,.20)]">
-        <div className="absolute left-0 top-0 origin-top-left overflow-hidden bg-white text-[#17191c]" style={{ width: MOBILE_WIDTH, height: MOBILE_HEIGHT, transform: `scale(${MOBILE_SCALE})` }}>
+        <div data-notegen-mobile-screen data-notegen-mobile-theme="light" className="absolute left-0 top-0 origin-top-left overflow-hidden bg-white text-[#17191c]" style={{ width: MOBILE_WIDTH, height: MOBILE_HEIGHT, transform: `scale(${MOBILE_SCALE})`, "--background": "#fff", "--foreground": "#17191c", "--popover": "#fff", "--popover-foreground": "#17191c", "--muted": "#f4f4f5", "--muted-foreground": "#71717a", "--accent": "#f4f4f5", "--accent-foreground": "#17191c", "--primary": "#18181b", "--primary-foreground": "#fafafa", "--secondary": "#f4f4f5", "--secondary-foreground": "#18181b", "--destructive": "hsl(0 84.2% 60.2%)", "--border": "#e4e4e7", "--input": "#e4e4e7", "--ring": "#a1a1aa" } as CSSProperties}>
           {children}
         </div>
       </div>
@@ -132,7 +133,7 @@ export function NoteGenMobileCapture({ lang = "cn" }: { lang?: NoteGenReplicaLan
   )
 }
 
-export function NoteGenMobileChat({ lang = "cn" }: { lang?: NoteGenReplicaLanguage }) {
+export function NoteGenMobileChat({ lang = "cn", chatState, chatProps }: { lang?: NoteGenReplicaLanguage; chatState?: NoteGenMobileChatSheet; chatProps?: Omit<NoteGenMobileChatProps, "lang" | "defaultSheet"> }) {
   const prompts = lang === "en" ? ["Help me write a note", "Summarize this content", "Brainstorm some ideas"] : ["帮我写一篇笔记", "帮我总结这段内容", "帮我头脑风暴一些想法"]
   return (
     <div className="relative min-h-0 flex-1 bg-[linear-gradient(#f4f4f5_1px,transparent_1px),linear-gradient(90deg,#f4f4f5_1px,transparent_1px)] [background-size:40px_40px]">
@@ -143,10 +144,14 @@ export function NoteGenMobileChat({ lang = "cn" }: { lang?: NoteGenReplicaLangua
         <p className="mb-2 mt-7 px-1 text-xs text-[#8b8d92]">{lang === "en" ? "Quick start" : "快速开始"}</p>
         <div className="space-y-2">{prompts.map((prompt, index) => <div key={prompt} className="flex h-11 items-center rounded-lg border border-[#dedfe2] bg-white px-4 text-sm">{index === 0 ? <SquarePen className="mr-2 size-4 text-[#777a80]" /> : index === 1 ? <FileText className="mr-2 size-4 text-[#777a80]" /> : <Lightbulb className="mr-2 size-4 text-[#777a80]" />}<b className="font-medium">{prompt}</b><ChevronRight className="ml-auto size-4 text-[#777a80]" /></div>)}</div>
       </section>
-      <div className="absolute inset-x-3 bottom-[101px] flex h-[102px] flex-col gap-1 rounded-[22px] border border-black/10 bg-white/70 p-1.5 backdrop-blur-xl">
-        <p className="flex min-h-10 items-start p-2 text-sm text-[#97999e]">{lang === "en" ? "Ask a question or organize notes into an article..." : "你可以提问或将记录整理为文章..."}</p>
-        <div className="flex h-11 items-center"><span className="flex size-10 items-center justify-center"><Plus className="size-5 text-[#7a7d82]" /></span><span className="flex size-10 items-center justify-center"><Bot className="size-5" /></span><ShieldQuestion className="ml-auto mr-6 size-[18px] text-[#74777d]" /><span className="flex size-10 items-center justify-center rounded-full bg-[#fafafa]"><Send className="size-[17px] text-[#8f9297]" /></span></div>
-      </div>
+      <NoteGenMobileChatProvider lang={lang} defaultSheet={chatState} {...chatProps}>
+        <div data-notegen-mobile-composer className="absolute inset-x-3 bottom-[101px] flex min-h-[102px] flex-col gap-1 rounded-[22px] border border-black/10 bg-white/70 p-1.5 backdrop-blur-xl">
+          <NoteGenMobileComposerMenu />
+          <NoteGenMobileContextStrip />
+          <NoteGenMobileTextInput />
+          <div className="flex h-11 items-center justify-between"><NoteGenMobileComposerLeading /><div className="flex items-center gap-2 pr-1"><NoteGenMobilePermissionButton /><NoteGenMobileSendButton /></div></div>
+        </div>
+      </NoteGenMobileChatProvider>
     </div>
   )
 }
@@ -297,12 +302,12 @@ export function NoteGenMobileGeneralSettings({ lang = "cn" }: { lang?: NoteGenRe
   )
 }
 
-export function NoteGenMobileReplica({ lang = "cn", screen = "capture" }: { lang?: NoteGenReplicaLanguage; screen?: NoteGenMobileScreen }) {
+export function NoteGenMobileReplica({ lang = "cn", screen = "capture", chatState, chatProps }: { lang?: NoteGenReplicaLanguage; screen?: NoteGenMobileScreen; chatState?: NoteGenMobileChatSheet; chatProps?: Omit<NoteGenMobileChatProps, "lang" | "defaultSheet"> }) {
   return (
     <NoteGenMobileFrame>
       <div className="relative flex h-full min-h-0 flex-col bg-white">
         <NoteGenMobileStatusBar />
-        {screen === "capture" ? <NoteGenMobileCapture lang={lang} /> : screen === "chat" ? <NoteGenMobileChat lang={lang} /> : screen === "writing" ? <NoteGenMobileWriting lang={lang} /> : screen === "canvas" ? <NoteGenMobileCanvas lang={lang} /> : screen === "me" ? <NoteGenMobileMe lang={lang} /> : screen === "settings" ? <NoteGenMobileSettings lang={lang} /> : <NoteGenMobileGeneralSettings lang={lang} />}
+        {screen === "capture" ? <NoteGenMobileCapture lang={lang} /> : screen === "chat" ? <NoteGenMobileChat lang={lang} chatState={chatState} chatProps={chatProps} /> : screen === "writing" ? <NoteGenMobileWriting lang={lang} /> : screen === "canvas" ? <NoteGenMobileCanvas lang={lang} /> : screen === "me" ? <NoteGenMobileMe lang={lang} /> : screen === "settings" ? <NoteGenMobileSettings lang={lang} /> : <NoteGenMobileGeneralSettings lang={lang} />}
         {screen === "settings" || screen === "settings-general" ? null : <NoteGenMobileDock screen={screen} lang={lang} />}
       </div>
     </NoteGenMobileFrame>

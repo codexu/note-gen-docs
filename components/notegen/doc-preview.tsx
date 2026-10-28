@@ -16,6 +16,7 @@ import {
   NoteGenUpdatePrompt,
 } from "@/components/notegen/feedback-replica"
 import { NoteGenMobileReplica, type NoteGenMobileScreen } from "@/components/notegen/mobile-replica"
+import type { NoteGenMobileChatProps, NoteGenMobileChatSheet } from "./mobile-chat-composer"
 import { NoteGenOrganizeNotesReplica } from "@/components/notegen/organize-notes-replica"
 import {
   NoteGenSettingsDetailReplica,
@@ -59,6 +60,8 @@ type NoteGenDocPreviewProps =
       lang?: NoteGenReplicaLanguage
       label?: string
       screen: NoteGenMobileScreen
+      chatState?: NoteGenMobileChatSheet
+      chatProps?: Omit<NoteGenMobileChatProps, "lang" | "defaultSheet">
     }
   | {
       kind: "settings"
@@ -183,7 +186,7 @@ export function NoteGenDocPreview(props: NoteGenDocPreviewProps) {
         <div className="mx-auto w-full max-w-[1120px]"><NoteGenEditorFeatureScene lang={lang} scene={props.scene} /></div>
       ) : props.kind === "mobile" ? (
         <div className="mx-auto w-full max-w-[320px]">
-          <NoteGenMobileReplica lang={lang} screen={props.screen} />
+          <NoteGenMobileReplica key={`${lang}-${props.screen}-${props.chatState ?? "closed"}`} lang={lang} screen={props.screen} chatState={props.chatState} chatProps={props.chatProps} />
         </div>
       ) : props.kind === "model-setup" ? (
         <NoteGenModelSetupScene key={`${lang}-${props.step}`} lang={lang} step={props.step} />

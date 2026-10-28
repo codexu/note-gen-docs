@@ -76,6 +76,8 @@ import {
   NoteGenGlobalSearch,
   NoteGenImageViewer,
   NoteGenMobileReplica,
+  noteGenComposerOptions,
+  type NoteGenMobileChatSheet,
   NoteGenRecordingOverlay,
   NoteGenRecordWorkspace,
   NoteGenReplicaFrame,
@@ -375,6 +377,15 @@ export function NoteGenComponentGallery({ lang }: { lang: NoteGenReplicaLanguage
         >
           <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {(["capture", "chat", "writing", "canvas", "me", "settings", "settings-general"] as const).map((screen) => <ComponentCard key={screen} title={`Mobile · ${screen}`} description={text("代码实时渲染", "Rendered live from code")}><NoteGenMobileReplica lang={lang} screen={screen} /></ComponentCard>)}
+            {(["tools", "model", "prompt", "mcp", "add", "resource", "skill", "command", "permission"] as NonNullable<NoteGenMobileChatSheet>[]).map(state => <ComponentCard key={`mobile-chat-${state}`} title={`Mobile chat · ${state}`} description={text("手机画面内的固定抽屉与候选列表", "Fixed drawer and picker states inside the phone")}><NoteGenMobileReplica lang={lang} screen="chat" chatState={state} /></ComponentCard>)}
+            <ComponentCard title="Mobile chat · no model" description={text("未配置模型时禁用添加入口并隐藏推理滑块", "Without a model, Add is disabled and reasoning is hidden")}><NoteGenMobileReplica lang={lang} screen="chat" chatState="tools" chatProps={{ hasModel: false, models: [] }} /></ComponentCard>
+            <ComponentCard title="Mobile chat · unsupported reasoning" description={text("模型不支持推理等级时不显示滑块", "Hide the slider when reasoning is unsupported")}><NoteGenMobileReplica lang={lang} screen="chat" chatState="tools" chatProps={{ reasoningSupported: false }} /></ComponentCard>
+            <ComponentCard title="Mobile chat · model next turn" description={text("运行中切换模型显示当前与下一轮模型", "While running, show the current and next-turn model")}><NoteGenMobileReplica lang={lang} screen="chat" chatState="tools" chatProps={{ running: true, activeModel: "model-a", model: "model-b" }} /></ComponentCard>
+            <ComponentCard title="Mobile chat · MCP empty" description={text("没有启用的 MCP 服务器", "No enabled MCP servers")}><NoteGenMobileReplica lang={lang} screen="chat" chatState="mcp" chatProps={{ servers: [] }} /></ComponentCard>
+            <ComponentCard title="Mobile chat · MCP connecting" description={text("连接中与已选择状态", "Connecting and selected states")}><NoteGenMobileReplica lang={lang} screen="chat" chatState="mcp" chatProps={{ servers: [{ id: "search", label: "Search", type: "sse", status: "connecting" }], selectedServerIds: ["search"] }} /></ComponentCard>
+            <ComponentCard title="Mobile chat · skills disabled" description={text("技能关闭后的候选空态", "Skill picker when Skills are disabled")}><NoteGenMobileReplica lang={lang} screen="chat" chatState="skill" chatProps={{ contextState: "disabled" }} /></ComponentCard>
+            <ComponentCard title="Mobile chat · loading" description={text("候选列表加载中", "Loading context choices")}><NoteGenMobileReplica lang={lang} screen="chat" chatState="resource" chatProps={{ contextState: "loading", options: [], loadingRotation: 0 }} /></ComponentCard>
+            <ComponentCard title="Mobile chat · all added" description={text("已添加所有可用资源", "All available resources already added")}><NoteGenMobileReplica lang={lang} screen="chat" chatState="resource" chatProps={{ defaultContexts: noteGenComposerOptions(lang) }} /></ComponentCard>
           </div>
         </GallerySection>
 

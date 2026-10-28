@@ -16,7 +16,7 @@ import type { NoteGenReplicaLanguage } from "./types"
 import { noteGenChatCss } from "./chat-replica-style"
 import { cn } from "@/lib/utils"
 
-export type NoteGenChatContext = { id: string; kind: "file" | "folder" | "record" | "canvas" | "skill" | "image"; label: string; description?: string; locked?: boolean }
+export type NoteGenChatContext = { id: string; kind: "file" | "folder" | "record" | "canvas" | "skill" | "image"; label: string; description?: string; locked?: boolean; scope?: "global" | "project" }
 export type NoteGenComposerMenu = "add" | "resource" | "skill" | "command" | "tools" | "permission" | null
 export type NoteGenPermissionMode = "read-only" | "ask" | "auto-edit"
 export type NoteGenComposerProps = {
@@ -69,8 +69,8 @@ export function noteGenComposerOptions(lang: NoteGenReplicaLanguage): NoteGenCha
     { id: "file:feedback", kind: "file", label: en ? "Feedback.md" : "使用反馈.md" },
     { id: "record:idea", kind: "record", label: en ? "Prototype feedback" : "原型反馈记录" },
     { id: "canvas:plan", kind: "canvas", label: en ? "Project roadmap" : "项目路线图" },
-    { id: "skill:meeting", kind: "skill", label: "meeting-notes", description: en ? "Summarize decisions and action items." : "整理讨论要点、决定与待办事项。" },
-    { id: "skill:writing", kind: "skill", label: "technical-writing", description: en ? "Write clear technical documents." : "编写清晰的技术文档。" },
+    { id: "skill:meeting", kind: "skill", label: "meeting-notes", scope: "global", description: en ? "Summarize decisions and action items." : "整理讨论要点、决定与待办事项。" },
+    { id: "skill:writing", kind: "skill", label: "technical-writing", scope: "project", description: en ? "Write clear technical documents." : "编写清晰的技术文档。" },
   ]
 }
 
@@ -78,12 +78,12 @@ export type NoteGenComposerOption = NoteGenChatContext | { id: string; kind: "co
 export function noteGenCommandOptions(lang: NoteGenReplicaLanguage): NoteGenComposerOption[] {
   const en = lang === "en"
   const rows = en ? [
-    ["summarize", "Summarize", "Extract key points and conclusions", "Summarize the following content and extract key points: "],
-    ["organize", "Organize into a note", "Create structured Markdown", "Organize the following into a structured Markdown note: "],
-    ["rewrite", "Polish", "Keep the meaning and improve the writing", "Polish the following content while preserving its meaning: "],
-    ["translate", "Translate", "Translate into a specified language", "Translate the following content into: "],
-    ["searchNotes", "Search notes", "Find relevant knowledge", "Search my notes and answer: "],
-    ["createNote", "Create note", "Create a structured Markdown note", "Create a Markdown note based on these requirements: "],
+    ["summarize", "Summarize", "Extract key points and conclusions", "Summarize the following content and extract the key points and conclusions:"],
+    ["organize", "Organize as note", "Create structured Markdown", "Organize the following content into a clear, structured Markdown note:"],
+    ["rewrite", "Polish", "Improve wording without changing meaning", "Polish the following content while preserving its meaning:"],
+    ["translate", "Translate", "Translate into a chosen language", "Translate the following content into:"],
+    ["searchNotes", "Search notes", "Find related content in your knowledge base", "Search my note knowledge base and answer:"],
+    ["createNote", "Create note", "Create a structured Markdown note", "Create a new Markdown note based on these requirements:"],
   ] : [
     ["summarize", "总结", "提炼重点和结论", "请总结以下内容，提炼重点和结论："],
     ["organize", "整理成笔记", "整理为结构清晰的 Markdown", "请将以下内容整理成结构清晰的 Markdown 笔记："],

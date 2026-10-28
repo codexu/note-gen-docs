@@ -94,6 +94,7 @@ import {
 } from "@/components/notegen-mobile-dock"
 import { CanvasThumbnail } from "@/components/home/canvas-thumbnail"
 import { NoteGenDesktopReplica } from "@/components/home/notegen-desktop-replica"
+import { NoteGenMobileChatProvider, NoteGenMobileComposerLeading, NoteGenMobileComposerMenu, NoteGenMobileContextStrip, NoteGenMobilePermissionButton, NoteGenMobileSendButton, NoteGenMobileTextInput } from "@/components/notegen/mobile-chat-composer"
 
 const desktopRecords = [
   ["语音", "西湖边想走慢一点", "曲院风荷、北山街和孤山安排在周六上午。", "刚刚"],
@@ -793,7 +794,7 @@ function MobileReplica() {
 
         <div className="absolute inset-0 rounded-[3rem] bg-[linear-gradient(135deg,#6a6a6f_0%,#202024_18%,#08080a_50%,#29292d_82%,#5b5b60_100%)] p-[3px] shadow-[0_30px_70px_-24px_rgba(0,0,0,0.75)]">
           <div className="notegen-mobile-replica relative isolate h-full transform-gpu overflow-hidden rounded-[2.82rem] border-[5px] border-[#111114] bg-background">
-            <div className="relative h-full w-full transform-gpu md:h-[125%] md:w-[125%] md:origin-top-left md:scale-[0.8]">
+            <div data-notegen-mobile-screen className="relative h-full w-full transform-gpu md:h-[125%] md:w-[125%] md:origin-top-left md:scale-[0.8]">
             <div className="pointer-events-none absolute left-1/2 top-2 z-[60] flex h-6 w-[5.25rem] -translate-x-1/2 items-center justify-end rounded-full bg-[#050507] px-2.5">
               <span className="size-1.5 rounded-full bg-[#111b24]" />
             </div>
@@ -973,6 +974,9 @@ function MobileRecordPage() {
 
 function MobileChatPage({ onComplete }: { onComplete: () => void }) {
   const { lang, text } = useDemoLanguage()
+  const [manualMode, setManualMode] = useState(false)
+  const [manualText, setManualText] = useState("")
+  const [manualStopped, setManualStopped] = useState(false)
   const [processOpen, setProcessOpen] = useState(true)
   const [ragOpen, setRagOpen] = useState(false)
   const [skillsOpen, setSkillsOpen] = useState(false)
@@ -1034,6 +1038,7 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
   const visibleEvents = agentEvents.filter((event) => elapsed >= event.start)
 
   useEffect(() => {
+    if (manualMode) return
     const startedAt = performance.now()
     const totalDuration = responseStart + responseLength * 26
     const timer = window.setInterval(() => {
@@ -1045,7 +1050,7 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
     }, 32)
 
     return () => window.clearInterval(timer)
-  }, [responseLength])
+  }, [responseLength, manualMode])
 
   useEffect(() => {
     const scrollArea = chatScrollRef.current
@@ -1059,10 +1064,10 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
   }, [processComplete])
 
   useEffect(() => {
-    if (!responseComplete) return
+    if (!responseComplete || manualMode) return
     const timer = window.setTimeout(onComplete, 2400)
     return () => window.clearTimeout(timer)
-  }, [onComplete, responseComplete])
+  }, [onComplete, responseComplete, manualMode])
 
   function formatDuration(duration: number) {
     return duration < 1000 ? `${Math.round(duration)}ms` : `${(duration / 1000).toFixed(1)}s`
@@ -1221,44 +1226,34 @@ function MobileChatPage({ onComplete }: { onComplete: () => void }) {
           </div> : null}
         </div>
         <div className="notegen-demo-chat-input absolute inset-x-3 z-50 pb-1">
-          <InputGroup className="mobile-dock-surface min-h-[82px] flex-col items-stretch gap-1 rounded-[1.35rem] p-1.5">
+          <NoteGenMobileChatProvider lang={lang} running={messageSent && !responseComplete && !manualStopped} value={manualMode ? manualText : (messageSent ? "" : composerText)} onValueChange={setManualText} onStop={() => { setManualStopped(true); setManualMode(true); setManualText("") }} onInteractionChange={active => { if (active && !manualMode) { setManualMode(true); setManualText(messageSent ? "" : composerText) } }}>
+          <InputGroup data-notegen-mobile-composer className="mobile-dock-surface min-h-[82px] flex-col items-stretch gap-1 rounded-[1.35rem] p-1.5">
+            <NoteGenMobileComposerMenu />
             {!messageSent && selectedContextCount > 0 ? (
               <ConversationContextStrip count={selectedContextCount} />
             ) : null}
+            <NoteGenMobileContextStrip />
             <div className="relative w-full">
-              {activeAssociation ? (
+              {!manualMode && activeAssociation ? (
                 <ComposerResourceMenu kind={activeAssociation.kind} />
               ) : null}
-              <InputGroupTextarea
-                aria-label={text("对话输入", "Chat input")}
-                placeholder={messageSent || composerText.length === 0 ? text("你可以提问或将记录整理为文章...", "Ask a question or organize records into an article...") : undefined}
-                value={messageSent ? "" : composerText}
-                readOnly
-                className="min-h-10 max-h-10 w-full px-2 py-2 text-sm placeholder:text-[13px]"
-              />
+              <NoteGenMobileTextInput readOnly={!manualMode} onFocus={() => { if (!manualMode) { setManualMode(true); setManualText(messageSent ? "" : composerText) } }} className="min-h-10 max-h-10 w-full px-2 py-2 text-sm placeholder:text-[13px]" />
             </div>
             <InputGroupAddon align="block-end" className="justify-between p-0">
-              <div className="flex items-center gap-1">
-                <InputGroupButton size="icon-sm" aria-label={text("添加附件", "Add attachment")}><PaperclipIcon /></InputGroupButton>
-                <InputGroupButton size="icon-sm" aria-label={text("选择工具", "Choose tool")}><ToolCaseIcon /></InputGroupButton>
-              </div>
+              <NoteGenMobileComposerLeading />
               <div className="flex items-center gap-2 pr-1">
-                <InputGroupButton size="icon-sm" aria-label={text("权限设置", "Permission settings")}><ShieldQuestionIcon /></InputGroupButton>
-                <InputGroupButton
-                  size="icon-sm"
-                  variant="secondary"
-                  aria-label={text("发送", "Send")}
-                  disabled={messageSent || !promptFullyTyped}
+                <NoteGenMobilePermissionButton />
+                <NoteGenMobileSendButton
+                  disabled={!manualMode ? (messageSent && !responseComplete ? false : messageSent || !promptFullyTyped) : undefined}
                   className={cn(
                     "transition-transform",
-                    !messageSent && elapsed >= messageSentAt - 160 && "scale-90"
+                    !manualMode && !messageSent && elapsed >= messageSentAt - 160 && "scale-90"
                   )}
-                >
-                  <SendIcon />
-                </InputGroupButton>
+                />
               </div>
             </InputGroupAddon>
           </InputGroup>
+          </NoteGenMobileChatProvider>
         </div>
       </div>
     </div>
