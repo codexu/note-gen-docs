@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckSquare, CopySlash, FilePlus, ImagePlus, Link, Mic, Minus, ScanText, Square, X } from "lucide-react"
+import { CheckSquare, Copy, CopySlash, FilePlus, ImagePlus, Link, Mic, Minus, ScanText, Square, X } from "lucide-react"
 
 import { NoteGenReplicaIconButton } from "@/components/notegen/replica-primitives"
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
@@ -34,7 +34,7 @@ export function NoteGenCaptureToolbar({ lang = "cn", onToolClick, showShortcutHi
   )
 }
 
-export function NoteGenWindowControls({ platform = "mac", className }: { platform?: NoteGenReplicaPlatform; className?: string }) {
+export function NoteGenWindowControls({ platform = "mac", maximized = false, className }: { platform?: NoteGenReplicaPlatform; maximized?: boolean; className?: string }) {
   return platform === "mac" ? (
     <div data-notegen-replica="window-controls" className={cn("flex shrink-0 items-center gap-2 px-3", className)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 10px" }} aria-hidden="true">
       <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#ff5f57" }} />
@@ -43,7 +43,7 @@ export function NoteGenWindowControls({ platform = "mac", className }: { platfor
     </div>
   ) : (
     <div className={cn("flex h-full shrink-0 items-stretch", className)} aria-hidden="true">
-      {[Minus, Square, X].map((Icon, index) => (
+      {[Minus, maximized ? Copy : Square, X].map((Icon, index) => (
         <span key={index} className="flex w-12 items-center justify-center text-muted-foreground">
           <Icon className={index === 1 ? "size-3.5" : "size-4"} />
         </span>

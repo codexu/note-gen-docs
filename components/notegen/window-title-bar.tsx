@@ -14,6 +14,7 @@ export type NoteGenTitleBarProps = {
   lang: NoteGenReplicaLanguage
   mode?: NoteGenTitleBarMode
   platform?: NoteGenReplicaPlatform
+  maximized?: boolean
   view?: NoteGenReplicaView
   onViewChange?: (view: NoteGenReplicaView) => void
   panels?: NoteGenReplicaPanelVisibility
@@ -30,7 +31,7 @@ export type NoteGenTitleBarProps = {
 }
 
 export function NoteGenWindowTitleBar({
-  lang, mode = "full", platform = "mac", view = "workspace", onViewChange,
+  lang, mode = "full", platform = "mac", maximized = false, view = "workspace", onViewChange,
   panels = { left: true, center: true, right: true }, onPanelToggle,
   pinned = false, onPinnedChange, showShortcutHints = false, hasUpdate = false, onCaptureToolClick,
   leftSlot, centerSlot, rightSlot, className,
@@ -71,7 +72,7 @@ export function NoteGenWindowTitleBar({
             {hasUpdate && view !== "settings" ? <span className="pointer-events-none absolute right-1 top-1 size-2 rounded-full bg-destructive" /> : null}
           </span>
         </div>
-        {platform !== "mac" ? <NoteGenWindowControls platform={platform} /> : null}
+        {platform !== "mac" ? <NoteGenWindowControls platform={platform} maximized={maximized} /> : null}
       </> : <div className="flex-1" aria-hidden="true" />}
     </header>
   )

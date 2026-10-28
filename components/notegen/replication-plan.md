@@ -144,3 +144,119 @@
 报错修正：官网安装的 lucide-react 0.536.0 不导出应用新版使用的 `TagPlus`。已通过该版本现有的 `createLucideIcon` 定义本地 `tag-plus-icon.tsx`，替换桌面与独立记录侧栏的两个引用，未升级依赖。通过读取安装包声明核对导出，页面尚未重新运行验证。
 
 下一次执行时更新应用/官网 SHA 与观察日期，按上次**真正完成的源码基线**比较提交；不得把本方案调研 SHA 当作已经实施的同步点。视觉尚未验收的项保留状态，不因代码完成自动标为完美复刻。
+
+### 2026-10-27 全组件源码巡检
+
+本轮为检查与差异整理，**未修改复刻组件代码，未更新任何实施完成基线**。下面的“待同步”不能理解为已经完成。本节更新此前方案中的候选名单；历史实施记录继续保留。
+
+#### 观察基线与范围
+
+- 应用 HEAD：`750cd7383317471d2d45d05efacf63e60d767e52`；该提交的 Tauri 版本为 **0.39.0**。本地 `src-tauri/tauri.conf.json` 有未提交修改，显示 **0.39.1**，不能将工作区版本当成正式发布版本。
+- 官网修改前 HEAD：`fb6df858e552dda86e7479d8dba5afd9a8c816b1`，开始检查时工作区干净。
+- 应用原有未提交变化涉及 `package.json`、锁文件、Tauri 配置与插件宿主、Markdown 导出/公式/高亮/渲染器、插件嵌入视图及 `src/lib/markdown/`。应用仓库全程只读。近期界面变化主要依据已提交源码；上述进行中的改动不作为稳定复刻目标。
+- 已覆盖公共导出、桌面首页/文档/画廊调用，及外壳、记录、标签、文件/编辑器、Agent、Skills、设置、移动端、画布、记忆、同步和发布扩展的源码入口。对明显变化深入阅读结构、样式及可见性条件；没有逐状态运行所有功能。
+- 查阅 `3144e326` 之后的差异用于回看外壳和旧缺项；查阅 `eee8a65c`（v0.39.0 发布提交）之后的差异定位最新变化。二者都不是整套复刻已完成的统一基线；此前只存在分功能族实施记录。
+- 无本轮应用实机截图，系统、窗口尺寸、主题和运行状态均未采样。以下全部属于源码巡检，像素与浮层几何未验证。不启动服务器，不运行测试、Lint、类型检查或构建。
+
+#### 已确认的差异
+
+优先级：P1 为首页/文档常见界面或核心交互已经落后；P2 为专用状态、条件入口或原有缺项。来源路径相对应用根目录，拟修改路径相对官网根目录。所有项目当前均为**待同步**。
+
+| 编号 / 优先级 | 来源路径 / 提交 | 现有复刻 | 当前目标可见状态 | 拟修改文件 | 验收条件 |
+| --- | --- | --- | --- | --- | --- |
+| A01 / P1 | `main/main-status-bar.tsx`、`main/status-bar-order.tsx`；`6cc5e5dd` | `NoteGenMainStatusBar` 仍为 `h-6 min-h-6 px-1`；编辑器工具紧随工作区；独立文档同步扩展未接回全景 | 外栏改为 `h-7 min-h-7 px-2`，默认弹性空隙位置按当前 rank 与各 portal 的顺序组合；支持当前文档同步入口 | `app-shell-replica.tsx`、`sync-release-replica.tsx` 及完整桌面调用 | 默认顺序和 28px 高度与源码相符；写作/记录/画布切换后工具出现条件正确；窄屏不挤坏控件 |
+| A02 / P1 | `main/left-sidebar.tsx`、`setting/editor/outline.tsx`、`editor/markdown/outline.tsx`；`04aec9ca` | 共享侧栏工作区类型仅 writing/records/canvas；设置仅“显示大纲”；发布扩展虽有大纲，完整场景未接入 | `outlinePlacement === 'sidebar'` 时才增加大纲入口；隐藏常规文件操作；没有活动编辑器时显示空态；编辑器位置模式保留启用及左/右选择 | `workspace-switcher.tsx`、`settings-data.ts`、`settings-replica.tsx`、`components/home/notegen-desktop-replica.tsx`；复用 `editor-release-replica.tsx` 的已有展示数据 | 编辑器内/侧栏两种位置、左/右、无文档空态分别有固定场景；不能把条件入口永久显示 |
+| A03 / P1 | `chat/attachment-add-menu.tsx`、`chat-composer-menu.tsx`、`chat-input.tsx`；`1d7f150c` | 独立 Agent 用回形针；首页和 Skills 场景只有加号，无新版添加菜单；文件夹引用另有专用扩展 | 上方分组菜单：图片/文件/文件夹，再到资源 `@` / 技能 `/`；资源和技能选择排除已关联项；空输入起始处 Backspace 每次移除最后一项上下文 | `agent-replica.tsx`、共享 composer（可新增）、桌面 AgentPanel、`skill-agent-replica.tsx`、`chat-folder-replica.tsx` | 五个入口顺序、说明与快捷键正确；菜单在复刻容器内；引用去重和逐项删除只转换本地状态 |
+| A04 / P1 | `chat/chat-tools-popover.tsx`、`chat-tool-item.tsx`、model/prompt/reasoning-select 与 `clipboard-monitor.tsx`；`1d7f150c` | 模型/权限小胶囊和空工具箱图标不能表达新版工具面板 | 320px 工具面板，分“对话”与“扩展”；模型、提示词、推理强度、MCP、剪贴板以标题/说明/当前值和右箭头呈现；MCP 使用嵌套面板 | 同 A03；`model-settings-replica.tsx` 中的模型选择场景需核对调用后复用 | 面板及子层的顺序、当前值、计数、可滚动区域完整；保留模型菜单和赞助额度已有状态 |
+| A05 / P1 | `chat/agent-run-timeline.tsx`、`agent-display-utils.ts`、`chat.css`；`c46e8549` | 画廊是固定三卡片；首页是“已处理 + 4 行工具”；Skills 场景又独立绘制过程 | 按运行轨迹分段/分组展示，可展开事件的摘要、参数与结果；审批/提问/交互 UI 属于对应事件；处理中、完成、失败和停止各有展示 | `agent-replica.tsx`、桌面 AgentPanel、`skill-agent-replica.tsx`、`mcp-record-workspace.tsx` 等共享调用 | 固定轨迹可重放相同展开状态；历史折叠与当前等待状态正确；运行标题效果可由影片控制，不引入独立随机时钟 |
+| A06 / P1 | `chat/agent-approval-panel.tsx`、`components/chat-ui/approval-ui.tsx`、`agent-run-timeline.tsx`；`c46e8549` | 独立 Agent 仍是黄色“允许/拒绝”卡；更新与安装审批始终铺开字段，按钮位置和内容各自绘制 | 紧凑 Card 头部包含摘要、参数展开、取消、条件性的本对话授权和单次确认；警告保持可见，详情可折叠；历史只读卡隐藏操作 | `agent-replica.tsx`、`agent-update-approval-replica.tsx`、`skill-agent-replica.tsx` | 待确认/已确认/取消、只读历史、有/无会话授权、有/无风险警告都有固定状态；不可只替换颜色 |
+| A07 / P1 | `chat/agent-question-panel.tsx`、`components/chat-ui/question-ui.tsx`；`c46e8549` | 仅 Skills 候选单选卡；没有通用多题、多选、取消或历史回答；候选组件本身的单选即提交方向仍成立 | 题号、单/多选类型、选项描述、取消；单选立即推进，多选显式完成；历史展示选中/未作答/取消，内嵌时间线 | `skill-agent-replica.tsx`，新增共享提问部件并接入 Agent 时间线 | 单题单选、两题切换、多选未选择禁用、取消和只读结果分别可展示；保留旧 `onSelect` 兼容 |
+| A08 / P1 | `components/chat-ui/chat-response.tsx`、`chat-ui-registry.tsx`、response-content/controls；`1db0b9c2` | 默认回复是文本/Markdown，`result: ReactNode` 虽可注入内容，但没有对应的固定交互 UI 场景 | 最终结构化回复中的卡片、表格、来源、步骤、Tabs/Accordion、操作按钮，以及流式未完成和失败回退；工具进度与表单仍留在时间线 | 新增展示组件，接入 `agent-replica.tsx`、画廊、必要的 `doc-preview.tsx` / MDX 注册 | 固定数据和本地回调复刻代表性布局，不导入 JSON 渲染运行时、store 或实际服务；流式态和完成态可独立控制 |
+| A09 / P2 | `components/markdown/artifact-link.tsx`、`remark-artifacts.ts`、chat-ui 的 artifact 控件；`2ac8f8fb` | 没有专用的对话生成文件入口和另存状态 | Markdown 中内联文件链接 + 相邻下载按钮；打开/另存忙碌、部分文件提示、错误；移动端禁用桌面操作并给出提示 | 共享文件结果部件、Agent 固定示例及移动场景 | 文件名、按钮及禁用/处理中展示准确；点击只触发演示回调，不读写磁盘 |
+| A10 / P1 | `chat/message-control/index.tsx`、各 control、`chat-content.tsx`；`c46e8549` | 独立 Agent 是复制/插入小条；首页回复没有操作栏；Skills 场景图标常驻 | 元信息与操作分列；常规回复操作包括复制、翻译、朗读、删除，附加操作取决于消息；最后一条助手消息可见，较早助手消息按 hover/focus 或移动端显式状态显示 | `agent-replica.tsx`、桌面 AgentPanel、`skill-agent-replica.tsx`、`mcp-record-workspace.tsx` | 最后一条/历史条目、桌面悬停/键盘聚焦、移动可见状态一致；避免把所有消息都设成常驻工具栏 |
+| A11 / P1 | `setting/skills/components/skills-settings.tsx`、recommended-skills/install-dialog；`764392a5` | 工作区在上、全局在下，同时展示两组；无发现页 | “全局 / 工作区 / 发现”三个标签及数量，默认全局；发现页的加载、失败、空列表、推荐卡、已安装与安装范围确认 | `skills-settings-replica.tsx`、`settings-replica.tsx`、画廊 | 默认全局、单页显示及计数正确；推荐数据固定；安装仅作模拟；旧 `projectSkills/globalSkills` props 继续可用 |
+| A12 / P2 | `setting/skills/components/skill-card.tsx`、`skill-environment-dialog.tsx`；`cdfeed06` | 卡片只有名称、描述、开关、删除 | 按脚本与平台条件展示运行环境状态/入口；环境弹窗列出 Python、Node、npm 及所需系统命令，版本/缺失、安装依赖、刷新、错误和移动端提示 | `skills-settings-replica.tsx`，可新增环境展示部件 | 无脚本技能不误显示环境控制；可用/缺失/安装中/错误/移动提示都有固定示例，不检测用户实际环境 |
+| A13 / P2 | `components/title-bar.tsx`；`c8e328bc` | Windows/Linux 的最大化按钮始终是 Square；无最大化状态 prop | 最大化后切为还原图标 Copy；普通窗口为 Square；mac 红绿灯保持平台专用 | `chrome-controls.tsx`、`window-title-bar.tsx`、外壳 props | Windows/Linux 普通与最大化两种场景；新增可选 prop，旧调用默认行为兼容 |
+| A14 / P2（原有缺项） | `setting/config.tsx`、`components/settings-dialog.tsx`、plugins 设置目录 | 复刻设置仍写 0.36.0，缺少 plugins ID 与扩展分组；旧方案曾列 readAloud 缺项 | 版本由集中场景数据提供；跟随当前配置补插件入口及专用展示。**当前桌面 config 没有独立 readAloud 项，不能仅因页面文件存在就新增侧栏项** | `settings-data.ts`、`settings-replica.tsx`、README | 两套设置版本文案统一；分组顺序与平台/开发者条件入口按当前源码；历史视频可显式传旧版本 |
+| A15 / P2（原有缺项） | `editor/tab-bar.tsx`、`browser-panel.tsx`、插件 editor 入口 | 基础 tabs 只显示文件；完整场景有记录/画布但缺浏览器、插件、只读；Skills 场景另画 tabs | 多类型标签及只读；浏览器起始/加载/内容/错误，插件面板/终端使用固定数据；现有多类型部分继续复用 | `file-editor-replica.tsx`、桌面 SharedEditorTabs、`skill-agent-replica.tsx`，浏览器/插件专用组件 | 不能将 `NoteGenToolCall type="terminal"` 视为已实现终端；旧文件 tab 导出保持兼容，不重画全部场景 |
+| A16 / P2（分叉） | `editor/markdown/bubble-menu.tsx`、`color-menu.tsx`、outline/table 部件 | 发布扩展已有文字颜色/高亮/标题/表格/侧栏大纲；基础 BubbleMenu 和 AISelection 仍是较旧工具集合 | 复用已存在的发布状态，补齐通用工具栏的块类型、文字颜色和多色高亮；大纲接回 A02 | `file-editor-replica.tsx`、`editor-ai-selection-replica.tsx`、`editor-release-replica.tsx` | 不重复开发“缺失颜色菜单”；同状态下发布扩展、文档选区和全景工具一致；按真实自然尺寸展示 |
+| A17 / P2 | `mobile/chat/components/chat-tools-drawer.tsx`、model/prompt/mcp-selector、共用 attachment-add-menu；`1d7f150c` | 文档/画廊移动聊天仍用 Bot 图标；首页有另一套 MobileChatPage；无新分组抽屉 | ToolCase 触发器，移动抽屉中分“对话 / 扩展”，模型/提示词/推理/MCP 用新行结构；添加资源/技能使用移动抽屉 | `mobile-replica.tsx`、`components/home/note-gen-demo.tsx` 中当前仍使用的 MobileReplica | 不能只改桌面；首页和文档两份实际移动调用都核对；抽屉使用手机坐标与安全区 |
+
+#### 已有能力与未发现新增主结构变化的范围
+
+以下只说明源码调查结果，不表示该族所有视觉细节已经验收。
+
+| 范围 | 本轮结论 |
+| --- | --- |
+| 标签管理 | `tag-manage.tsx`、`record-tag-tree.ts` 从既有 `3144e326` 基线到当前 HEAD 未变；层级树、后代去重计数、删除保护已有共享实现，不应重复重做。 |
+| 记录创建 | 发布扩展已覆盖保存到/新标签/选中标签/快捷记录/保存后；v0.39.0 发布提交之后 `main/mark/` 无新增差异。没有由此推断详情、筛选和移动记录都已完全一致。 |
+| 画布与图表 | `main/canvas/` 在上述旧基线后无提交差异；已有通用 canvas 和细化 chart workspace。保持其固定场景，接入全局状态栏时受 A01 影响。 |
+| 记忆 | `components/memories/` 与 `setting/memories/` 在上述旧基线后无提交差异；专用记忆复刻已存在。 |
+| 同步 | v0.39.0 之后 `setting/sync/` 无提交差异；已有切换、恢复、工作区绑定、文档同步扩展。重点是 A01 的全景整合，不能把专用扩展误判成全景已同步。 |
+| 编辑器发布功能 | `editor-release-replica.tsx` 已覆盖 color/outline/table/heading；`editor-review-release-replica.tsx` 已覆盖长文档与结构化修改预览。问题主要是 A02/A16 的共享接入与旧工具栏分叉。 |
+| 模型与赞助额度 | 已有独立模型设置、模型菜单、Token 额度示例和 context ring；本次不能退回旧“每日次数”样例。新增差异集中在 A04 的工具面板入口和排列。 |
+| 图像编辑 | `image-editor.tsx` 近期差异主要涉及换文件、外部同步与保存校验，未据此发现必须重画的主工具栏；现有 ImageViewer 不能据名推断已实现完整裁剪编辑器。 |
+| 插件代码块 | 已有固定 Graphviz 源码/预览/导出扩展。应用本地插件与 Markdown 渲染仍有进行中的改动，稳定后再逐状态核对，当前不跟随改写。 |
+| 空白聊天 | 已有共享淡网格/渐隐/快速开始/最近对话；保留，不能用更新回复结构的理由退回纯色空白。 |
+
+#### 建议实施顺序与兼容方式
+
+1. **外壳、侧栏与设置基础**：A01/A02/A13/A14。把版本改成可覆盖的集中样例；大纲可见性通过可选 props 表达，不破坏当前 writing/records/canvas 调用。
+2. **统一聊天部件**：先抽共享输入框、工具面板、消息操作和时间线，再覆盖 A03–A10。独立 Agent、桌面 AgentPanel、Skills 与 MCP 场景复用；保留现有公开导出和调用默认值。时间线/消息数据由场景提供，不把运行时逻辑搬进官网。
+3. **Skills**：A11/A12。保持现有数据 props，增加可选的 tab、推荐列表、环境状态与回调；旧视频需要原布局时用明确的历史展示状态，不能无说明地改变其固定镜头。
+4. **编辑器和条件功能**：A15/A16。复用已有发布扩展，不再为相同菜单生成第三份实现。
+5. **移动与接入**：A17 与对应新增状态加入中英文画廊；需要文档使用的才扩展 preview kind 和 MDX 注册。首页移动实际函数仍在使用，不能删掉后只改共享移动组件。
+
+人工验收清单（未执行）：在相同语言、主题、平台、尺寸、展开状态下，对照完整桌面与局部画廊；切换三面板/双面板、侧栏大纲、工具菜单及内嵌审批/问题；检查长英文、窄容器、浮层缩放、禁用态及移动安全区。所有新状态用固定数据，不运行真实安装、AI、文件或同步操作。
+
+本轮交付仅为以上差异清单。没有组件实施、截图验收、提交、推送或发布。
+
+### 2026-10-01 实施记录：层级标签管理
+
+来源仍为应用基线 `3144e326311f9002a6609a429c65cc7b390bc67b`；定位依据 `538329da`（多标签与层级管理）、`ad9786d4`（删除保护），正式实现对照 `src/app/core/main/mark/tag-manage.tsx`、`src/lib/record-tag-tree.ts` 与 `src/db/tags.ts`。
+
+| 旧复刻 | 已实施目标与文件 | 验收条件 / 状态 |
+| --- | --- | --- |
+| 桌面按标签分组展开记录；独立侧栏使用横向标签条 | 新增 `tag-management-replica.tsx`，桌面场景与 `record-replica.tsx` 共用上树下列表；固定三级示例 | 代码完成，视觉未验收 |
+| 固定标签计数，选标签不筛选 | 多路径关联、父级按记录 ID 去重汇总、选择后筛选下方列表 | 静态逻辑核对，交互未运行验证 |
+| 无层级管理演示 | 根/子标签创建、父级重命名联动子级、同级排序、受保护删除；隐式父节点只在用户选择时本地实体化 | 代码完成，交互未运行验证 |
+| 无上下分区控制 | 默认标签区域 35%，鼠标拖动或键盘调整，双击收起，按钮恢复 | 代码完成，尺寸未实图对照 |
+| 文档仍描述单标签、删除标签会删记录 | 更新中英文记录文档及画廊介绍，保留已有 MDX preview kind 和 TagChip 导出 | 调用与内容静态核对完成 |
+
+人工验收（尚未执行）：
+
+1. 完整桌面选择“旅行”和“杭州旅行”，数量应为 4 而非各子级之和；第一条示例同时属于“路线”和“参考资料”。点击叶子仅显示对应记录。
+2. 展开/收起任意层级；拖动分隔条，双击收起后恢复；键盘聚焦分隔条用上下键调整、Enter 收起/展开。
+3. 点击顶部新建标签，输入 `项目/官网/文档`；检查空段和重名报错。右键添加子标签；重命名父级后检查子级路径与记录归属同步变更。
+4. 同级上移/下移；默认标签的重命名/删除与有子标签节点的删除应禁用。删除叶子只移除标签，记录仍保留在其他关联标签或默认标签中。
+5. 中英文记录画廊、文档记录预览、首页记录场景和剪藏下载页均检查；本批未改移动端专用抽屉、详情多标签编辑器或复杂筛选规则。
+
+没有运行测试、Lint、类型检查、构建或开发服务器；未获取应用截图，不报告像素级一致性。右键菜单使用现有 Radix 依赖，表单沿用本站 Dialog/Input，无新增运行依赖。
+
+报错修正：官网安装的 lucide-react 0.536.0 不导出应用新版使用的 `TagPlus`。已通过该版本现有的 `createLucideIcon` 定义本地 `tag-plus-icon.tsx`，替换桌面与独立记录侧栏的两个引用，未升级依赖。通过读取安装包声明核对导出，页面尚未重新运行验证。
+
+下一次执行时更新应用/官网 SHA 与观察日期，按上次**真正完成的源码基线**比较提交；不得把本方案调研 SHA 当作已经实施的同步点。视觉尚未验收的项保留状态，不因代码完成自动标为完美复刻。
+
+### 2026-10-27 实施记录：共享外壳同步
+
+本批按用户指令先实施共享外壳。源码基线仍为 `750cd7383317471d2d45d05efacf63e60d767e52`，官网开始实施前 HEAD 仍为 `fb6df858e552dda86e7479d8dba5afd9a8c816b1`；保留本轮前面的检查记录及应用所有原有改动。以下状态覆盖前述巡检表中对应项的“待同步”，不把未涉及的功能族标为完成。
+
+| 项目 | 本批实际变更 | 状态与剩余边界 |
+| --- | --- | --- |
+| A01 状态栏 | `app-shell-replica.tsx` 改 28px 和 px-2；工作区后加弹性空隙，编辑器工具/插件/字数/条件历史后再到模型与提示词。同步触发器补状态文字和 ChevronUp（上轮巡检遗漏的源码变化）。新增容器内概览；`sync-overview-replica.tsx` 的文档卡片同时接入全景与发布扩展，保留原公开导出。移除常驻“配置同步”，改到概览内按状态展示。 | 主要布局与文档卡代码完成；源码与调用静态复核。未重做自由拖拽排序、完整同步队列与平台恢复详情；非写作工具组仍沿用已有 canvasControls 接口。 |
+| A02 大纲 | 新增共享 `outline-replica.tsx`，复用中英文完整正文对应的固定标题；搜索、折叠、选中和文内定位均为本地行为。侧栏入口由 placement 决定，选中时隐藏常规操作，无可视化文档时显示空态。编辑器内左右位置和底栏显隐按钮接入；设置条件控制与完整场景联动。旧 workspace 联合类型与回调保持不变。 | 本批目标状态代码完成，尚未运行或实图验收；未模拟标题拖拽排序、滚动自动跟踪、面板拖动改宽。 |
+| A13 平台窗口图标 | `NoteGenWindowControls`、标题栏与桌面 props 增加可选 maximized；Windows/Linux 最大化场景用 Copy 还原图标。 | 代码完成；纯展示，不操控系统窗口。mac 红绿灯沿用已有实现。 |
+| A14 设置基础 | 新增 `replica-baseline.ts` 集中默认示例版本 0.39.0，多种设置入口可覆盖 version；修正两处 0.36.0。补扩展分组、Plugins ID/入口及已安装为空的固定展示；未凭 readAloud 页面文件新增桌面侧栏项。设置更新点默认不再常驻。 | **部分完成**。插件发现/市场、更新、开发者页及权限状态仍待专用组件实施；本批静态标签不宣称可操作。 |
+| 首页/画廊/文档兼容 | 完整桌面/文档复用现有入口；画廊新增左右大纲、侧栏大纲、空态、大纲设置、平台普通/最大化和同步概览固定场景。公开导出补齐；Settings 既有 kind 可接受新增 section。Skills 场景的底栏样式选择器适配新的容器。 | 调用与 props 静态复核完成；未新增依赖或启动预览。 |
+
+人工验收步骤（尚未执行）：
+
+1. 打开中英文组件画廊的窗口工具栏区，比较 Windows/Linux 普通与最大化两行；普通为 Square、最大化为 Copy，mac 红绿灯不受影响。
+2. 在完整桌面切换记录、写作、画布，检查底栏 28px、两处空隙、插件/字数/模型位置与窄屏滚动。点击同步入口，检查圆点、文字、展开箭头，Escape/点外部关闭；配置同步进入设置的同步页。
+3. 检查固定“已同步 + 当前文档”场景：文件名、更多菜单中上传/获取顺序；检查 checking/syncing 的文档操作禁用。所有回调只用于演示，不会发起同步。
+4. 在设置 → 编辑器中切换大纲区域。编辑器内模式才展示默认启用和左右位置，未启用时位置控件禁用；侧栏模式出现第四个入口。返回完整场景检查位置与底栏按钮联动。
+5. 在侧栏大纲搜索并清空，展开/收起二级标题，点击标题检查正文定位。切换记录或画布后再次点击大纲，检查无活动 Markdown 文档空态与常规操作隐藏。固定左右编辑器场景检查正文滚动和英文长标题换行。
+6. 设置搜索“插件”能到达扩展分组；关于页默认显示 0.39.0，传入历史 version 时同步显示覆盖值。检查首页、文档、画廊的同一外壳；新旧发布文档同步场景共用底栏和文档卡。
+7. 在相同系统、尺寸、主题和状态获取应用/复刻截图后，复核浮层遮挡、放大、位置、字体和面板比例；本批没有截图证据，不声称像素级一致。
+
+未运行测试、Lint、类型检查、构建或开发服务器；未提交、推送或发布。A03–A12、A15–A17 仍待后续按巡检顺序实施；A16 已有颜色/表格/标题扩展继续保留。本批没有将上述状态改为完成。

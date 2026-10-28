@@ -1,7 +1,7 @@
 "use client"
 
-import type { CSSProperties, ReactNode } from "react"
-import { Bot, ChevronDown, ChevronsUpDown, Code2, Copy, Download, Eye, FolderOpen, Grid3X3, List, Magnet, Maximize2, Settings2, Sparkles, WandSparkles, ZoomOut } from "lucide-react"
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react"
+import { Bot, ChevronDown, ChevronUp, ChevronsUpDown, Code2, Copy, Download, Eye, FolderOpen, Grid3X3, List, Magnet, Maximize2, History, Sparkles, WandSparkles, ZoomOut } from "lucide-react"
 
 import type { NoteGenReplicaPlatform } from "@/components/notegen/chrome-controls"
 import { NoteGenReplicaFrame } from "@/components/notegen/replica-primitives"
@@ -9,6 +9,7 @@ import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
 import { NoteGenWindowTitleBar, type NoteGenTitleBarProps } from "@/components/notegen/window-title-bar"
 import type { NoteGenWorkspace } from "@/components/notegen/workspace-switcher"
 import { cn } from "@/lib/utils"
+import { NoteGenSyncOverview, type NoteGenDocumentSyncFixture } from "./sync-overview-replica"
 
 // Preserve the original public imports while sharing one implementation.
 export { NoteGenCaptureToolbar, NoteGenWindowControls } from "@/components/notegen/chrome-controls"
@@ -47,19 +48,21 @@ export function NoteGenUnifiedSyncIndicator({ lang = "cn", state = "local", rece
     "--notegen-sync-busy": "hsl(38 92% 50%)",
   } as CSSProperties
   return (
-    <span role="status" tabIndex={0} aria-label={description} title={description} data-sync-state={state} style={{ ...syncColors, display: "inline-flex", width: 24, height: 24, flexShrink: 0, alignItems: "center", justifyContent: "center" }} className="flex size-6 shrink-0 items-center justify-center rounded-sm outline-none focus-visible:ring-1 focus-visible:ring-ring">
+    <span role="status" aria-label={description} title={description} data-sync-state={state} style={syncColors} className="inline-flex h-6 shrink-0 items-center justify-center gap-1.5 rounded-sm px-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring">
       <span aria-hidden="true" style={{ display: "block", width: 8, height: 8, borderRadius: "50%", background: state === "local" || state === "not-configured" ? "color-mix(in srgb, var(--color-muted-foreground, #a1a1aa) 50%, transparent)" : state === "unavailable" || state === "failed" ? "var(--color-destructive, #ef4444)" : state === "checking" || state === "syncing" ? "var(--notegen-sync-busy)" : "var(--notegen-sync-ready)" }} className={cn("size-2 rounded-full", state === "local" || state === "not-configured" ? "bg-muted-foreground/50" : state === "unavailable" || state === "failed" ? "bg-destructive" : state === "checking" || state === "syncing" ? "bg-[var(--notegen-sync-busy)]" : "bg-[var(--notegen-sync-ready)]")} />
+      <span>{label}</span><ChevronUp className="size-3" aria-hidden="true" />
     </span>
   )
 }
 
-function StatusItem({ icon: Icon, label, endIcon: EndIcon }: { icon: typeof Bot; label: string; endIcon?: typeof Bot }) {
+function StatusItem({ icon: Icon, label, endIcon: EndIcon, onClick, active }: { icon: typeof Bot; label: string; endIcon?: typeof Bot; onClick?: () => void; active?: boolean }) {
+  const Tag = onClick ? "button" : "span"
   return (
-    <span title={label} className="inline-flex h-5 min-w-0 shrink-0 items-center gap-1 px-1.5">
+    <Tag title={label} onClick={onClick} aria-pressed={onClick ? active : undefined} className="inline-flex h-6 min-w-0 shrink-0 items-center gap-1 px-1.5">
       <Icon className="size-3 shrink-0" />
       <span className="truncate">{label}</span>
       {EndIcon ? <EndIcon className="size-3 shrink-0 opacity-50" /> : null}
-    </span>
+    </Tag>
   )
 }
 
@@ -75,23 +78,48 @@ export type NoteGenMainStatusBarProps = {
   modelControl?: ReactNode
   canvasControls?: ReactNode
   promptLabel?: string
+  currentDocument?: NoteGenDocumentSyncFixture
+  syncPopoverOpen?: boolean
+  onSyncPopoverOpenChange?: (open: boolean) => void
+  onConfigureSync?: () => void
+  onDocumentSyncAction?: (action: "sync" | "upload" | "download") => void
+  showSyncHistory?: boolean
+  showOutlineToggle?: boolean
+  outlineOpen?: boolean
+  onToggleOutline?: () => void
   className?: string
 }
 
 export function NoteGenMainStatusBar({
   lang = "cn", workspace = "writing", workspaceName, syncState = "local",
-  recentSyncActivity, pluginSlot, characterCount = 862, modelLabel = "GPT-5", modelControl, canvasControls, promptLabel, className,
+  recentSyncActivity, pluginSlot, characterCount = 862, modelLabel = "GPT-5", modelControl, canvasControls, promptLabel, currentDocument, syncPopoverOpen, onSyncPopoverOpenChange, onConfigureSync, onDocumentSyncAction,
+  showSyncHistory = false, showOutlineToggle = true, outlineOpen = false, onToggleOutline, className,
 }: NoteGenMainStatusBarProps) {
   const en = lang === "en"
+  const [localSyncOpen, setLocalSyncOpen] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
+  const syncOpen = syncPopoverOpen ?? localSyncOpen
+  const setSyncOpen = (open: boolean) => { if (syncPopoverOpen === undefined) setLocalSyncOpen(open); onSyncPopoverOpenChange?.(open) }
+  useEffect(() => {
+    if (!syncOpen) return
+    const outside = (event: PointerEvent) => { if (event.target instanceof Node && !root.current?.contains(event.target)) setSyncOpen(false) }
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setSyncOpen(false) }
+    document.addEventListener("pointerdown", outside)
+    document.addEventListener("keydown", escape)
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape) }
+  }, [syncOpen, syncPopoverOpen, onSyncPopoverOpenChange])
   return (
-    <footer data-notegen-replica="status-bar" className={cn("flex h-6 min-h-6 shrink-0 items-center gap-2 overflow-x-auto overflow-y-hidden border-t bg-background px-1 text-xs text-muted-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden", className)}>
-      <NoteGenUnifiedSyncIndicator lang={lang} state={syncState} recentActivity={recentSyncActivity} />
+    <div ref={root} className="relative shrink-0" data-notegen-replica="status-bar-container">
+    {syncOpen ? <NoteGenSyncOverview lang={lang} state={syncState} currentDocument={currentDocument} recentActivity={recentSyncActivity} onClose={() => setSyncOpen(false)} onConfigure={() => { setSyncOpen(false); onConfigureSync?.() }} onDocumentAction={onDocumentSyncAction} /> : null}
+    <footer data-notegen-replica="status-bar" className={cn("flex h-7 min-h-7 shrink-0 items-center gap-2 overflow-x-auto overflow-y-hidden border-t bg-background px-2 text-xs text-muted-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden", className)}>
+      <button type="button" aria-expanded={syncOpen} aria-label={en ? "Sync overview" : "同步概览"} onClick={() => setSyncOpen(!syncOpen)} className="shrink-0 rounded hover:bg-muted"><NoteGenUnifiedSyncIndicator lang={lang} state={syncState} recentActivity={recentSyncActivity} /></button>
       <StatusItem icon={FolderOpen} label={workspaceName ?? (en ? "Local workspace" : "本地工作区")} endIcon={ChevronsUpDown} />
+      <span className="min-w-2 flex-1" aria-hidden="true" />
       {workspace === "writing" ? <div className="flex shrink-0 items-center gap-0.5">
         <StatusItem icon={Eye} label={en ? "Visual" : "所见即所得"} />
         <StatusItem icon={Copy} label={en ? "Copy" : "复制"} />
         <StatusItem icon={Download} label={en ? "Export" : "导出"} />
-        <StatusItem icon={List} label={en ? "Outline" : "大纲"} />
+        {showOutlineToggle ? <StatusItem icon={List} label={en ? "Outline" : "大纲"} active={outlineOpen} onClick={onToggleOutline} /> : null}
       </div> : workspace === "canvas" ? canvasControls ?? <div className="flex shrink-0 items-center gap-0.5">
         <StatusItem icon={Grid3X3} label={en ? "Grid" : "网格"} />
         <StatusItem icon={Magnet} label={en ? "Snap" : "吸附"} />
@@ -100,14 +128,14 @@ export function NoteGenMainStatusBar({
         <StatusItem icon={ZoomOut} label="100%" />
         <StatusItem icon={Maximize2} label={en ? "Fit canvas" : "适应画布"} />
       </div> : null}
-      <span className="min-w-2 flex-1" aria-hidden="true" />
       {pluginSlot ? <div data-notegen-replica="status-plugins" className="flex shrink-0 items-center gap-1">{pluginSlot}</div> : null}
-      <span className="min-w-2 flex-1" aria-hidden="true" />
       {workspace === "writing" ? <span className="px-1">T {characterCount} {en ? "characters" : "字符"}</span> : null}
-      <StatusItem icon={Settings2} label={en ? "Configure sync" : "配置同步"} />
+      {workspace === "writing" && showSyncHistory ? <StatusItem icon={History} label={en ? "History" : "历史版本"} /> : null}
+      <span className="min-w-2 flex-1" aria-hidden="true" />
       {modelControl ?? <StatusItem icon={Bot} label={modelLabel} endIcon={ChevronDown} />}
       <StatusItem icon={Sparkles} label={promptLabel ?? (en ? "Default" : "默认提示词")} endIcon={ChevronDown} />
     </footer>
+    </div>
   )
 }
 

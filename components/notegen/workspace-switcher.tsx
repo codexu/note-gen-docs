@@ -1,27 +1,30 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { Files, Highlighter, Palette } from "lucide-react"
+import { Files, Highlighter, ListTree, Palette } from "lucide-react"
 
 import type { NoteGenReplicaLanguage } from "@/components/notegen/types"
 import { cn } from "@/lib/utils"
 
 export type NoteGenWorkspace = "writing" | "records" | "canvas"
 
-export function NoteGenWorkspaceSidebar({ lang, value, onValueChange, actions, children, compact = false, className }: {
+export function NoteGenWorkspaceSidebar({ lang, value, onValueChange, actions, children, compact = false, showOutline = false, outlineActive = false, onOutlineSelect, className }: {
   lang: NoteGenReplicaLanguage
   value: NoteGenWorkspace
   onValueChange?: (workspace: NoteGenWorkspace) => void
   actions?: ReactNode
   children: ReactNode
   compact?: boolean
+  showOutline?: boolean
+  outlineActive?: boolean
+  onOutlineSelect?: () => void
   className?: string
 }) {
   return (
     <section data-notegen-replica="workspace-sidebar" className={cn("flex min-h-0 min-w-0 flex-col border-r", className)}>
       <div className="flex h-12 shrink-0 items-center justify-between border-b px-2">
-        <NoteGenWorkspaceSwitcher lang={lang} value={value} onValueChange={onValueChange} className={cn("shrink-0 flex-nowrap", compact && "[&>button]:gap-1 [&>button]:px-1.5")} />
-        {actions}
+        <div className="min-w-0 flex-1 overflow-x-auto"><NoteGenWorkspaceSwitcher lang={lang} value={value} onValueChange={onValueChange} showOutline={showOutline} outlineActive={outlineActive} onOutlineSelect={onOutlineSelect} className={cn("w-fit shrink-0 flex-nowrap", compact && "[&>button]:gap-1 [&>button]:px-1.5")} /></div>
+        {!(showOutline && outlineActive) && actions}
       </div>
       <div className="relative min-h-0 flex-1 overflow-hidden">{children}</div>
     </section>
@@ -43,11 +46,17 @@ export function NoteGenWorkspaceSwitcher({
   lang,
   value,
   onValueChange,
+  showOutline = false,
+  outlineActive = false,
+  onOutlineSelect,
   className,
 }: {
   lang: NoteGenReplicaLanguage
   value: NoteGenWorkspace
   onValueChange?: (workspace: NoteGenWorkspace) => void
+  showOutline?: boolean
+  outlineActive?: boolean
+  onOutlineSelect?: () => void
   className?: string
 }) {
   return (
@@ -55,15 +64,15 @@ export function NoteGenWorkspaceSwitcher({
       aria-label={lang === "en" ? "Switch workspace" : "切换工作区"}
       className={cn("flex flex-wrap items-center gap-0.5 rounded-xl border bg-background p-0.5", className)}
     >
-      {workspaceTabs.map(({ id, cn: cnLabel, en, icon: Icon }) => {
-        const active = value === id
+      {[...workspaceTabs, ...(showOutline ? [{ id: "outline" as const, cn: "大纲", en: "Outline", icon: ListTree }] : [])].map(({ id, cn: cnLabel, en, icon: Icon }) => {
+        const active = id === "outline" ? outlineActive : !(showOutline && outlineActive) && value === id
         const label = lang === "en" ? en : cnLabel
 
         return (
           <button
             key={id}
             type="button"
-            onClick={() => onValueChange?.(id)}
+            onClick={() => id === "outline" ? onOutlineSelect?.() : onValueChange?.(id)}
             aria-pressed={active}
             aria-label={label}
             className={cn(

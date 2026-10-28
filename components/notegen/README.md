@@ -2,6 +2,19 @@
 
 This folder contains style-only, code-native replicas for documentation and marketing pages. They do not connect to NoteGen stores, Tauri, databases, file APIs, or AI services.
 
+## Shared shell update · 2026-10-27
+
+Source baseline: `750cd7383317471d2d45d05efacf63e60d767e52` (committed version 0.39.0). `replica-baseline.ts` owns the display version; the application's uncommitted 0.39.1 version is not used as a release claim. Settings detail, full settings, settings dialogs and the desktop scene accept an optional `version` for historical fixtures.
+
+- The shared status bar uses 28px height, current default spacer placement, a labeled sync trigger, a container-local sync overview and the shared `NoteGenDocumentSyncCard`. The release document-sync scene reuses the same bar and card. Supply `currentDocument`, optional `showSyncHistory`, and `onDocumentSyncAction`; no operation touches files. `syncPopoverOpen` / `onSyncPopoverOpenChange` support controlled frames, otherwise the trigger opens locally; Escape/outside click close it.
+- `NoteGenWorkspaceSidebar` / `NoteGenWorkspaceSwitcher` retain the `writing | records | canvas` contract. Optional `showOutline`, `outlineActive` and `onOutlineSelect` add the conditional fourth entry without changing existing workspace callbacks. Sidebar actions disappear while its outline is selected.
+- `NoteGenOutlinePanel` accepts fixed headings, active ID and a navigation callback, with local search/folding and a no-document state. `NoteGenDesktopReplica` shares its heading fixture with the visible Chinese/English document, and scrolls only the replica article. `initialOutlinePreferences` initializes an interactive scene; `outlinePreferences` with `onOutlinePreferencesChange` controls a scene externally. The default is editor/right/disabled, following application defaults. `initialOutlineActive` selects the sidebar entry initially. Editor outline panes use the natural 256px default (limited in narrow previews); resize/drag-to-reorder behavior is not implemented in this batch.
+- `NoteGenOutlineSettings` exposes conditional placement, default enable and left/right controls. Full desktop settings and the status-bar outline toggle share the same local preferences. `initialSettingsSection` selects the initial full settings page. Standalone settings retain preferences while changing pages.
+- Windows/Linux window controls accept `maximized` and show Copy for restore; default remains Square. `NoteGenWindowTitleBar`, desktop props and AppShell's `titleBarProps` forward the state.
+- Settings now include the Extensions group and Plugins entry. This batch supplies only the installed-empty display snapshot; marketplace, update and developer content/interaction remain pending. No independent desktop read-aloud navigation item is invented.
+
+Fixed gallery scenes include sync overview/current-document menu, normal/maximized platform controls, outline search/folding/empty, conditional settings, sidebar outline, and left/right editor outline. Existing homepage and desktop document previews inherit shared-shell changes; existing `kind="settings"` can render `section="plugins"` without new MDX registration. No server, test, lint, type check, build or screenshot comparison was run. See the dated implementation entry in [replication-plan.md](./replication-plan.md) for remaining scope and manual checks.
+
 ## Component families
 
 - `app-shell-replica`: platform window controls, capture toolbar, panel handle, app shell, and the unified full-width PC status bar.

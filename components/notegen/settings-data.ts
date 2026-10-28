@@ -1,3 +1,5 @@
+import { NOTEGEN_REPLICA_VERSION } from "./replica-baseline"
+
 export type NoteGenSettingSectionId =
   | "about"
   | "general"
@@ -19,6 +21,7 @@ export type NoteGenSettingSectionId =
   | "backup"
   | "imageHosting"
   | "file"
+  | "plugins"
 
 export type NoteGenSettingControl = "switch" | "select" | "slider" | "shortcut" | "button" | "input" | "textarea" | "status"
 
@@ -68,7 +71,7 @@ export const noteGenSettingsPages: Record<NoteGenSettingSectionId, NoteGenSettin
     cnDescription: "查看 NoteGen 的版本、更新与开源信息。",
     enDescription: "View NoteGen version, updates, and open-source information.",
     sections: [
-      { cn: "NoteGen", en: "NoteGen", presentation: "cards", rows: [row("NoteGen", "NoteGen", "status", "v0.36.0", "v0.36.0", "AI 驱动的跨平台 Markdown 笔记应用", "An AI-powered cross-platform Markdown note-taking app")] },
+      { cn: "NoteGen", en: "NoteGen", presentation: "cards", rows: [row("NoteGen", "NoteGen", "status", `v${NOTEGEN_REPLICA_VERSION}`, `v${NOTEGEN_REPLICA_VERSION}`, "AI 驱动的跨平台 Markdown 笔记应用", "An AI-powered cross-platform Markdown note-taking app")] },
       { cn: "软件更新", en: "Software update", cnDescription: "检查新版本并选择更新渠道", enDescription: "Check for new versions and choose an update channel", rows: [row("当前版本", "Current version", "status", "已是最新版本", "Up to date"), row("更新渠道", "Update channel", "select", "稳定版", "Stable")] },
       { cn: "项目链接", en: "Project links", presentation: "cards", rows: [row("GitHub", "GitHub", "button", "查看源码", "View source", "访问 NoteGen 开源仓库", "Visit the NoteGen repository"), row("官方网站", "Official website", "button", "打开网站", "Open website", "查看文档与下载信息", "Read docs and download NoteGen")] },
     ],
@@ -274,5 +277,10 @@ export const noteGenSettingsPages: Record<NoteGenSettingSectionId, NoteGenSettin
       { cn: "当前工作区", en: "Current workspace", rows: [row("工作区目录", "Workspace directory", "input", "~/Documents/NoteGen", "~/Documents/NoteGen"), row("更改工作区", "Change workspace", "button", "选择文件夹", "Choose folder", "更改后需要重启应用才能完全生效", "Restart the app after changing the workspace")] },
       { cn: "写作资源路径", en: "Writing assets path", cnDescription: "编辑器本地插入图片时会使用该目录名。", enDescription: "The editor uses this folder name for local images.", rows: [row("资源目录名称", "Assets folder name", "input", "assets", "assets")] },
     ],
+  },
+  plugins: {
+    cn: "插件", en: "Plugins",
+    cnDescription: "安装和管理 NoteGen 插件。", enDescription: "Install and manage NoteGen plugins.",
+    sections: [],
   },
 }

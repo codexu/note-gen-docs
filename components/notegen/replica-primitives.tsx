@@ -13,7 +13,7 @@ export function NoteGenReplicaFrame({
     <div
       data-notegen-replica="frame"
       className={cn(
-        "w-full overflow-hidden rounded-xl border bg-background text-[9px] leading-normal text-foreground shadow-xl sm:text-[10px] lg:text-xs",
+        "relative isolate w-full overflow-hidden rounded-xl border bg-background text-[9px] leading-normal text-foreground shadow-xl sm:text-[10px] lg:text-xs",
         fill ? "h-full" : "aspect-[16/10]",
         className
       )}
