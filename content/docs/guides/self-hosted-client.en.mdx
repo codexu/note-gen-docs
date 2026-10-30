@@ -47,3 +47,22 @@ If a local workspace is incorrectly bound to multiple libraries, the client show
 ## Disconnect and recover
 
 Disconnecting does not automatically delete the local workspace. Preserve the server URL, account and recovery information, and local backup before reconnecting. If login fails, check readiness, certificate, device time, and the browser callback, then contact the instance administrator. Never post passwords, TOTP codes, recovery keys, or invitation links in a public issue.
+
+## Personal data switches and attachments
+
+Pause tags, records, conversations, messages, memories, and settings separately. Pausing tags also pauses dependent records, linked notes, canvases, and messages; pausing conversations also pauses messages. Re-enabling retrieves the remote snapshot, preserving pending local changes before replacing the same item. Pausing a domain does not remove downloaded data.
+
+Attachment transfer covers local resources managed by NoteGen. Files at external locations still need separate backups. Pausing personal attachment transfer does not remove downloaded files. Workspace attachments sync with their notes.
+
+Login tokens and sync keys use the system credential store: macOS Keychain, Windows Credential Manager, Linux Secret Service, and the existing mobile Keychain / Keystore storage. Linux requires an available, unlocked desktop keyring. An unavailable credential store causes an explicit connection error. Legacy plaintext credentials are removed only after migration and individual readback verification succeed.
+
+## Recover after a failed switch
+
+Newer clients save and verify files, personal database rows, and sync mappings before switching. If switching fails, choose **Restore data from before the switch** in the review window:
+
+1. The client saves a fresh safety copy before every recovery attempt or retry, retaining earlier copies.
+2. Notes and attachments are copied into a separate recovered workspace; the original workspace is retained.
+3. Personal data returns to the snapshot, and the client switches to local storage. Server data is retained.
+4. Check files and records before choosing a sync provider again. The window shows the recovered workspace and safety-copy locations.
+
+The progress window stays open during recovery. If local records change after the safety copy is saved, the client stops database replacement; review the changes before retrying. Sensitive settings remain unchanged when either the backup or the current client excludes them. If recovery is interrupted, restart the client and continue recovery before enabling sync. Older snapshots containing only files and personal-data.json remain available for manual recovery through the backup-folder action. They cannot be automatically restored by the newer recovery flow.

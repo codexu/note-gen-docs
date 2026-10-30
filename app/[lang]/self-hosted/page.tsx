@@ -45,7 +45,7 @@ const content = {
     notice: {
       title: '当前处于实验阶段',
       description:
-        '部署方式、配置和数据库结构仍可能变化。请始终保留 NoteGen 本地 Markdown，不要把实验实例作为重要数据的唯一副本。完整备份恢复工具仍在完善中。',
+        '部署方式、配置和数据库结构仍可能变化。请保留本地 Markdown 和独立备份，并在开放测试前完成隔离恢复。当前安全修复尚未发布为镜像。',
     },
     comparison: {
       title: '与其他同步方案相比',
@@ -64,7 +64,7 @@ const content = {
     deploy: {
       title: '准备部署自己的实例？',
       description:
-        '官方 AMD64 / ARM64 镜像已经发布到 GHCR，可以通过 Docker Compose 直接拉取。完整指南包含环境变量、HTTPS、首次初始化、客户端连接、升级、数据备份和常见问题。',
+        '当前修复先使用 Docker Compose 从源码构建。完整指南包含安装凭据、HTTPS、客户端连接、容量预算、升级和离线备份恢复；正式镜像发布后可固定版本部署。',
       action: '阅读自托管部署文档',
       source: '查看服务端源码',
     },
@@ -75,7 +75,7 @@ const content = {
         ['NoteGen Server', '同步 API、WebSocket、认证和账号管理 Web 同源运行。'],
         ['PostgreSQL 17', '保存账号、设备、同步游标、对象版本和实例配置。'],
         ['持久化数据卷', 'PostgreSQL 与附件数据独立于容器生命周期保存。'],
-        ['GHCR 镜像', 'latest 跟随 release 分支发布，完整版本标签用于稳定复现。'],
+        ['部署版本', '当前从源码构建；镜像发布后选择实际存在的完整标签或 digest。'],
       ],
     },
     feedback: {
@@ -97,7 +97,7 @@ const content = {
     notice: {
       title: 'Experimental today',
       description:
-        'Deployment, configuration, and database structures may still change. Keep your local Markdown files and never treat an experimental instance as the only copy of important data. Complete backup and restore tooling is still being built.',
+        'Deployment, configuration, and database structures may still change. Keep local Markdown and independent backups, and complete an isolated recovery before opening testing. The current security fixes have not been published as an image yet.',
     },
     comparison: {
       title: 'How it compares with other sync options',
@@ -116,7 +116,7 @@ const content = {
     deploy: {
       title: 'Ready to deploy your own instance?',
       description:
-        'Official AMD64 and ARM64 images are available from GHCR and can be pulled directly with Docker Compose. The complete guide covers environment variables, HTTPS, first-time setup, client connection, upgrades, backups, and troubleshooting.',
+        'Build the current fixes from source with Docker Compose. The guide covers installation credentials, HTTPS, clients, storage budgets, upgrades, and offline backup and recovery. Select a pinned image after a release is published.',
       action: 'Read the self-hosting guide',
       source: 'View server source',
     },
@@ -127,7 +127,7 @@ const content = {
         ['NoteGen Server', 'Sync API, WebSocket, authentication, and the account portal run on one origin.'],
         ['PostgreSQL 17', 'Stores accounts, devices, sync cursors, object versions, and instance configuration.'],
         ['Persistent volumes', 'Database and attachment data remain outside the container lifecycle.'],
-        ['GHCR image', 'latest follows releases from the release branch; full version tags provide reproducible deployments.'],
+        ['Deployment version', 'Build from source for now; select an existing version tag or digest after an image is published.'],
       ],
     },
     feedback: {
