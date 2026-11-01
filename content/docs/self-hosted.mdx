@@ -21,7 +21,7 @@ NoteGen Server 为 NoteGen 提供账号、设备关联、实时同步、团队�
 
 默认 Compose 会启动 NoteGen Server 和 PostgreSQL 17，并使用两个独立的数据卷保存数据库与附件。服务默认只监听宿主机的 `127.0.0.1:3789`。
 
-官方镜像地址为 `ghcr.io/codexu/note-gen-server`，支持 `linux/amd64` 和 `linux/arm64`。当前这一批安全与恢复修复尚未发布为镜像，请先使用下方源码容器构建流程。不要使用旧 `edge` 镜像代替这些修复。正式镜像发布后，再填写经过核对的版本标签或 digest；服务器无需安装 Node.js 或 pnpm。
+官方测试镜像为 `ghcr.io/codexu/note-gen-server:beta`，支持 `linux/amd64` 和 `linux/arm64`，可匿名拉取。服务器无需安装 Node.js 或 pnpm，也无需从源码构建。`beta` 指向最近发布的测试版，本指南使用该频道部署和升级。
 
 ### 1. 准备服务器
 
@@ -59,10 +59,18 @@ openssl rand -hex 32
 | `SETUP_TOKEN` | 第三个随机值，首次安装时在页面输入；不要放在网址、截图或公开日志中 |
 | `PUBLIC_BASE_URL` | NoteGen 客户端实际访问的地址，不带路径和末尾斜杠 |
 | `SERVER_BIND_ADDRESS` | 保持 `127.0.0.1`，由反向代理提供公网入口 |
-| `NOTEGEN_SERVER_IMAGE` | 当前保留示例值 `notegen-server:dev`，配合源码构建；有正式镜像后填写已发布的完整标签或 digest |
-| `ACCOUNT_STORAGE_MAX_BYTES` | 单账号同步数据预算，默认 5 GiB，包含历史和附件预占 |
-| `INSTANCE_STORAGE_MAX_BYTES` | 实例同步数据预算，默认 50 GiB；数据库索引、WAL、备份需另行监控 |
+| `NOTEGEN_SERVER_IMAGE` | 改为 `ghcr.io/codexu/note-gen-server:beta`，跟随测试版频道 |
+| `ACCOUNT_STORAGE_MAX_BYTES` | 单账号同步容量初始值，默认 5 GiB，包含历史和附件预占 |
+| `INSTANCE_STORAGE_MAX_BYTES` | 实例同步容量初始值，默认 50 GiB；数据库索引、WAL、备份需另行监控 |
 | `STORAGE_MIN_FREE_BYTES` | 附件磁盘最低预留空间，默认 1 GiB |
+
+将 `.env` 中的镜像配置设为以下值，即使示例文件使用了具体版本，也以此处填写的值为准：
+
+```dotenv
+NOTEGEN_SERVER_IMAGE=ghcr.io/codexu/note-gen-server:beta
+```
+
+需要控制升级版本时，可以将 `beta` 替换为已发布的完整版本标签，或使用 `ghcr.io/codexu/note-gen-server@sha256:...` 固定镜像 digest。
 
 仅在本机测试时，可以使用：
 
@@ -79,11 +87,12 @@ PUBLIC_BASE_URL=https://sync.example.com
 ### 4. 启动服务
 
 ```bash
-docker compose -f compose.yaml -f compose.dev.yaml up -d --build
+docker compose pull
+docker compose up -d
 docker compose ps
 ```
 
-当前命令从检出的源码构建 `notegen-server:dev`。构建失败时先排查原因，不要回退到不包含修复的旧镜像。正式镜像可用后，可在 `.env` 中配置经核对的 `NOTEGEN_SERVER_IMAGE`，再使用 `docker compose pull` 和 `docker compose up -d`。
+以上命令拉取 `.env` 中指定的预构建镜像，并启动服务端、账号管理 Web 和 PostgreSQL。源码容器构建方式见[从源码运行](#从源码运行)。
 
 首次启动会等待 PostgreSQL 就绪，并自动执行尚未应用的数据库迁移。两个服务都显示为 `healthy` 后，再检查就绪接口：
 
@@ -140,14 +149,23 @@ Caddy 会自动申请和续期 HTTPS 证书。开放公网前先确认 `SETUP_TO
 
 其他 Git、S3、WebDAV 和云盘方案参见[同步配置](/cn/docs/settings/sync)。
 
+## 容量设置
+
+管理员可在 Web 后台的“实例运维 → 访问与配置 → 运行配置”中修改“每账号容量上限（GiB）”和“实例总容量上限（GiB）”。输入当前密码并保存后立即生效，无需重启；支持小数，最小为 1 MiB。
+
+`ACCOUNT_STORAGE_MAX_BYTES` 和 `INSTANCE_STORAGE_MAX_BYTES` 仅在首次安装或旧实例尚未保存容量设置时提供初始值。后台保存后以数据库配置为准，重启不会被环境变量覆盖。
+
+容量包含保留历史和附件上传预占，共享资料库计入所有者账号。降低上限不会删除已有数据；超限后限制新增占用，读取、删除和取消上传仍可使用。删除笔记不会立即释放全部容量，数据库索引、WAL 和备份仍需单独预留磁盘空间。
+
 ## 升级实例
 
-升级前先阅读仓库说明，并对 PostgreSQL 与附件数据建立同一时间点的配套备份。当前源码容器部署使用以下命令；正式镜像部署应先填写实际发布的固定版本或 digest，再拉取升级。
+升级前先阅读新版本说明，并对 PostgreSQL 与附件数据建立同一时间点的配套备份。使用 `beta` 频道时，无需每次修改镜像标签，执行以下命令即可拉取并应用最近发布的测试版。保留现有 `.env` 中的密码、密钥和实例地址，不要用示例文件覆盖它。
 
 ```bash
 cd note-gen-server
 git pull --ff-only
-docker compose -f compose.yaml -f compose.dev.yaml up -d --build
+docker compose pull
+docker compose up -d
 docker compose ps
 ```
 
@@ -158,7 +176,7 @@ curl --fail http://127.0.0.1:3789/health/ready
 docker compose logs --tail=200 server
 ```
 
-源码部署需要复现版本时，应记录 Git 提交 SHA。镜像部署应使用仓库镜像页面实际存在的完整标签或 digest，不要假设 `latest` 或某个版本已经发布。镜像发布与源码合并是独立操作。
+发布新的测试版不会自动更新正在运行的容器；执行 `docker compose pull` 和 `docker compose up -d` 后才会应用更新。如果使用完整版本或 digest，升级前需先修改 `.env` 中的 `NOTEGEN_SERVER_IMAGE`。若数据库迁移已执行，回退前应按[备份与恢复手册](https://github.com/codexu/note-gen-server/blob/main/docs/deployment/backup-restore.md)恢复配套数据，不能只切换回旧镜像。
 
 ## 数据与备份
 
@@ -220,9 +238,19 @@ cp .env.example .env
 pnpm dev
 ```
 
-修改 `.env` 中的 `DATABASE_URL`、`AUTH_SECRET` 和 `PUBLIC_BASE_URL`。开发模式下 API 默认监听 `3789`，账号管理 Web 默认监听 `3790`。
+修改 `.env` 中的 `DATABASE_URL`、`AUTH_SECRET`、首次安装的 `SETUP_TOKEN` 和 `PUBLIC_BASE_URL`。开发模式下 API 默认监听 `3789`，账号管理 Web 默认监听 `3790`。
 
 项目结构、修改边界和贡献检查参见 [NoteGen Server 仓库](https://github.com/codexu/note-gen-server)中的贡献指南。
+
+### 从源码构建容器
+
+需要验证本地修改时，在仓库根目录准备 `.env`：尚无配置时复制 `.env.docker.example` 并填写实例配置；已有配置则保留原文件。将 `NOTEGEN_SERVER_IMAGE` 改为 `notegen-server:dev`，再执行：
+
+```bash
+docker compose -f compose.yaml -f compose.dev.yaml up -d --build
+```
+
+修改源码后重新执行该命令即可构建更新。需要复现构建时，记录对应的 Git 提交 SHA。
 
 ## 常见问题
 

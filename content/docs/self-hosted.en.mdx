@@ -21,7 +21,7 @@ Use Docker Compose for production-like or long-running experiments. Source mode 
 
 The default Compose stack starts NoteGen Server and PostgreSQL 17. Two separate volumes store the database and attachments. The service listens only on `127.0.0.1:3789` on the host by default.
 
-The official image is `ghcr.io/codexu/note-gen-server` and supports `linux/amd64` and `linux/arm64`. The current security and recovery fixes have not been published as an image yet. Use the source container build below; an older `edge` image does not contain these fixes. After an image is published, select a verified version tag or digest. The host does not need Node.js or pnpm.
+The official test image is `ghcr.io/codexu/note-gen-server:beta`. It supports `linux/amd64` and `linux/arm64` and can be pulled anonymously. The host does not need Node.js, pnpm, or a source build. The `beta` tag points to the most recently published test release; this guide uses that channel for deployment and upgrades.
 
 ### 1. Prepare the server
 
@@ -59,10 +59,18 @@ Edit `.env` and verify at least these values:
 | `SETUP_TOKEN` | The third random value, entered in the installer; never put it in URLs, screenshots, or public logs |
 | `PUBLIC_BASE_URL` | The exact address used by NoteGen clients, without a path or trailing slash |
 | `SERVER_BIND_ADDRESS` | Keep `127.0.0.1` and expose the service through a reverse proxy |
-| `NOTEGEN_SERVER_IMAGE` | Keep `notegen-server:dev` for the source build until a verified image is published; then select a version tag or digest |
-| `ACCOUNT_STORAGE_MAX_BYTES` | Per-account sync budget, 5 GiB by default, including retained history and upload reservations |
-| `INSTANCE_STORAGE_MAX_BYTES` | Instance sync budget, 50 GiB by default; monitor database indexes, WAL, and backups separately |
+| `NOTEGEN_SERVER_IMAGE` | Change to `ghcr.io/codexu/note-gen-server:beta` to follow the test release channel |
+| `ACCOUNT_STORAGE_MAX_BYTES` | Initial per-account sync capacity, 5 GiB by default, including retained history and upload reservations |
+| `INSTANCE_STORAGE_MAX_BYTES` | Initial instance sync capacity, 50 GiB by default; monitor database indexes, WAL, and backups separately |
 | `STORAGE_MIN_FREE_BYTES` | Minimum free space on the blob filesystem, 1 GiB by default |
+
+Set the image in `.env` to the following value, even if the example file uses a specific version:
+
+```dotenv
+NOTEGEN_SERVER_IMAGE=ghcr.io/codexu/note-gen-server:beta
+```
+
+To control which version you deploy, replace `beta` with a published full version tag, or pin a digest using `ghcr.io/codexu/note-gen-server@sha256:...`.
 
 For a local-only trial:
 
@@ -79,11 +87,12 @@ PUBLIC_BASE_URL=https://sync.example.com
 ### 4. Start the services
 
 ```bash
-docker compose -f compose.yaml -f compose.dev.yaml up -d --build
+docker compose pull
+docker compose up -d
 docker compose ps
 ```
 
-This command builds `notegen-server:dev` from the checked-out source. Resolve build failures rather than falling back to an older image without the fixes. Once a release is available, set a verified `NOTEGEN_SERVER_IMAGE` in `.env`, then use `docker compose pull` and `docker compose up -d`.
+These commands pull the prebuilt image specified in `.env` and start the server, account portal, and PostgreSQL. For local container builds, see [Run from source](#run-from-source).
 
 On first startup, the server waits for PostgreSQL and applies pending database migrations. Once both services report `healthy`, check readiness:
 
@@ -140,14 +149,23 @@ Validate the connection in this order:
 
 See [Sync](/en/docs/settings/sync) for Git, S3, WebDAV, and cloud-drive options.
 
+## Storage capacity
+
+Administrators can change the per-account and instance capacity limits in GiB under the Web administration portal’s instance operations → access and configuration → runtime configuration. Enter the current password and save to apply the limits immediately without restarting. Decimal values are supported, with a minimum of 1 MiB.
+
+`ACCOUNT_STORAGE_MAX_BYTES` and `INSTANCE_STORAGE_MAX_BYTES` provide initial values at first installation or for older instances without saved capacity settings. Once saved in the portal, database settings take precedence and are not overwritten by environment variables on restart.
+
+Capacity includes retained history and attachment upload reservations. Shared libraries count toward their owner’s account. Lowering a limit does not delete existing data; when usage exceeds the limit, additional usage is restricted while reads, deletions, and upload cancellation remain available. Deleting a note does not immediately reclaim all capacity. Reserve separate disk space for database indexes, WAL, and backups.
+
 ## Upgrade the instance
 
-Before upgrading, review repository notes and create a consistent backup of PostgreSQL and attachments. Use these commands for the current source container deployment. For an image deployment, first select a verified published version or digest, then pull and recreate the service.
+Before upgrading, review the new release notes and create a consistent backup of PostgreSQL and attachments. When using the `beta` channel, run the following commands to pull and apply the most recently published test release without changing the image tag each time. Keep existing passwords, keys, and instance URLs in `.env`; do not overwrite it with the example file.
 
 ```bash
 cd note-gen-server
 git pull --ff-only
-docker compose -f compose.yaml -f compose.dev.yaml up -d --build
+docker compose pull
+docker compose up -d
 docker compose ps
 ```
 
@@ -158,7 +176,7 @@ curl --fail http://127.0.0.1:3789/health/ready
 docker compose logs --tail=200 server
 ```
 
-Record the Git commit SHA for reproducible source builds. For images, select a version or digest that actually exists in the package registry; do not assume `latest` or a version has already been published. Merging source and publishing an image are separate operations.
+Publishing a new test release does not automatically update running containers; run `docker compose pull` and `docker compose up -d` to apply it. If you pin a full version or digest, update `NOTEGEN_SERVER_IMAGE` in `.env` before upgrading. If database migrations have run, follow the [Backup and restore runbook](https://github.com/codexu/note-gen-server/blob/main/docs/deployment/backup-restore.md) to restore the matching data before rolling back; switching to the old image alone is insufficient.
 
 ## Data and backups
 
@@ -220,9 +238,19 @@ cp .env.example .env
 pnpm dev
 ```
 
-Set `DATABASE_URL`, `AUTH_SECRET`, and `PUBLIC_BASE_URL` in `.env`. In development, the API listens on `3789` and the account portal on `3790` by default.
+Set `DATABASE_URL`, `AUTH_SECRET`, the first-install `SETUP_TOKEN`, and `PUBLIC_BASE_URL` in `.env`. In development, the API listens on `3789` and the account portal on `3790` by default.
 
 See the contribution guide in the [NoteGen Server repository](https://github.com/codexu/note-gen-server) for project structure, change boundaries, and contribution checks.
+
+### Build a container from source
+
+To validate local changes, prepare `.env` in the repository root. If it does not exist, copy `.env.docker.example` and fill in the instance configuration; otherwise, keep the existing file. Set `NOTEGEN_SERVER_IMAGE=notegen-server:dev`, then run:
+
+```bash
+docker compose -f compose.yaml -f compose.dev.yaml up -d --build
+```
+
+Run the command again after changing the source to rebuild the image. Record the Git commit SHA when you need to reproduce a build.
 
 ## Troubleshooting
 
