@@ -43,6 +43,8 @@ export function NoteGenEditorAISelectionReplica({ lang = "cn", state, showTutori
   const translateOpen = state ? state === "detail" : localTranslateOpen
   const [customLanguage, setCustomLanguage] = useState("")
   const [notice, setNotice] = useState("")
+  const [localActiveFormats, setActiveFormats] = useState<string[]>([])
+  const activeFormats = formatProps?.active ?? localActiveFormats
   const width = 680
   const height = canvasHeight ?? (translateOpen ? 680 : menuOpen ? 480 : 320)
   useEffect(() => {
@@ -103,7 +105,10 @@ export function NoteGenEditorAISelectionReplica({ lang = "cn", state, showTutori
               </div>
             </div> : null}
           </div>
-          <ToolbarSeparator /><NoteGenEditorFormatControls lang={lang} {...formatProps} />
+          <ToolbarSeparator /><NoteGenEditorFormatControls lang={lang} {...formatProps} active={activeFormats} onChange={change => {
+            if (change.active !== undefined) setActiveFormats(change.active)
+            formatProps?.onChange?.(change)
+          }} />
         </div>
       </div>
     </div>
